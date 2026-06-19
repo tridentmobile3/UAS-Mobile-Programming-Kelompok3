@@ -1,4 +1,4 @@
-package com.example.workingreport
+package com.kelompok3.workingreport
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

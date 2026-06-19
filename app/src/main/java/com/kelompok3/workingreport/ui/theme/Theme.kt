@@ -1,6 +1,5 @@
-package com.example.workingreport.ui.theme
+package com.kelompok3.workingreport.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

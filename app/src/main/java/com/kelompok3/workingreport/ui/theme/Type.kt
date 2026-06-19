@@ -1,4 +1,4 @@
-package com.example.workingreport.ui.theme
+package com.kelompok3.workingreport.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
