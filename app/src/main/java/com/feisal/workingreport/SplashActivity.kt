@@ -14,7 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 
 class SplashActivity : AppCompatActivity() {
 
-    private val greetings = arrayOf("Halo", "Hello", "Bonjour", "こんにちは", "안녕하세요", "Padepokan 79")
+    private val greetings = arrayOf("Hello","Bonjour","こんにちは","안녕하세요","你好","Padepokan 79")
     private var currentIndex = 0
 
     // Palet 4 Warna Khas Padepokan 79
@@ -34,7 +34,6 @@ class SplashActivity : AppCompatActivity() {
         val runnable = object : Runnable {
             override fun run() {
                 if (currentIndex < greetings.size) {
-                    // Set teks warna-warni
                     tvGreeting.text = getColorfulText(greetings[currentIndex])
                     tvGreeting.startAnimation(slideUpAnim)
 

@@ -1,0 +1,608 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0B101E">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingBottom="100dp"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/btnBackRiwayat"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="16dp"
+                    android:src="@android:drawable/ic_menu_revert"
+                    app:tint="@android:color/white" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Halo, Feisal 👋"
+                        android:textColor="@android:color/white"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:letterSpacing="0.1"
+                        android:text="SABTU, 20 JUNI 2026"
+                        android:textColor="#8B95A5"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    app:cardBackgroundColor="#009688"
+                    app:cardCornerRadius="20dp"
+                    app:strokeWidth="0dp">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="F"
+                        android:textColor="@android:color/white"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Riwayat Absensi"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Pantau histori kehadiran kamu"
+                android:textColor="#8B95A5"
+                android:textSize="12sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    app:cardBackgroundColor="#161D2F"
+                    app:cardCornerRadius="8dp"
+                    app:strokeColor="#2D3548"
+                    app:strokeWidth="1dp">
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:src="@android:drawable/ic_media_previous"
+                        app:tint="#8B95A5" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="Juni 2026"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    app:cardBackgroundColor="#161D2F"
+                    app:cardCornerRadius="8dp"
+                    app:strokeColor="#2D3548"
+                    app:strokeWidth="1dp">
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:src="@android:drawable/ic_media_next"
+                        app:tint="#8B95A5" />
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal"
+                android:weightSum="4">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="90dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    app:cardBackgroundColor="#161D2F"
+                    app:cardCornerRadius="12dp"
+                    app:strokeColor="#2D3548"
+                    app:strokeWidth="1dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="12dp"
+                            android:layout_height="12dp"
+                            app:cardBackgroundColor="#2ECC71"
+                            app:cardCornerRadius="6dp"
+                            app:strokeWidth="0dp" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="92%"
+                            android:textColor="@android:color/white"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="KEHADIRAN"
+                            android:textColor="#8B95A5"
+                            android:textSize="8sp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="90dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    app:cardBackgroundColor="#161D2F"
+                    app:cardCornerRadius="12dp"
+                    app:strokeColor="#2D3548"
+                    app:strokeWidth="1dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@android:drawable/ic_menu_recent_history"
+                            app:tint="#3498DB" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="08:06"
+                            android:textColor="@android:color/white"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="RATA² MASUK"
+                            android:textColor="#8B95A5"
+                            android:textSize="8sp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="90dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    app:cardBackgroundColor="#161D2F"
+                    app:cardCornerRadius="12dp"
+                    app:strokeColor="#2D3548"
+                    app:strokeWidth="1dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@android:drawable/ic_dialog_alert"
+                            app:tint="#F4D03F" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="1×"
+                            android:textColor="@android:color/white"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="TERLAMBAT"
+                            android:textColor="#8B95A5"
+                            android:textSize="8sp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="90dp"
+                    android:layout_weight="1"
+                    app:cardBackgroundColor="#161D2F"
+                    app:cardCornerRadius="12dp"
+                    app:strokeColor="#2D3548"
+                    app:strokeWidth="1dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@android:drawable/ic_menu_mylocation"
+                            app:tint="#E74C3C" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="0×"
+                            android:textColor="@android:color/white"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="GPS GAGAL"
+                            android:textColor="#8B95A5"
+                            android:textSize="8sp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                app:cardBackgroundColor="#161D2F"
+                app:cardCornerRadius="16dp"
+                app:strokeColor="#2D3548"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:orientation="horizontal"
+                        android:weightSum="7">
+                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="S" android:textColor="#8B95A5" android:textSize="12sp" />
+                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="S" android:textColor="#8B95A5" android:textSize="12sp" />
+                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="R" android:textColor="#8B95A5" android:textSize="12sp" />
+                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="K" android:textColor="#8B95A5" android:textSize="12sp" />
+                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="J" android:textColor="#8B95A5" android:textSize="12sp" />
+                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="S" android:textColor="#8B95A5" android:textSize="12sp" />
+                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="M" android:textColor="#8B95A5" android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:orientation="horizontal" android:weightSum="7">
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#2ECC71" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#2ECC71" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#2ECC71" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#2ECC71" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#2ECC71" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#2ECC71" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#222831" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:orientation="horizontal" android:weightSum="7">
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#2ECC71" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#2ECC71" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#2ECC71" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#2ECC71" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#F4D03F" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#2ECC71" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#222831" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:orientation="horizontal" android:weightSum="7">
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#2ECC71" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#2ECC71" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#E74C3C" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#F4D03F" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#2ECC71" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#1E3A8A" app:cardCornerRadius="8dp" app:strokeColor="#3498DB" app:strokeWidth="2dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#222831" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:orientation="horizontal" android:weightSum="7">
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#222831" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#222831" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#222831" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#222831" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#222831" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#222831" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#222831" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:weightSum="7">
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#222831" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#222831" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#222831" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#222831" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#222831" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#222831" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center"><com.google.android.material.card.MaterialCardView android:layout_width="34dp" android:layout_height="34dp" app:cardBackgroundColor="#222831" app:cardCornerRadius="8dp" app:strokeWidth="0dp"/></LinearLayout>
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:orientation="horizontal">
+
+                        <View android:layout_width="8dp" android:layout_height="8dp" android:background="@drawable/bg_location_badge" android:layout_gravity="center_vertical"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Hadir" android:textColor="#8B95A5" android:textSize="10sp" android:layout_marginStart="4dp" android:layout_marginEnd="16dp"/>
+
+                        <View android:layout_width="8dp" android:layout_height="8dp" android:background="#F4D03F" android:layout_gravity="center_vertical"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Izin" android:textColor="#8B95A5" android:textSize="10sp" android:layout_marginStart="4dp" android:layout_marginEnd="16dp"/>
+
+                        <View android:layout_width="8dp" android:layout_height="8dp" android:background="#E74C3C" android:layout_gravity="center_vertical"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Telat" android:textColor="#8B95A5" android:textSize="10sp" android:layout_marginStart="4dp" android:layout_marginEnd="16dp"/>
+
+                        <View android:layout_width="8dp" android:layout_height="8dp" android:background="#222831" android:layout_gravity="center_vertical"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Libur" android:textColor="#8B95A5" android:textSize="10sp" android:layout_marginStart="4dp"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:layout_marginEnd="8dp"
+                        app:cardBackgroundColor="#1E3A8A"
+                        app:cardCornerRadius="18dp"
+                        app:strokeColor="#3498DB"
+                        app:strokeWidth="1dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:paddingHorizontal="20dp"
+                            android:text="Semua"
+                            android:textColor="@android:color/white"
+                            android:textSize="12sp" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:layout_marginEnd="8dp"
+                        app:cardBackgroundColor="#161D2F"
+                        app:cardCornerRadius="18dp"
+                        app:strokeColor="#2D3548"
+                        app:strokeWidth="1dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:paddingHorizontal="20dp"
+                            android:text="Hadir"
+                            android:textColor="#8B95A5"
+                            android:textSize="12sp" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:layout_marginEnd="8dp"
+                        app:cardBackgroundColor="#161D2F"
+                        app:cardCornerRadius="18dp"
+                        app:strokeColor="#2D3548"
+                        app:strokeWidth="1dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:paddingHorizontal="20dp"
+                            android:text="Izin"
+                            android:textColor="#8B95A5"
+                            android:textSize="12sp" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:layout_marginEnd="8dp"
+                        app:cardBackgroundColor="#161D2F"
+                        app:cardCornerRadius="18dp"
+                        app:strokeColor="#2D3548"
+                        app:strokeWidth="1dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:paddingHorizontal="20dp"
+                            android:text="Telat"
+                            android:textColor="#8B95A5"
+                            android:textSize="12sp" />
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                android:layout_marginBottom="12dp"
+                app:cardBackgroundColor="#161D2F"
+                app:cardCornerRadius="16dp"
+                app:strokeColor="#2D3548"
+                app:strokeWidth="1dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="16dp">
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="JUN" android:textColor="#8B95A5" android:textSize="10sp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="19" android:textColor="@android:color/white" android:textSize="16sp" android:textStyle="bold" />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Hadir Lengkap" android:textColor="@android:color/white" android:textSize="14sp" android:textStyle="bold" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="08:01 - 17:05 · GPS terverifikasi" android:textColor="#8B95A5" android:textSize="12sp" />
+                    </LinearLayout>
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        app:cardBackgroundColor="#2ECC71"
+                        app:cardCornerRadius="10dp"
+                        app:strokeWidth="0dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                android:layout_marginBottom="12dp"
+                app:cardBackgroundColor="#161D2F"
+                app:cardCornerRadius="16dp"
+                app:strokeColor="#2D3548"
+                app:strokeWidth="1dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="16dp">
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="JUN" android:textColor="#8B95A5" android:textSize="10sp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="18" android:textColor="@android:color/white" android:textSize="16sp" android:textStyle="bold" />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Izin Sakit" android:textColor="@android:color/white" android:textSize="14sp" android:textStyle="bold" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Bukti: surat_dokter.pdf" android:textColor="#8B95A5" android:textSize="12sp" />
+                    </LinearLayout>
+                    <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_dialog_info" app:tint="#F4D03F" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                app:cardBackgroundColor="#161D2F"
+                app:cardCornerRadius="16dp"
+                app:strokeColor="#2D3548"
+                app:strokeWidth="1dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="16dp">
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="JUN" android:textColor="#8B95A5" android:textSize="10sp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="17" android:textColor="@android:color/white" android:textSize="16sp" android:textStyle="bold" />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Hadir, Terlambat" android:textColor="@android:color/white" android:textSize="14sp" android:textStyle="bold" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="08:21 - 17:00" android:textColor="#8B95A5" android:textSize="12sp" />
+                    </LinearLayout>
+                    <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_dialog_alert" app:tint="#E74C3C" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:gravity="center"
+                android:text="Lihat Riwayat Lengkap →"
+                android:textColor="#3498DB"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>
