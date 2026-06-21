@@ -1,76 +1,291 @@
 package com.feisal.workingreport
 
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.LinearGradient
-import android.graphics.Shader
 import android.os.Bundle
-import android.view.animation.AnimationUtils
-import android.widget.Button
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.feisal.workingreport.ui.components.GlassCard
+import com.feisal.workingreport.ui.theme.LiquidGlassBackground
+import com.feisal.workingreport.ui.theme.p79Colors
 
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
 
-        // Animasi (dari kode aslimu)
-        val mainContainer = findViewById<LinearLayout>(R.id.mainContainer)
-        val animSlideUp = AnimationUtils.loadAnimation(this, R.anim.slide_up_fade)
-        mainContainer?.startAnimation(animSlideUp)
+        setContent {
+            val colors = p79Colors(isDark = true)
+            var email by remember { mutableStateOf("") }
+            var password by remember { mutableStateOf("") }
 
-        // Gradient Teks (dari kode aslimu)
-        applyGradientToTujuhSembilan()
+            LiquidGlassBackground(colors = colors) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Spacer(modifier = Modifier.height(32.dp))
 
-        // --- MULAI LOGIKA LOGIN DISINI ---
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .background(colors.blue, CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "WELCOME BACK",
+                            color = colors.text1,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.5.sp
+                        )
+                    }
 
-        // Kenalkan ID dari layout XML ke variabel Kotlin
-        val etEmail = findViewById<EditText>(R.id.etEmail)       // Sesuaikan ID dengan XML kamu
-        val etPassword = findViewById<EditText>(R.id.etPassword) // Sesuaikan ID dengan XML kamu
-        val btnLogin = findViewById<Button>(R.id.btnLogin)       // Sesuaikan ID dengan XML kamu
+                    Spacer(modifier = Modifier.height(16.dp))
 
-        btnLogin.setOnClickListener {
-            // Ambil teks yang diketik user
-            val emailKetik = etEmail.text.toString().trim()
-            val passKetik = etPassword.text.toString().trim()
+                    Text(
+                        text = "Padepokan",
+                        color = colors.text0,
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold
+                    )
 
-            // Cek kecocokan
-            if (emailKetik == "admin@gmail.com" && passKetik == "admin123") {
-                // Jika cocok, buat Intent untuk pindah ke DashboardActivity
-                val pindahHalaman = Intent(this@LoginActivity, DashboardActivity::class.java)
-                startActivity(pindahHalaman)
+                    Text(
+                        text = "Tujuh Sembilan",
+                        style = TextStyle(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(colors.blue, colors.green)
+                            )
+                        ),
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
 
-                // Gunakan finish() agar user tidak kembali ke halaman login saat menekan tombol "Back"
-                finish()
-            } else {
-                // Jika salah, tampilkan pesan error
-                Toast.makeText(this, "Email atau password salah, Mas!", Toast.LENGTH_SHORT).show()
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(modifier = Modifier.fillMaxWidth().height(3.dp)) {
+                        Box(modifier = Modifier.weight(1f).fillMaxSize().background(colors.red))
+                        Box(modifier = Modifier.weight(1f).fillMaxSize().background(colors.amber))
+                        Box(modifier = Modifier.weight(1f).fillMaxSize().background(colors.green))
+                        Box(modifier = Modifier.weight(1f).fillMaxSize().background(colors.blue))
+                    }
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    GlassCard(
+                        colors = colors,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .background(Color(0xFF161D2F), RoundedCornerShape(12.dp))
+                                    .border(1.dp, colors.border, RoundedCornerShape(12.dp))
+                                    .clip(RoundedCornerShape(12.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.logo_padepokan79_icon),
+                                    contentDescription = "Logo",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(text = "Always Improving You", color = colors.text1, fontSize = 10.sp)
+                                Text(text = "Padepokan 79", color = colors.text0, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Text(
+                            text = "Sign In",
+                            color = colors.text0,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        OutlinedTextField(
+                            value = email,
+                            onValueChange = { email = it },
+                            label = { Text("Email Address", color = colors.text1) },
+                            leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = colors.text1) },
+                            shape = RoundedCornerShape(16.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = colors.blue,
+                                unfocusedBorderColor = colors.border,
+                                focusedTextColor = colors.text0,
+                                unfocusedTextColor = colors.text0,
+                                cursorColor = colors.blue,
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        OutlinedTextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = { Text("Password", color = colors.text1) },
+                            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = colors.text1) },
+                            visualTransformation = PasswordVisualTransformation(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = colors.blue,
+                                unfocusedBorderColor = colors.border,
+                                focusedTextColor = colors.text0,
+                                unfocusedTextColor = colors.text0,
+                                cursorColor = colors.blue,
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = "Forgot Password?",
+                            color = colors.blue,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .align(Alignment.End)
+                                .clickable { }
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Button(
+                            onClick = {
+                                if (email == "admin@gmail.com" && password == "admin123") {
+                                    val pindahHalaman = Intent(this@LoginActivity, DashboardActivity::class.java)
+                                    startActivity(pindahHalaman)
+                                    finish()
+                                } else {
+                                    Toast.makeText(this@LoginActivity, "Email atau password salah!", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                            contentPadding = PaddingValues(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(55.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        Brush.horizontalGradient(listOf(colors.blue, colors.green)),
+                                        RoundedCornerShape(28.dp)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("LOGIN", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                            Divider(color = colors.border, modifier = Modifier.weight(1f))
+                            Text("OR CONTINUE WITH", color = colors.text1, fontSize = 10.sp, modifier = Modifier.padding(horizontal = 16.dp))
+                            Divider(color = colors.border, modifier = Modifier.weight(1f))
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        OutlinedButton(
+                            onClick = { },
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.Transparent),
+                            border = BorderStroke(1.dp, colors.border),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(55.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_google),
+                                    contentDescription = "Google",
+                                    tint = Color.Unspecified,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text("Continue with Google", color = colors.text0, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        text = "UAS MOBILE PROGRAMMING · KELOMPOK 3",
+                        color = colors.text1,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                }
             }
-        }
-    }
-
-    private fun applyGradientToTujuhSembilan() {
-        val tvTujuhSembilan = findViewById<TextView>(R.id.tvTujuhSembilan)
-        tvTujuhSembilan.post {
-            val width = tvTujuhSembilan.width.toFloat()
-            if (width <= 0f) return@post
-
-            val shader = LinearGradient(
-                0f, 0f, width, 0f,
-                intArrayOf(
-                    Color.parseColor("#1E88E5"),
-                    Color.parseColor("#26C281")
-                ),
-                null,
-                Shader.TileMode.CLAMP
-            )
-
-            tvTujuhSembilan.paint.shader = shader
-            tvTujuhSembilan.invalidate()
         }
     }
 }

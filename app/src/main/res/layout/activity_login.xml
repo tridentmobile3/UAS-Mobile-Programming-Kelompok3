@@ -124,7 +124,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:letterSpacing="0.1"
-                                android:text="PT · EST. 79"
+                                android:text="Always Improving You"
                                 android:textColor="#7C8798"
                                 android:textSize="11sp" />
 
