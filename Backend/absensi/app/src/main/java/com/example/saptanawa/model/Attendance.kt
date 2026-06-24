@@ -4,8 +4,9 @@ data class Attendance(
     val id: String = "",
     val userId: String = "",
     val employeeName: String = "",
+    val employeeNip: String = "",
     val date: String = "",
-    val status: String = "HADIR",
+    val status: String = AttendanceStatus.HADIR.name,
 
     val checkInTime: String = "",
     val checkInLatitude: Double = 0.0,
@@ -20,7 +21,20 @@ data class Attendance(
     val checkOutAccuracy: Float = 0f,
     val checkOutDistance: Float = 0f,
     val checkOutPhotoUrl: String = "",
-    
+
+    val faceVerified: Boolean = false,
+    val isLocked: Boolean = true,
+    val source: String = "ANDROID_APP",
+
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )
+
+enum class AttendanceStatus {
+    HADIR,
+    TERLAMBAT,
+    IZIN,
+    SAKIT,
+    CUTI,
+    ALPHA
+}

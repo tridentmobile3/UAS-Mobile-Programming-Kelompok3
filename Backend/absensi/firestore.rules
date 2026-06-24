@@ -1,40 +1,130 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
-    function isAuthenticated() {
+    function signedIn() {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return request.auth.uid == userId;
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
     }
 
-    // Users Collection
+    function isHC() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && userDoc().data.role == "HC"
+        && userDoc().data.status == "ACTIVE";
+    }
+
+    function isSelf(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
     match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner(userId);
+      allow read: if isSelf(userId) || isHC();
+
+      allow create: if false;
+
+      allow update: if isHC()
+        || (
+          isSelf(userId)
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(["fcmToken", "photoProfileUrl", "updatedAt"])
+        );
+
+      allow delete: if false;
     }
 
-    // Office Locations
     match /office_locations/{locationId} {
-      allow read: if isAuthenticated();
-      allow write: if false; // Only via Console/Admin
+      allow read: if signedIn();
+      allow write: if isHC();
     }
 
-    // Attendances
     match /attendances/{attendanceId} {
-      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid);
-      allow create: if isAuthenticated() && (request.resource.data.userId == request.auth.uid);
-      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid);
+      allow read: if signedIn()
+        && (
+          resource.data.userId == request.auth.uid
+          || isHC()
+        );
+
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.isLocked == true;
+
+      allow update: if (
+          signedIn()
+          && resource.data.userId == request.auth.uid
+          && request.resource.data.userId == resource.data.userId
+          && request.resource.data.date == resource.data.date
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly([
+              "checkOutTime",
+              "checkOutLatitude",
+              "checkOutLongitude",
+              "checkOutAccuracy",
+              "checkOutDistance",
+              "checkOutPhotoUrl",
+              "updatedAt"
+            ])
+        )
+        || isHC();
+
+      allow delete: if false;
     }
 
-    // Permissions
     match /permissions/{permissionId} {
-      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid);
-      allow create: if isAuthenticated() && (request.resource.data.userId == request.auth.uid);
-      allow update: if false; // Approval logic handled by admin/HC
+      allow read: if signedIn()
+        && (
+          resource.data.userId == request.auth.uid
+          || isHC()
+        );
+
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == "PENDING";
+
+      allow update: if isHC()
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly([
+            "status",
+            "reviewedBy",
+            "reviewerName",
+            "reviewNote",
+            "reviewedAt",
+            "updatedAt"
+          ]);
+
+      allow delete: if false;
+    }
+
+    match /working_reports/{reportId} {
+      allow read: if signedIn()
+        && (
+          resource.data.userId == request.auth.uid
+          || isHC()
+        );
+
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+
+      allow update: if signedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == resource.data.userId;
+
+      allow delete: if false;
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if signedIn()
+        && (
+          resource.data.userId == request.auth.uid
+          || isHC()
+        );
+
+      allow create, update: if isHC();
+      allow delete: if false;
     }
   }
 }

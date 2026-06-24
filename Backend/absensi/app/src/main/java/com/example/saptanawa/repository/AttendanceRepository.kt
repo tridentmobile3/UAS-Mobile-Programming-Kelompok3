@@ -2,8 +2,9 @@ package com.example.saptanawa.repository
 
 import android.net.Uri
 import com.example.saptanawa.model.Attendance
+import com.example.saptanawa.model.AttendanceStatus
 import com.example.saptanawa.model.OfficeLocation
-import com.example.saptanawa.model.PermissionRequest
+import com.example.saptanawa.model.User
 import com.example.saptanawa.service.StorageService
 import com.example.saptanawa.utils.Constants
 import com.example.saptanawa.utils.DateHelper
@@ -20,8 +21,13 @@ class AttendanceRepository {
     private val currentUserId: String
         get() = auth.currentUser?.uid ?: throw IllegalStateException("User not logged in")
 
-    private val currentUserName: String
-        get() = auth.currentUser?.displayName ?: "Unknown Employee"
+    suspend fun getCurrentUser(): User? {
+        return firestore.collection(Constants.USERS_COLLECTION)
+            .document(currentUserId)
+            .get()
+            .await()
+            .toObject(User::class.java)
+    }
 
     suspend fun getOfficeLocation(locationId: String = "padepokan79_main"): OfficeLocation? {
         return firestore.collection(Constants.OFFICE_LOCATIONS_COLLECTION)
@@ -35,8 +41,10 @@ class AttendanceRepository {
         latitude: Double,
         longitude: Double,
         accuracy: Float,
-        photoUri: Uri
+        photoUri: Uri,
+        faceVerified: Boolean = false
     ): Result<Unit> = runCatching {
+        val user = getCurrentUser() ?: throw Exception("User profile not found")
         val office = getOfficeLocation() ?: throw Exception("Office location not found")
         val distance = LocationHelper.calculateDistanceMeter(
             latitude, longitude, office.latitude, office.longitude
@@ -62,15 +70,18 @@ class AttendanceRepository {
         val attendance = Attendance(
             id = docId,
             userId = currentUserId,
-            employeeName = currentUserName,
+            employeeName = user.name,
+            employeeNip = user.nip,
             date = today,
-            status = "HADIR",
+            status = AttendanceStatus.HADIR.name,
             checkInTime = DateHelper.getCurrentTime(),
             checkInLatitude = latitude,
             checkInLongitude = longitude,
             checkInAccuracy = accuracy,
             checkInDistance = distance,
-            checkInPhotoUrl = photoUrl
+            checkInPhotoUrl = photoUrl,
+            faceVerified = faceVerified,
+            isLocked = true
         )
 
         firestore.collection(Constants.ATTENDANCES_COLLECTION)
@@ -124,48 +135,6 @@ class AttendanceRepository {
                 "updatedAt" to System.currentTimeMillis()
             )
         ).await()
-    }
-
-    suspend fun submitPermission(
-        type: String,
-        reason: String,
-        proofUri: Uri? = null,
-        driveLink: String? = null,
-        fileName: String? = null,
-        mimeType: String? = null
-    ): Result<Unit> = runCatching {
-        if (reason.isBlank()) throw Exception("Reason is required")
-        if (proofUri == null && driveLink.isNullOrBlank()) {
-            throw Exception("Proof file or Google Drive link is required")
-        }
-
-        val today = DateHelper.getCurrentDate()
-        var uploadedUrl = ""
-        
-        if (proofUri != null) {
-            val extension = fileName?.substringAfterLast(".", "jpg") ?: "jpg"
-            val path = "${Constants.PERMISSION_PROOFS_PATH}/$currentUserId/$today/proof.$extension"
-            uploadedUrl = storageService.uploadFile(path, proofUri)
-        }
-
-        val permission = PermissionRequest(
-            id = firestore.collection(Constants.PERMISSIONS_COLLECTION).document().id,
-            userId = currentUserId,
-            employeeName = currentUserName,
-            type = type,
-            reason = reason,
-            date = today,
-            proofUrl = uploadedUrl,
-            driveLink = driveLink ?: "",
-            fileName = fileName ?: "",
-            mimeType = mimeType ?: "",
-            status = "PENDING"
-        )
-
-        firestore.collection(Constants.PERMISSIONS_COLLECTION)
-            .document(permission.id)
-            .set(permission)
-            .await()
     }
 
     suspend fun getTodayAttendance(): Attendance? {
