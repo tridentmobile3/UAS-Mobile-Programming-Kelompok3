@@ -18,6 +18,12 @@ service cloud.firestore {
         && userDoc().data.status == "ACTIVE";
     }
 
+    function isActiveUser() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && userDoc().data.status == "ACTIVE";
+    }
+
     function isSelf(userId) {
       return signedIn() && request.auth.uid == userId;
     }
@@ -49,12 +55,12 @@ service cloud.firestore {
           || isHC()
         );
 
-      allow create: if signedIn()
+      allow create: if isActiveUser()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.isLocked == true;
 
       allow update: if (
-          signedIn()
+          isActiveUser()
           && resource.data.userId == request.auth.uid
           && request.resource.data.userId == resource.data.userId
           && request.resource.data.date == resource.data.date
@@ -81,7 +87,7 @@ service cloud.firestore {
           || isHC()
         );
 
-      allow create: if signedIn()
+      allow create: if isActiveUser()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.status == "PENDING";
 
@@ -106,10 +112,10 @@ service cloud.firestore {
           || isHC()
         );
 
-      allow create: if signedIn()
+      allow create: if isActiveUser()
         && request.resource.data.userId == request.auth.uid;
 
-      allow update: if signedIn()
+      allow update: if isActiveUser()
         && resource.data.userId == request.auth.uid
         && request.resource.data.userId == resource.data.userId;
 

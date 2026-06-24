@@ -28,6 +28,9 @@ class WorkingReportRepository {
     }
 
     suspend fun submitReport(
+        startTime: String,
+        endTime: String,
+        workLocation: String,
         title: String,
         description: String,
         progress: String,
@@ -39,8 +42,19 @@ class WorkingReportRepository {
     ): Result<Unit> = runCatching {
         val user = getCurrentUser() ?: throw Exception("User profile not found")
         val today = DateHelper.getCurrentDate()
-        var attachmentUrl = ""
+        val docId = "${currentUserId}_$today"
 
+        val existing = firestore
+            .collection(Constants.WORKING_REPORTS_COLLECTION)
+            .document(docId)
+            .get()
+            .await()
+
+        if (existing.exists()) {
+            throw Exception("Working report hari ini sudah dikirim")
+        }
+
+        var attachmentUrl = ""
         if (attachmentUri != null) {
             val extension = fileName?.substringAfterLast(".", "file") ?: "file"
             val path = "${Constants.WORKING_REPORT_FILES_PATH}/$currentUserId/$today/attachment.$extension"
@@ -48,11 +62,14 @@ class WorkingReportRepository {
         }
 
         val report = WorkingReport(
-            id = firestore.collection(Constants.WORKING_REPORTS_COLLECTION).document().id,
+            id = docId,
             userId = currentUserId,
             employeeName = user.name,
             employeeNip = user.nip,
             date = today,
+            startTime = startTime,
+            endTime = endTime,
+            workLocation = workLocation,
             title = title,
             description = description,
             progress = progress,
@@ -66,7 +83,7 @@ class WorkingReportRepository {
         )
 
         firestore.collection(Constants.WORKING_REPORTS_COLLECTION)
-            .document(report.id)
+            .document(docId)
             .set(report)
             .await()
     }

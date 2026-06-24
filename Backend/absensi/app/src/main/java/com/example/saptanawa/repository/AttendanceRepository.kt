@@ -42,8 +42,12 @@ class AttendanceRepository {
         longitude: Double,
         accuracy: Float,
         photoUri: Uri,
-        faceVerified: Boolean = false
+        faceVerified: Boolean
     ): Result<Unit> = runCatching {
+        if (!faceVerified) {
+            throw Exception("Verifikasi wajah gagal")
+        }
+
         val user = getCurrentUser() ?: throw Exception("User profile not found")
         val office = getOfficeLocation() ?: throw Exception("Office location not found")
         val distance = LocationHelper.calculateDistanceMeter(

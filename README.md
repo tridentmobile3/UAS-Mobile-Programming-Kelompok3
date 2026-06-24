@@ -1,43 +1,47 @@
-# UAS MOBILE PROGRAMMING KELOMPOK3 📱
+# Sapta Work
 
-[![Platform](https://img.shields.io/badge/platform-Android%20%7C%20iOS-blue)](https://developer.android.com)
-[![Framework](https://img.shields.io/badge/Framework-Flutter%20%2F%20React%20Native%20%2F%20Kotlin-green)](#)
+Sapta Work adalah aplikasi Android Native Kotlin untuk absensi karyawan dan working report pada PT Padepokan Tujuh Sembilan. Proyek ini dibuat untuk memenuhi Tugas Besar mata kuliah **Mobile Programming** di Universitas Teknologi Bandung.
 
-## 📝 Penjelasan Aplikasi
-Aplikasi ini dibuat untuk memenuhi Tugas Besar mata kuliah **Mobile Programming** di Universitas Teknologi Bandung.
+## Fitur Utama
 
-### Fitur Utama:
-* 🚀 **Fitur 1**: 
-* 📍 **Fitur 2**: 
-* 🔔 **Fitur 3**: 
+- **Login NIP & Password**: Masuk menggunakan Nomor Induk Pegawai dan kata sandi yang aman.
+- **Role-Based Access**: Sistem khusus untuk role HC (Human Capital) dan Karyawan.
+- **Absensi Selfie & Wajah**: Check-in aman menggunakan verifikasi wajah/selfie.
+- **Geofencing (GPS Lock)**: Absensi hanya dapat dilakukan dalam radius kantor yang ditentukan.
+- **Lock Absensi Harian**: Mencegah manipulasi dengan membatasi satu kali absensi per hari.
+- **Working Report Harian**: Pelaporan progres kerja, kendala, dan rencana kerja harian.
+- **Manajemen Izin/Sakit**: Pengajuan izin dengan bukti dokumen/foto/PDF.
+- **Dashboard HC**: Pemantauan real-time absensi, izin, dan laporan kerja seluruh karyawan.
+
+## Teknologi & Arsitektur
+
+- **Bahasa**: Android Native Kotlin
+- **Backend**: Firebase Authentication (NIP mapping to Email)
+- **Database**: Cloud Firestore
+- **Storage**: Firebase Storage (Foto absensi & Bukti izin)
+- **Komponen UI**: Activity, Fragment, RecyclerView, Intent
+- **Arsitektur**: Repository Pattern dengan Kotlin Coroutines
+
+## Struktur Proyek
+
+- `Frontend/`: Kode sumber Android Studio (Kotlin).
+- `Backend/absensi/`: Logika repository, model data, dan Firebase security rules.
+- `docs/` atau `ooad/`: Dokumen analisis dan perancangan sistem.
+
+## Cara Menjalankan
+
+1. Clone repositori ini.
+2. Buka folder `Frontend` menggunakan Android Studio.
+3. Hubungkan dengan project Firebase Anda (pastikan `google-services.json` sudah terpasang).
+4. Build dan jalankan di perangkat Android atau Emulator.
 
 ---
 
-## 🛠️ Teknologi & Arsitektur
-* **Frontend**: 
-* **State Management**: 
-* **Backend/Database**: 
-* **Tools**: 
+## Tim Pengembang (TIF RP 24 CNS)
 
----
-
-## 👥 Anggota Kelompok & Pembagian Tugas
-Berikut adalah anggota **Kelompok [Nomor Kelompok]** dari kelas **TIF RP 24 CNS**:
-
-| Foto  | Nama & NIM | Role / Jobdesk Utama | GitHub |
-| :---: | :--- | :--- | :---: |
-| <img src="https://github.com/identicons/dafa1922.png" width="50"> | **Dafa Irsyad Nasrullah** <br> NIM: 24552011306 | • <br>• <br>• | [@dafa1922](https://github.com/dafa1922) |
-| <img src="https://github.com/identicons/raihanzdiky.png" width="50"> | **Diky Raihan Subagja** <br> NIM: 24552011194 | •  <br>• <br>•  | [@raihanzdiky](https://github.com/raihanzdiky) |
-| <img src="https://github.com/identicons/feifeis17.png" width="50"> | **Feisal Ramdhani Riyadi** <br> NIM: 24552011317 | • <br>• <br>•  | [@feifeis17](https://github.com/feifeis17) |
-| <img src="https://github.com/identicons/areksaxyz.png" width="50"> | **Muhamad Arga Reksapati** <br> NIM: 24552011324 | • <br>• <br>•  | [@areksaxyz](https://github.com/areksaxyz) |
-
----
-
-## 🚀 Cara Menjalankan Proyek (Setup)
-
-Prasyarat: Pastikan sudah menginstal [Flutter SDK / React Native CLI / Android SDK] di laptop masing-masing.
-
-1. **Clone Repositori**
-```bash
-   git clone [https://github.com/tridentmobile3/UAS-Mobile-Programming-Kelompok3](https://github.com/tridentmobile3/UAS-Mobile-Programming-Kelompok3)
-   cd UAS-Mobile-Programming-Kelompok3
+| Nama | NIM | Role |
+| :--- | :--- | :--- |
+| **Dafa Irsyad Nasrullah** | 24552011306 | Frontend Developer |
+| **Diky Raihan Subagja** | 24552011194 | UI/UX Designer |
+| **Feisal Ramdhani Riyadi** | 24552011317 | Frontend Developer |
+| **Muhamad Arga Reksapati** | 24552011324 | Backend Developer |
