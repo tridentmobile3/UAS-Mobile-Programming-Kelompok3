@@ -1,5 +1,6 @@
 package com.feisal.workingreport
 
+import androidx.core.view.WindowCompat
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -27,6 +28,9 @@ class SplashActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
         setContentView(R.layout.activity_splash)
         val tvGreeting = findViewById<TextView>(R.id.tvGreeting)
         val slideUpAnim = AnimationUtils.loadAnimation(this, R.anim.slide_up_fade)

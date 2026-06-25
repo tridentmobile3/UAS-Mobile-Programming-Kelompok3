@@ -55,6 +55,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 import com.feisal.workingreport.ui.components.GlassCard
 import com.feisal.workingreport.ui.components.NoiseOverlay
 import com.feisal.workingreport.ui.theme.LiquidGlassBackground
@@ -64,25 +65,28 @@ class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
+
         setContent {
             val colors = p79Colors(isDark = true)
             var nip by remember { mutableStateOf("") }
             var password by remember { mutableStateOf("") }
 
             Box(modifier = Modifier.fillMaxSize()) {
-                // Background
                 LiquidGlassBackground(colors = colors) { }
                 NoiseOverlay()
 
-                // Scrollable Content
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(24.dp)
+                        .padding(horizontal = 24.dp)
                         .verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally // Memastikan konten sejajar tengah
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Spacer(modifier = Modifier.height(32.dp))
+
+                    Spacer(modifier = Modifier.height(64.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -288,6 +292,7 @@ class LoginActivity : ComponentActivity() {
                             }
                         }
                     }
+
                     Spacer(modifier = Modifier.height(48.dp))
 
                     Text(
@@ -298,6 +303,7 @@ class LoginActivity : ComponentActivity() {
                         letterSpacing = 1.sp,
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
+
                     Spacer(modifier = Modifier.height(24.dp))
                 }
             }

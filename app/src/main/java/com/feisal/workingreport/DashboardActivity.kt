@@ -1,15 +1,13 @@
 package com.feisal.workingreport
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.animation.core.Animatable
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.IntOffset
-import kotlin.math.roundToInt
+
+import androidx.core.view.WindowCompat
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -25,6 +23,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -65,6 +64,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -78,9 +80,11 @@ import kotlinx.coroutines.launch
 
 class DashboardActivity : AppCompatActivity() {
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
         setContent {
             val colors = p79Colors(isDark = true)
             var showNotificationSheet by remember { mutableStateOf(false) }
@@ -290,22 +294,6 @@ fun HomeContent(colors: P79Colors, activity: AppCompatActivity, onLaporClick: ()
         Spacer(modifier = Modifier.height(12.dp))
         HistoryList(colors = colors)
         Spacer(modifier = Modifier.height(130.dp))
-    }
-}
-
-@Composable
-fun PlaceholderContent(colors: P79Colors, title: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = title,
-            color = colors.text0,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
     }
 }
 
@@ -530,81 +518,111 @@ fun HistoryItem(colors: P79Colors, date: String, title: String, desc: String, ic
 
 @Composable
 fun DockNavigationBar(colors: P79Colors, selectedIndex: Int, onItemSelected: (Int) -> Unit, modifier: Modifier = Modifier) {
-    val coroutineScope = rememberCoroutineScope()
-    val density = LocalDensity.current
+    var dragOffset by remember { mutableStateOf(0f) }
 
-    BoxWithConstraints(
+    Row(
         modifier = modifier
-            .padding(start = 24.dp, end = 24.dp, bottom = 32.dp)
             .fillMaxWidth()
-            .clip(RoundedCornerShape(32.dp))
-            .background(Color(0xD9161D2F))
-            .border(1.dp, colors.border, RoundedCornerShape(32.dp))
+            .padding(horizontal = 24.dp)
+            .padding(bottom = 32.dp)
             .pointerInput(Unit) {
-                val itemWidthPx = with(density) { (size.width / 4).toFloat() }
                 detectHorizontalDragGestures(
+                    onDragStart = { dragOffset = 0f },
                     onDragEnd = {
-
+                        if (dragOffset < -50f && selectedIndex < 3) {
+                            onItemSelected(selectedIndex + 1)
+                        } else if (dragOffset > 50f && selectedIndex > 0) {
+                            onItemSelected(selectedIndex - 1)
+                        }
+                        dragOffset = 0f
                     }
                 ) { change, dragAmount ->
+                    change.consume()
+                    dragOffset += dragAmount
                 }
-            }
+            },
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        val itemWidth = maxWidth / 4
-        val itemWidthPx = with(density) { itemWidth.toPx() }
+        BoxWithConstraints(
+            modifier = Modifier
+                .weight(1f)
+                .height(64.dp)
+                .clip(RoundedCornerShape(32.dp))
+                .background(Color(0xD9161D2F))
+                .border(1.dp, colors.border, RoundedCornerShape(32.dp))
+        ) {
+            val itemWidth = maxWidth / 3
 
-        val pillOffset = remember { Animatable(selectedIndex * itemWidthPx) }
-        LaunchedEffect(selectedIndex) {
-            pillOffset.animateTo(
-                targetValue = selectedIndex * itemWidthPx,
-                animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow)
+            val targetOffset = if (selectedIndex < 3) itemWidth * selectedIndex else itemWidth * 2
+            val indicatorOffset by animateDpAsState(
+                targetValue = targetOffset,
+                animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow),
+                label = "indicatorOffset"
             )
+
+            val indicatorAlpha by animateFloatAsState(
+                targetValue = if (selectedIndex < 3) 1f else 0f,
+                label = "indicatorAlpha"
+            )
+
+            Box(
+                modifier = Modifier
+                    .offset(x = indicatorOffset)
+                    .width(itemWidth)
+                    .fillMaxHeight()
+                    .padding(6.dp)
+                    .graphicsLayer(alpha = indicatorAlpha)
+                    .background(
+                        Brush.linearGradient(listOf(colors.blue, colors.green)),
+                        RoundedCornerShape(26.dp)
+                    )
+            )
+
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                BottomNavItem(colors = colors, icon = Icons.Default.Home, label = "Home", isSelected = selectedIndex == 0, modifier = Modifier.weight(1f)) { onItemSelected(0) }
+                BottomNavItem(colors = colors, icon = Icons.Default.DateRange, label = "Riwayat", isSelected = selectedIndex == 1, modifier = Modifier.weight(1f)) { onItemSelected(1) }
+                BottomNavItem(colors = colors, icon = Icons.Default.Edit, label = "Laporan", isSelected = selectedIndex == 2, modifier = Modifier.weight(1f)) { onItemSelected(2) }
+            }
         }
 
         Box(
             modifier = Modifier
-                .offset { IntOffset(pillOffset.value.roundToInt(), 0) }
-                .width(itemWidth)
-                .matchParentSize()
-                .padding(6.dp)
-                .background(
-                    Brush.linearGradient(listOf(colors.blue.copy(alpha = 0.3f), colors.green.copy(alpha = 0.3f))),
-                    RoundedCornerShape(26.dp)
-                )
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .pointerInput(Unit) {
-                    detectHorizontalDragGestures(
-                        onDragEnd = {
-                            coroutineScope.launch {
-                                val targetIndex = (pillOffset.value / itemWidthPx).roundToInt().coerceIn(0, 3)
-                                onItemSelected(targetIndex)
-                            }
-                        }
-                    ) { change, dragAmount ->
-                        change.consume()
-                        coroutineScope.launch {
-                            val newOffset = (pillOffset.value + dragAmount).coerceIn(0f, 3 * itemWidthPx)
-                            pillOffset.snapTo(newOffset)
-                        }
-                    }
-                }
-                .padding(vertical = 12.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
+                .size(64.dp)
+                .clip(CircleShape)
+                // PERBAIKAN: Menggunakan SolidColor agar Kotlin tidak bingung
+                .background(if (selectedIndex == 3) Brush.linearGradient(listOf(colors.blue, colors.green)) else SolidColor(Color(0xD9161D2F)))
+                .border(1.dp, if (selectedIndex == 3) Color.Transparent else colors.border, CircleShape)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = { onItemSelected(3) }
+                ),
+            contentAlignment = Alignment.Center
         ) {
-            BottomNavItem(colors = colors, icon = Icons.Default.Home, label = "Home", isSelected = selectedIndex == 0, modifier = Modifier.weight(1f)) { onItemSelected(0) }
-            BottomNavItem(colors = colors, icon = Icons.Default.DateRange, label = "Riwayat", isSelected = selectedIndex == 1, modifier = Modifier.weight(1f)) { onItemSelected(1) }
-            BottomNavItem(colors = colors, icon = Icons.Default.Edit, label = "Laporan", isSelected = selectedIndex == 2, modifier = Modifier.weight(1f)) { onItemSelected(2) }
-            BottomNavItem(colors = colors, icon = Icons.Default.Person, label = "Profil", isSelected = selectedIndex == 3, modifier = Modifier.weight(1f)) { onItemSelected(3) }
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = "Profil",
+                tint = if (selectedIndex == 3) Color.White else colors.text1,
+                modifier = Modifier.size(26.dp)
+            )
         }
     }
 }
 
 @Composable
-fun BottomNavItem(colors: P79Colors, icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, isSelected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun BottomNavItem(
+    colors: P79Colors,
+    icon: ImageVector,
+    label: String,
+    isSelected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.clickable(
@@ -613,9 +631,9 @@ fun BottomNavItem(colors: P79Colors, icon: androidx.compose.ui.graphics.vector.I
             onClick = onClick
         )
     ) {
-        Icon(icon, contentDescription = label, tint = if (isSelected) colors.text0 else colors.text1, modifier = Modifier.size(24.dp))
+        Icon(icon, contentDescription = label, tint = if (isSelected) Color.White else colors.text1, modifier = Modifier.size(24.dp))
         Spacer(modifier = Modifier.height(4.dp))
-        Text(label, color = if (isSelected) colors.text0 else colors.text1, fontSize = 10.sp)
+        Text(label, color = if (isSelected) Color.White else colors.text1, fontSize = 10.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
     }
 }
 
@@ -638,7 +656,7 @@ fun NotificationSheetContent(colors: P79Colors) {
 @Composable
 fun NotificationItem(
     colors: P79Colors,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     iconColor: Color,
     title: String,
     desc: String,
