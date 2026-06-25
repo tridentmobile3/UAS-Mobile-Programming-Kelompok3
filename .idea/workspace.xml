@@ -5,9 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a5862d9c-3807-4bdc-9ec5-64dbebf30b41" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Backend/absensi/app/src/main/java/com/example/saptanawa/repository/NotificationRepository.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Backend/absensi/app/src/main/java/com/example/saptanawa/repository/AnalyticsRepository.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/absensi/app/src/main/java/com/example/saptanawa/model/Notification.kt" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/absensi/app/src/main/java/com/example/saptanawa/model/Notification.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
