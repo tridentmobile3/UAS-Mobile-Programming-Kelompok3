@@ -8,7 +8,6 @@ object Constants {
     const val ATTENDANCES_COLLECTION = "attendances"
     const val PERMISSIONS_COLLECTION = "permissions"
     const val WORKING_REPORTS_COLLECTION = "working_reports"
-
     const val OVERTIMES_COLLECTION = "overtimes"
     const val NOTIFICATIONS_COLLECTION = "notifications"
 
