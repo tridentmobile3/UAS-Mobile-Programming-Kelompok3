@@ -17,6 +17,8 @@ data class OvertimeReport(
     val description: String = "",
 
     val attachmentUrl: String = "",
+    val fileName: String = "",
+    val mimeType: String = "",
 
     val status: String = OvertimeStatus.PENDING.name,
 

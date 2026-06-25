@@ -16,6 +16,7 @@ object Constants {
     const val ATTENDANCE_PHOTOS_PATH = "attendance_photos"
     const val PERMISSION_PROOFS_PATH = "permission_proofs"
     const val WORKING_REPORT_FILES_PATH = "working_report_files"
+    const val OVERTIME_FILES_PATH = "overtime_files"
 
     // Roles
     const val ROLE_HC = "HC"
