@@ -1,5 +1,6 @@
 package com.feisal.workingreport
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -48,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -70,7 +72,17 @@ class LoginActivity : ComponentActivity() {
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
 
         setContent {
-            val colors = p79Colors(isDark = true)
+            // 1. Baca preferensi tema yang tersimpan
+            val context = LocalContext.current
+            val sharedPref = remember { context.getSharedPreferences("AppPref", Context.MODE_PRIVATE) }
+            val isDarkMode = sharedPref.getBoolean("isDarkMode", true) // Default Dark Mode
+
+            // 2. Terapkan warna berdasarkan tema
+            val colors = p79Colors(isDark = isDarkMode)
+
+            // Variabel Warna Dinamis untuk Komponen
+            val cardBgColor = if (isDarkMode) Color(0xFF161D2F) else Color.White
+
             var nip by remember { mutableStateOf("") }
             var password by remember { mutableStateOf("") }
 
@@ -85,7 +97,6 @@ class LoginActivity : ComponentActivity() {
                         .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
                     Spacer(modifier = Modifier.height(64.dp))
 
                     Row(
@@ -148,7 +159,7 @@ class LoginActivity : ComponentActivity() {
                             Box(
                                 modifier = Modifier
                                     .size(48.dp)
-                                    .background(Color(0xFF161D2F), RoundedCornerShape(12.dp))
+                                    .background(cardBgColor, RoundedCornerShape(12.dp))
                                     .border(1.dp, colors.border, RoundedCornerShape(12.dp))
                                     .clip(RoundedCornerShape(12.dp)),
                                 contentAlignment = Alignment.Center

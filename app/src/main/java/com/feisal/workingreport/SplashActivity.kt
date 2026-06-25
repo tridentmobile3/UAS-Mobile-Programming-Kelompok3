@@ -1,75 +1,112 @@
 package com.feisal.workingreport
 
-import androidx.core.view.WindowCompat
+import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.style.ForegroundColorSpan
-import android.view.animation.AnimationUtils
-import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
+import com.feisal.workingreport.ui.components.NoiseOverlay
+import com.feisal.workingreport.ui.theme.LiquidGlassBackground
+import com.feisal.workingreport.ui.theme.p79Colors
+import kotlinx.coroutines.delay
 
-class SplashActivity : AppCompatActivity() {
-
-    private val greetings = arrayOf("Hello","Bonjour","こんにちは","안녕하세요","你好","Padepokan 79")
-    private var currentIndex = 0
-
-    // Palet 4 Warna Khas Padepokan 79
-    private val padepokanColors = intArrayOf(
-        Color.parseColor("#E53935"), // Merah
-        Color.parseColor("#4CAF50"), // Hijau
-        Color.parseColor("#1E88E5"), // Biru
-        Color.parseColor("#FBC02D")  // Kuning
-    )
-
+class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Bikin Full Screen
         WindowCompat.setDecorFitsSystemWindows(window, false)
         window.statusBarColor = android.graphics.Color.TRANSPARENT
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
-        setContentView(R.layout.activity_splash)
-        val tvGreeting = findViewById<TextView>(R.id.tvGreeting)
-        val slideUpAnim = AnimationUtils.loadAnimation(this, R.anim.slide_up_fade)
-        val handler = Handler(Looper.getMainLooper())
-        val runnable = object : Runnable {
-            override fun run() {
-                if (currentIndex < greetings.size) {
-                    tvGreeting.text = getColorfulText(greetings[currentIndex])
-                    tvGreeting.startAnimation(slideUpAnim)
 
-                    currentIndex++
-                    handler.postDelayed(this, 380) // Waktu
-                } else {
-                    startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-                    finish()
+        setContent {
+            // Baca memori tema
+            val sharedPref = getSharedPreferences("AppPref", Context.MODE_PRIVATE)
+            val isDarkMode = sharedPref.getBoolean("isDarkMode", true)
+            val colors = p79Colors(isDark = isDarkMode)
+
+            // MANTRA AJAIB: Ubah ikon jam & baterai jadi Hitam saat Light Mode!
+            val view = LocalView.current
+            if (!view.isInEditMode) {
+                SideEffect {
+                    WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !isDarkMode
                 }
             }
-        }
 
-        handler.post(runnable)
-    }
+            Box(modifier = Modifier.fillMaxSize()) {
+                // Background akan otomatis ikut Light/Dark Mode
+                LiquidGlassBackground(colors = colors) { }
+                NoiseOverlay()
 
-    //untuk mewarnai tiap huruf
-    private fun getColorfulText(text: String): SpannableString {
-        val spannable = SpannableString(text)
-        var colorIndex = 0 // Penghitung warna agar tidak terganggu spasi
-
-        for (i in text.indices) {
-            if (text[i] != ' ') { // Abaikan karakter spasi
-                val color = padepokanColors[colorIndex % padepokanColors.size]
-                spannable.setSpan(
-                    ForegroundColorSpan(color),
-                    i, i + 1,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                SplashScreenContent(
+                    onFinish = {
+                        startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
+                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                        finish()
+                    }
                 )
-                colorIndex++
             }
         }
-        return spannable
+    }
+}
+
+// Animasi Splash ala Vibes Coder
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun SplashScreenContent(onFinish: () -> Unit) {
+    val greetings = listOf("Hello", "Bonjour", "こんにちは", "안녕하세요", "你好", "Padepokan 79")
+    val padepokanColors = listOf(Color(0xFFE53935), Color(0xFF4CAF50), Color(0xFF1E88E5), Color(0xFFFBC02D))
+
+    var currentIndex by remember { mutableStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        for (i in greetings.indices) {
+            currentIndex = i
+            delay(400) // Kecepatan ganti kata
+        }
+        delay(200) // Jeda sebentar sebelum pindah halaman
+        onFinish()
+    }
+
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        AnimatedContent(
+            targetState = currentIndex,
+            transitionSpec = {
+                (slideInVertically(animationSpec = tween(300)) { height -> height } + fadeIn(animationSpec = tween(300))).togetherWith(
+                    slideOutVertically(animationSpec = tween(300)) { height -> -height } + fadeOut(animationSpec = tween(300)))
+            }, label = "splash_anim"
+        ) { targetIndex ->
+            val text = greetings[targetIndex]
+            val annotatedString = buildAnnotatedString {
+                var colorIndex = 0
+                for (char in text) {
+                    if (char != ' ') {
+                        withStyle(style = SpanStyle(color = padepokanColors[colorIndex % padepokanColors.size])) {
+                            append(char)
+                        }
+                        colorIndex++
+                    } else {
+                        append(char)
+                    }
+                }
+            }
+            Text(text = annotatedString, fontSize = 36.sp, fontWeight = FontWeight.Bold)
+        }
     }
 }
