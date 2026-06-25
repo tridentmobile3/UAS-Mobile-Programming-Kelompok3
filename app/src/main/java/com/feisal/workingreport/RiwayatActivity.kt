@@ -1,17 +1,25 @@
 package com.feisal.workingreport
 
-import android.os.Bundle
+import android.view.LayoutInflater
 import android.widget.ImageView
-import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.AndroidView
 
-class RiwayatActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_riwayat)
+@Composable
+fun RiwayatContent(onBackClick: () -> Unit) {
+    AndroidView(
+        factory = { context ->
 
-        val btnBackRiwayat = findViewById<ImageView>(R.id.btnBackRiwayat)
-        btnBackRiwayat.setOnClickListener {
-            finish()
-        }
-    }
+            val view = LayoutInflater.from(context).inflate(R.layout.activity_riwayat, null, false)
+            val btnBackRiwayat = view.findViewById<ImageView>(R.id.btnBackRiwayat)
+            btnBackRiwayat.setOnClickListener {
+
+                onBackClick()
+            }
+            view
+        },
+        modifier = Modifier.fillMaxSize()
+    )
 }

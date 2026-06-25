@@ -10,6 +10,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -24,10 +25,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
@@ -49,10 +51,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.feisal.workingreport.ui.components.GlassCard
+import com.feisal.workingreport.ui.components.NoiseOverlay
 import com.feisal.workingreport.ui.theme.LiquidGlassBackground
 import com.feisal.workingreport.ui.theme.p79Colors
 
@@ -62,19 +66,28 @@ class LoginActivity : ComponentActivity() {
 
         setContent {
             val colors = p79Colors(isDark = true)
-            var email by remember { mutableStateOf("") }
+            var nip by remember { mutableStateOf("") }
             var password by remember { mutableStateOf("") }
 
-            LiquidGlassBackground(colors = colors) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                // Background
+                LiquidGlassBackground(colors = colors) { }
+                NoiseOverlay()
+
+                // Scrollable Content
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(24.dp)
-                        .verticalScroll(rememberScrollState())
+                        .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally // Memastikan konten sejajar tengah
                 ) {
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Box(
                             modifier = Modifier
                                 .size(8.dp)
@@ -96,7 +109,8 @@ class LoginActivity : ComponentActivity() {
                         text = "Padepokan",
                         color = colors.text0,
                         fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.fillMaxWidth()
                     )
 
                     Text(
@@ -107,7 +121,8 @@ class LoginActivity : ComponentActivity() {
                             )
                         ),
                         fontSize = 32.sp,
-                        fontWeight = FontWeight.ExtraBold
+                        fontWeight = FontWeight.ExtraBold,
+                        modifier = Modifier.fillMaxWidth()
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -143,7 +158,7 @@ class LoginActivity : ComponentActivity() {
                             }
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
-                                Text(text = "Always Improving You", color = colors.text1, fontSize = 10.sp)
+                                Text(text = "PT · EST. 79", color = colors.text1, fontSize = 10.sp)
                                 Text(text = "Padepokan 79", color = colors.text0, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                             }
                         }
@@ -160,10 +175,11 @@ class LoginActivity : ComponentActivity() {
                         Spacer(modifier = Modifier.height(16.dp))
 
                         OutlinedTextField(
-                            value = email,
-                            onValueChange = { email = it },
-                            label = { Text("Email Address", color = colors.text1) },
-                            leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = colors.text1) },
+                            value = nip,
+                            onValueChange = { nip = it },
+                            label = { Text("NIP (Nomor Induk Pegawai)", color = colors.text1) },
+                            leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = colors.text1) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             shape = RoundedCornerShape(16.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = colors.blue,
@@ -214,12 +230,12 @@ class LoginActivity : ComponentActivity() {
 
                         Button(
                             onClick = {
-                                if (email == "admin@gmail.com" && password == "admin123") {
+                                if (nip == "123456" && password == "admin123") {
                                     val pindahHalaman = Intent(this@LoginActivity, DashboardActivity::class.java)
                                     startActivity(pindahHalaman)
                                     finish()
                                 } else {
-                                    Toast.makeText(this@LoginActivity, "Email atau password salah!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(this@LoginActivity, "NIP atau password salah!", Toast.LENGTH_SHORT).show()
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
@@ -272,9 +288,7 @@ class LoginActivity : ComponentActivity() {
                             }
                         }
                     }
-
-                    Spacer(modifier = Modifier.weight(1f))
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(48.dp))
 
                     Text(
                         text = "UAS MOBILE PROGRAMMING · KELOMPOK 3",
@@ -284,6 +298,7 @@ class LoginActivity : ComponentActivity() {
                         letterSpacing = 1.sp,
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
         }

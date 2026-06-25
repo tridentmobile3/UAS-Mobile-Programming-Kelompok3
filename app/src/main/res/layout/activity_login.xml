@@ -152,14 +152,14 @@
                         style="@style/LoginInputLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Email Address"
-                        app:startIconDrawable="@android:drawable/ic_dialog_email">
+                        android:hint="NIP (Nomor Induk Pegawai)"
+                        app:startIconDrawable="@android:drawable/ic_menu_myplaces">
 
                         <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etEmail"
+                            android:id="@+id/etNip"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:inputType="textEmailAddress"
+                            android:inputType="number"
                             android:textColor="#FFFFFF" />
                     </com.google.android.material.textfield.TextInputLayout>
 

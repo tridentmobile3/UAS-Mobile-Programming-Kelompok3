@@ -1,17 +1,24 @@
 package com.feisal.workingreport
 
-import android.os.Bundle
+import android.view.LayoutInflater
 import android.widget.ImageView
-import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.AndroidView
 
-class ProfilActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_profil)
+@Composable
+fun ProfilContent(onBackClick: () -> Unit) {
+    AndroidView(
+        factory = { context ->
+            val view = LayoutInflater.from(context).inflate(R.layout.activity_profil, null, false)
+            val btnBackProfil = view.findViewById<ImageView>(R.id.btnBackProfil)
+            btnBackProfil.setOnClickListener {
+                onBackClick()
+            }
 
-        val btnBackProfil = findViewById<ImageView>(R.id.btnBackProfil)
-        btnBackProfil.setOnClickListener {
-            finish()
-        }
-    }
+            view
+        },
+        modifier = Modifier.fillMaxSize()
+    )
 }
