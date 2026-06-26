@@ -9,6 +9,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,6 +19,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
@@ -30,18 +32,15 @@ class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Bikin Full Screen
         WindowCompat.setDecorFitsSystemWindows(window, false)
         window.statusBarColor = android.graphics.Color.TRANSPARENT
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
 
         setContent {
-            // Baca memori tema
             val sharedPref = getSharedPreferences("AppPref", Context.MODE_PRIVATE)
             val isDarkMode = sharedPref.getBoolean("isDarkMode", true)
             val colors = p79Colors(isDark = isDarkMode)
 
-            // MANTRA AJAIB: Ubah ikon jam & baterai jadi Hitam saat Light Mode!
             val view = LocalView.current
             if (!view.isInEditMode) {
                 SideEffect {
@@ -50,7 +49,6 @@ class SplashActivity : ComponentActivity() {
             }
 
             Box(modifier = Modifier.fillMaxSize()) {
-                // Background akan otomatis ikut Light/Dark Mode
                 LiquidGlassBackground(colors = colors) { }
                 NoiseOverlay()
 
@@ -66,7 +64,6 @@ class SplashActivity : ComponentActivity() {
     }
 }
 
-// Animasi Splash ala Vibes Coder
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun SplashScreenContent(onFinish: () -> Unit) {
@@ -78,9 +75,9 @@ fun SplashScreenContent(onFinish: () -> Unit) {
     LaunchedEffect(Unit) {
         for (i in greetings.indices) {
             currentIndex = i
-            delay(400) // Kecepatan ganti kata
+            delay(400)
         }
-        delay(200) // Jeda sebentar sebelum pindah halaman
+        delay(200)
         onFinish()
     }
 
@@ -90,7 +87,9 @@ fun SplashScreenContent(onFinish: () -> Unit) {
             transitionSpec = {
                 (slideInVertically(animationSpec = tween(300)) { height -> height } + fadeIn(animationSpec = tween(300))).togetherWith(
                     slideOutVertically(animationSpec = tween(300)) { height -> -height } + fadeOut(animationSpec = tween(300)))
-            }, label = "splash_anim"
+            },
+            contentAlignment = Alignment.Center,
+            label = "splash_anim"
         ) { targetIndex ->
             val text = greetings[targetIndex]
             val annotatedString = buildAnnotatedString {
@@ -106,7 +105,13 @@ fun SplashScreenContent(onFinish: () -> Unit) {
                     }
                 }
             }
-            Text(text = annotatedString, fontSize = 36.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = annotatedString,
+                fontSize = 36.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
