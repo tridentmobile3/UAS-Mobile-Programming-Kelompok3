@@ -31,6 +31,7 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/tvNamaHeader"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Halo, Feisal 👋"
@@ -56,6 +57,7 @@
                 app:cardCornerRadius="24dp"
                 app:strokeWidth="0dp">
                 <TextView
+                    android:id="@+id/tvInisialAvatar"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"

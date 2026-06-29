@@ -82,6 +82,7 @@ class DashboardActivity : AppCompatActivity() {
                 LiquidGlassBackground(colors = colors) { }
                 NoiseOverlay()
 
+                val userRole = (this@DashboardActivity).intent.getStringExtra("EXTRA_ROLE") ?: "karyawan"
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.fillMaxSize(),

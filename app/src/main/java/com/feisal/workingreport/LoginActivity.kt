@@ -238,19 +238,42 @@ class LoginActivity : ComponentActivity() {
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier
                                 .align(Alignment.End)
-                                .clickable { }
+                                .clickable { val intent = Intent(this@LoginActivity, ForgotPasswordActivity::class.java)
+                                    startActivity(intent)
+                                }
                         )
 
                         Spacer(modifier = Modifier.height(24.dp))
 
                         Button(
                             onClick = {
-                                if (nip == "123456" && password == "admin123") {
-                                    val pindahHalaman = Intent(this@LoginActivity, DashboardActivity::class.java)
-                                    startActivity(pindahHalaman)
-                                    finish()
-                                } else {
-                                    Toast.makeText(this@LoginActivity, "NIP atau password salah!", Toast.LENGTH_SHORT).show()
+                                val inputNip = nip.trim()
+                                val inputPassword = password
+
+                                when {
+                                    // ROLE 1: LOGIN SEBAGAI ADMIN
+                                    inputNip == "123" && inputPassword == "123" -> {
+                                        Toast.makeText(this@LoginActivity, "Login berhasil sebagai Admin!", Toast.LENGTH_SHORT).show()
+                                        val keDashboardAdmin = Intent(this@LoginActivity, DashboardAdminActivity::class.java)
+                                        startActivity(keDashboardAdmin)
+                                        finish()
+                                    }
+
+                                    // ROLE 2: LOGIN SEBAGAI PEGAWAI / USER
+                                    inputNip == "123456" && inputPassword == "admin123" -> {
+                                        Toast.makeText(this@LoginActivity, "Login berhasil!", Toast.LENGTH_SHORT).show()
+                                        val keDashboardUser = Intent(this@LoginActivity, DashboardActivity::class.java)
+                                        startActivity(keDashboardUser)
+                                        finish()
+                                    }
+
+                                    // JIKA KOSONG ATAU SALAH
+                                    inputNip.isEmpty() || inputPassword.isEmpty() -> {
+                                        Toast.makeText(this@LoginActivity, "NIP dan Password wajib diisi!", Toast.LENGTH_SHORT).show()
+                                    }
+                                    else -> {
+                                        Toast.makeText(this@LoginActivity, "NIP atau password salah!", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),

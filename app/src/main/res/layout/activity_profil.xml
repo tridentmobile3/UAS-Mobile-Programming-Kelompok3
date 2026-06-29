@@ -39,6 +39,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/tvNamaHeader"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Halo, Feisal 👋"
@@ -65,6 +66,7 @@
                     app:strokeWidth="0dp">
 
                     <TextView
+                        android:id="@+id/tvInisialAvatar"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:gravity="center"
@@ -76,6 +78,7 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/tvJabatanUser"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
@@ -127,6 +130,7 @@
                 </FrameLayout>
 
                 <TextView
+                    android:id="@+id/tvNamaUser"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
@@ -585,6 +589,7 @@
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardKeluar"
                 android:layout_width="match_parent"
                 android:layout_height="55dp"
                 android:layout_marginTop="24dp"

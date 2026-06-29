@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0B101E">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="none"
+        android:clipToPadding="false"
+        android:paddingBottom="100dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <ImageButton
+                    android:id="@+id/btnBack"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:src="@android:drawable/ic_menu_revert"
+                    android:contentDescription="Kembali"
+                    app:tint="@android:color/white" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mode Admin 🛠️"
+                        android:textColor="@android:color/white"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="MONITORING KEHADIRAN Absensi &amp; Laporan Kerja"
+                        android:textColor="#8B95A5"
+                        android:textSize="12sp"
+                        android:layout_marginTop="4dp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    app:cardBackgroundColor="#E74C3C"
+                    app:cardCornerRadius="24dp"
+                    app:strokeWidth="0dp">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="A"
+                        android:textColor="@android:color/white"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Halaman Verifikasi Kehadiran: Hari Ini\n(Selasa, 16 Apr 2022)"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp"
+                android:lineSpacingMultiplier="1.2"/>
+
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="2"
+                android:rowCount="2"
+                android:alignmentMode="alignBounds"
+                android:layout_marginBottom="16dp">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_columnWeight="1"
+                    android:layout_height="45dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_marginBottom="8dp"
+                    app:cardBackgroundColor="#161D2F"
+                    app:cardCornerRadius="12dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#2D3548">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="10dp">
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@android:drawable/ic_menu_search"
+                            app:tint="#8B95A5"/>
+                        <EditText
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@android:color/transparent"
+                            android:hint="Cari Karyawan"
+                            android:textColorHint="#5A6578"
+                            android:textColor="@android:color/white"
+                            android:textSize="13sp"
+                            android:maxLines="1"
+                            android:inputType="text"
+                            android:paddingStart="8dp"
+                            tools:ignore="RtlSymmetry" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_columnWeight="1"
+                    android:layout_height="45dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginBottom="8dp"
+                    app:cardBackgroundColor="#161D2F"
+                    app:cardCornerRadius="12dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#2D3548">
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:paddingHorizontal="12dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:text="Semua Divisi"
+                            android:textColor="@android:color/white"
+                            android:textSize="13sp"/>
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:src="@android:drawable/arrow_down_float"
+                            app:tint="#8B95A5"/>
+                    </RelativeLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_columnWeight="1"
+                    android:layout_height="45dp"
+                    android:layout_marginEnd="6dp"
+                    app:cardBackgroundColor="#161D2F"
+                    app:cardCornerRadius="12dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#2D3548">
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:paddingHorizontal="12dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:text="Semua Status"
+                            android:textColor="@android:color/white"
+                            android:textSize="13sp"/>
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:src="@android:drawable/arrow_down_float"
+                            app:tint="#8B95A5"/>
+                    </RelativeLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_columnWeight="1"
+                    android:layout_height="45dp"
+                    android:layout_marginStart="6dp"
+                    app:cardBackgroundColor="#161D2F"
+                    app:cardCornerRadius="12dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#2D3548">
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:paddingHorizontal="12dp">
+                        <ImageView
+                            android:id="@+id/ivCalendarIcon"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_centerVertical="true"
+                            android:src="@android:drawable/ic_menu_myplaces"
+                            app:tint="#8B95A5"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_toEndOf="@id/ivCalendarIcon"
+                            android:layout_centerVertical="true"
+                            android:layout_marginStart="8dp"
+                            android:text="16 Apr 2022"
+                            android:textColor="@android:color/white"
+                            android:textSize="13sp"/>
+                    </RelativeLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </GridLayout>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="#161D2F"
+                app:cardCornerRadius="16dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#2D3548"
+                android:layout_marginBottom="16dp">
+
+                <TableLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:stretchColumns="1">
+
+                    <TableRow
+                        android:background="#222A3F"
+                        android:paddingVertical="12dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="No." android:textColor="#8B95A5" android:textSize="12sp" android:textStyle="bold" android:gravity="center" android:paddingHorizontal="6dp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🔍 Karyawan ↕" android:textColor="#8B95A5" android:textSize="12sp" android:textStyle="bold" android:paddingStart="8dp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tipe Izin" android:textColor="#8B95A5" android:textSize="12sp" android:textStyle="bold" android:gravity="center"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Detail /\nLampiran" android:textColor="#8B95A5" android:textSize="11sp" android:textStyle="bold" android:gravity="center"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Aksi" android:textColor="#8B95A5" android:textSize="12sp" android:textStyle="bold" android:gravity="center" android:paddingEnd="8dp"/>
+                    </TableRow>
+
+                    <TableRow android:paddingVertical="12dp" android:gravity="center_vertical" android:background="#05000000">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1" android:textColor="@android:color/white" android:gravity="center"/>
+                        <LinearLayout android:orientation="horizontal" android:gravity="center_vertical" android:paddingStart="8dp">
+                            <com.google.android.material.card.MaterialCardView android:layout_width="32dp" android:layout_height="32dp" app:cardCornerRadius="16dp" app:cardBackgroundColor="#9B59B6" app:strokeWidth="0dp">
+                                <TextView android:layout_width="match_parent" android:layout_height="match_parent" android:text="DK" android:textColor="@android:color/white" android:gravity="center" android:textSize="11sp" android:textStyle="bold"/>
+                            </com.google.android.material.card.MaterialCardView>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Diky\nRaihan S." android:textColor="@android:color/white" android:textSize="13sp" android:layout_marginStart="8dp" android:textStyle="bold"/>
+                        </LinearLayout>
+                        <com.google.android.material.card.MaterialCardView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" app:cardBackgroundColor="#D35400" app:cardCornerRadius="6dp" app:strokeWidth="0dp"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sakit" android:textColor="@android:color/white" android:textSize="11sp" android:paddingHorizontal="8dp" android:paddingVertical="2dp" android:textStyle="bold"/></com.google.android.material.card.MaterialCardView>
+                        <LinearLayout android:gravity="center" android:orientation="vertical">
+                            <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@android:drawable/stat_sys_download" app:tint="#8B95A5"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="surat_dokter.pdf" android:textColor="#8B95A5" android:textSize="9sp"/>
+                        </LinearLayout>
+                        <LinearLayout android:gravity="center" android:orientation="horizontal" android:paddingEnd="8dp">
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/checkbox_on_background" app:tint="#2ECC71" android:layout_marginEnd="4dp"/>
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_delete" app:tint="#E74C3C"/>
+                        </LinearLayout>
+                    </TableRow>
+                    <View android:layout_height="1dp" android:background="#2D3548"/>
+
+                    <TableRow android:paddingVertical="12dp" android:gravity="center_vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="2" android:textColor="@android:color/white" android:gravity="center"/>
+                        <LinearLayout android:orientation="horizontal" android:gravity="center_vertical" android:paddingStart="8dp">
+                            <com.google.android.material.card.MaterialCardView android:layout_width="32dp" android:layout_height="32dp" app:cardCornerRadius="16dp" app:cardBackgroundColor="#9B59B6" app:strokeWidth="0dp">
+                                <TextView android:layout_width="match_parent" android:layout_height="match_parent" android:text="FS" android:textColor="@android:color/white" android:gravity="center" android:textSize="11sp" android:textStyle="bold"/>
+                            </com.google.android.material.card.MaterialCardView>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Feisal S." android:textColor="@android:color/white" android:textSize="13sp" android:layout_marginStart="8dp" android:textStyle="bold"/>
+                        </LinearLayout>
+                        <com.google.android.material.card.MaterialCardView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" app:cardBackgroundColor="#2C3E50" app:cardCornerRadius="6dp" app:strokeWidth="0dp"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Lembur" android:textColor="#F39C12" android:textSize="11sp" android:paddingHorizontal="8dp" android:paddingVertical="2dp" android:textStyle="bold"/></com.google.android.material.card.MaterialCardView>
+                        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_gravity="center" android:src="@android:drawable/ic_menu_view" app:tint="#8B95A5"/>
+                        <LinearLayout android:gravity="center" android:orientation="horizontal" android:paddingEnd="8dp">
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/checkbox_on_background" app:tint="#2ECC71" android:layout_marginEnd="4dp"/>
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_delete" app:tint="#E74C3C"/>
+                        </LinearLayout>
+                    </TableRow>
+                    <View android:layout_height="1dp" android:background="#2D3548"/>
+
+                    <TableRow android:paddingVertical="12dp" android:gravity="center_vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="3" android:textColor="@android:color/white" android:gravity="center"/>
+                        <LinearLayout android:orientation="horizontal" android:gravity="center_vertical" android:paddingStart="8dp">
+                            <com.google.android.material.card.MaterialCardView android:layout_width="32dp" android:layout_height="32dp" app:cardCornerRadius="16dp" app:cardBackgroundColor="#2ECC71" app:strokeWidth="0dp">
+                                <TextView android:layout_width="match_parent" android:layout_height="match_parent" android:text="SA" android:textColor="@android:color/white" android:gravity="center" android:textSize="11sp" android:textStyle="bold"/>
+                            </com.google.android.material.card.MaterialCardView>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Siti\nAminah" android:textColor="@android:color/white" android:textSize="13sp" android:layout_marginStart="8dp" android:textStyle="bold"/>
+                        </LinearLayout>
+                        <com.google.android.material.card.MaterialCardView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" app:cardBackgroundColor="#2ECC71" app:cardCornerRadius="6dp" app:strokeWidth="0dp"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Izin" android:textColor="@android:color/white" android:textSize="11sp" android:paddingHorizontal="8dp" android:paddingVertical="2dp" android:textStyle="bold"/></com.google.android.material.card.MaterialCardView>
+                        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_gravity="center" android:src="@android:drawable/ic_menu_view" app:tint="#8B95A5"/>
+                        <LinearLayout android:gravity="center" android:orientation="horizontal" android:paddingEnd="8dp">
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/checkbox_on_background" app:tint="#2ECC71" android:layout_marginEnd="4dp"/>
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_delete" app:tint="#E74C3C"/>
+                        </LinearLayout>
+                    </TableRow>
+                    <View android:layout_height="1dp" android:background="#2D3548"/>
+
+                    <TableRow android:paddingVertical="12dp" android:gravity="center_vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="4" android:textColor="@android:color/white" android:gravity="center"/>
+                        <LinearLayout android:orientation="horizontal" android:gravity="center_vertical" android:paddingStart="8dp">
+                            <com.google.android.material.card.MaterialCardView android:layout_width="32dp" android:layout_height="32dp" app:cardCornerRadius="16dp" app:cardBackgroundColor="#3498DB" app:strokeWidth="0dp">
+                                <TextView android:layout_width="match_parent" android:layout_height="match_parent" android:text="B" android:textColor="@android:color/white" android:gravity="center" android:textSize="11sp" android:textStyle="bold"/>
+                            </com.google.android.material.card.MaterialCardView>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Budi\nSantoso" android:textColor="@android:color/white" android:textSize="13sp" android:layout_marginStart="8dp" android:textStyle="bold"/>
+                        </LinearLayout>
+                        <com.google.android.material.card.MaterialCardView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" app:cardBackgroundColor="#D35400" app:cardCornerRadius="6dp" app:strokeWidth="0dp"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sakit" android:textColor="@android:color/white" android:textSize="11sp" android:paddingHorizontal="8dp" android:paddingVertical="2dp" android:textStyle="bold"/></com.google.android.material.card.MaterialCardView>
+                        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_gravity="center" android:src="@android:drawable/ic_menu_view" app:tint="#8B95A5"/>
+                        <LinearLayout android:gravity="center" android:orientation="horizontal" android:paddingEnd="8dp">
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/checkbox_on_background" app:tint="#2ECC71" android:layout_marginEnd="4dp"/>
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_delete" app:tint="#E74C3C"/>
+                        </LinearLayout>
+                    </TableRow>
+
+                </TableLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="3"
+                android:layout_marginBottom="16dp">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    app:cardBackgroundColor="#D35400"
+                    app:cardCornerRadius="8dp"
+                    app:strokeWidth="0dp">
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Pending Approval: 5" android:textColor="@android:color/white" android:textSize="10sp" android:gravity="center" android:paddingVertical="6dp" android:textStyle="bold"/>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginHorizontal="2dp"
+                    app:cardBackgroundColor="#2ECC71"
+                    app:cardCornerRadius="8dp"
+                    app:strokeWidth="0dp">
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Disetujui Hari Ini: 8" android:textColor="@android:color/white" android:textSize="10sp" android:gravity="center" android:paddingVertical="6dp" android:textStyle="bold"/>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    app:cardBackgroundColor="#C0392B"
+                    app:cardCornerRadius="8dp"
+                    app:strokeWidth="0dp">
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Ditolak Hari Ini: 2" android:textColor="@android:color/white" android:textSize="10sp" android:gravity="center" android:paddingVertical="6dp" android:textStyle="bold"/>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnProsesSemua"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:background="@drawable/bg_btn_gradient_absen"
+                app:backgroundTint="@null"
+                android:text="PROSES SEMUA TERPILIH"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/bottomNavigationCardAdmin"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="24dp"
+        app:cardBackgroundColor="#E6161D2F"
+        app:cardCornerRadius="35dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="#33FFFFFF"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:weightSum="4"
+            android:paddingHorizontal="10dp">
+
+            <LinearLayout android:id="@+id/navAdminHome" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:orientation="vertical">
+                <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_menu_myplaces" app:tint="#8B95A5"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Dashboard" android:textColor="#8B95A5" android:textSize="10sp" android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginVertical="6dp"
+                app:cardCornerRadius="24dp"
+                app:cardBackgroundColor="#2ECC71"
+                app:strokeWidth="0dp">
+                <LinearLayout android:id="@+id/navAdminKaryawan" android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:orientation="vertical">
+                    <ImageView android:layout_width="22dp" android:layout_height="22dp" android:src="@android:drawable/ic_menu_edit" app:tint="@android:color/black"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Presensi" android:textColor="@android:color/black" android:textSize="9sp" android:textStyle="bold" android:layout_marginTop="2dp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout android:id="@+id/navAdminPersetujuan" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:orientation="vertical">
+                <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_dialog_dialer" app:tint="#8B95A5"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Laporan Kerja" android:textColor="#8B95A5" android:textSize="10sp" android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/navAdminProfil" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:orientation="vertical">
+                <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_menu_info_details" app:tint="#8B95A5"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Profil" android:textColor="#8B95A5" android:textSize="10sp" android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
