@@ -12,19 +12,25 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
 class WorkingReportRepository {
-    private val firestore = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
+    private val firestore by lazy { try { FirebaseFirestore.getInstance() } catch (e: Exception) { null } }
+    private val auth by lazy { try { FirebaseAuth.getInstance() } catch (e: Exception) { null } }
     private val storageService = StorageService()
 
-    private val currentUserId: String
-        get() = auth.currentUser?.uid ?: throw IllegalStateException("User not logged in")
+    private val currentUserId: String?
+        get() = try { auth?.currentUser?.uid } catch (e: Exception) { null }
 
     suspend fun getCurrentUser(): User? {
-        return firestore.collection(Constants.USERS_COLLECTION)
-            .document(currentUserId)
-            .get()
-            .await()
-            .toObject(User::class.java)
+        val uid = currentUserId ?: return null
+        val firebaseFirestore = firestore ?: return null
+        return try {
+            firebaseFirestore.collection(Constants.USERS_COLLECTION)
+                .document(uid)
+                .get()
+                .await()
+                .toObject(User::class.java)
+        } catch (e: Exception) {
+            null
+        }
     }
 
     suspend fun submitReport(
@@ -40,11 +46,13 @@ class WorkingReportRepository {
         fileName: String? = null,
         mimeType: String? = null
     ): Result<Unit> = runCatching {
+        val uid = currentUserId ?: throw Exception("User not logged in")
+        val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
         val user = getCurrentUser() ?: throw Exception("User profile not found")
         val today = DateHelper.getCurrentDate()
-        val docId = "${currentUserId}_$today"
+        val docId = "${uid}_$today"
 
-        val existing = firestore
+        val existing = firebaseFirestore
             .collection(Constants.WORKING_REPORTS_COLLECTION)
             .document(docId)
             .get()
@@ -57,13 +65,13 @@ class WorkingReportRepository {
         var attachmentUrl = ""
         if (attachmentUri != null) {
             val extension = fileName?.substringAfterLast(".", "file") ?: "file"
-            val path = "${Constants.WORKING_REPORT_FILES_PATH}/$currentUserId/$today/attachment.$extension"
+            val path = "${Constants.WORKING_REPORT_FILES_PATH}/$uid/$today/attachment.$extension"
             attachmentUrl = storageService.uploadFile(path, attachmentUri)
         }
 
         val report = WorkingReport(
             id = docId,
-            userId = currentUserId,
+            userId = uid,
             employeeName = user.name,
             employeeNip = user.nip,
             date = today,
@@ -82,18 +90,24 @@ class WorkingReportRepository {
             isLocked = true
         )
 
-        firestore.collection(Constants.WORKING_REPORTS_COLLECTION)
+        firebaseFirestore.collection(Constants.WORKING_REPORTS_COLLECTION)
             .document(docId)
             .set(report)
             .await()
     }
 
     suspend fun getMyReports(): List<WorkingReport> {
-        return firestore.collection(Constants.WORKING_REPORTS_COLLECTION)
-            .whereEqualTo("userId", currentUserId)
-            .orderBy("date", com.google.firebase.firestore.Query.Direction.DESCENDING)
-            .get()
-            .await()
-            .toObjects(WorkingReport::class.java)
+        val uid = currentUserId ?: return emptyList()
+        val firebaseFirestore = firestore ?: return emptyList()
+        return try {
+            firebaseFirestore.collection(Constants.WORKING_REPORTS_COLLECTION)
+                .whereEqualTo("userId", uid)
+                .orderBy("date", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                .get()
+                .await()
+                .toObjects(WorkingReport::class.java)
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 }

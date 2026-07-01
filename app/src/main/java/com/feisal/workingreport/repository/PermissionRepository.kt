@@ -12,19 +12,25 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
 class PermissionRepository {
-    private val firestore = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
+    private val firestore by lazy { try { FirebaseFirestore.getInstance() } catch (e: Exception) { null } }
+    private val auth by lazy { try { FirebaseAuth.getInstance() } catch (e: Exception) { null } }
     private val storageService = StorageService()
 
-    private val currentUserId: String
-        get() = auth.currentUser?.uid ?: throw IllegalStateException("User not logged in")
+    private val currentUserId: String?
+        get() = try { auth?.currentUser?.uid } catch (e: Exception) { null }
 
     suspend fun getCurrentUser(): User? {
-        return firestore.collection(Constants.USERS_COLLECTION)
-            .document(currentUserId)
-            .get()
-            .await()
-            .toObject(User::class.java)
+        val uid = currentUserId ?: return null
+        val firebaseFirestore = firestore ?: return null
+        return try {
+            firebaseFirestore.collection(Constants.USERS_COLLECTION)
+                .document(uid)
+                .get()
+                .await()
+                .toObject(User::class.java)
+        } catch (e: Exception) {
+            null
+        }
     }
 
     suspend fun submitPermission(
@@ -35,24 +41,21 @@ class PermissionRepository {
         fileName: String? = null,
         mimeType: String? = null
     ): Result<Unit> = runCatching {
-        if (reason.isBlank()) throw Exception("Reason is required")
-        if (proofUri == null && driveLink.isNullOrBlank()) {
-            throw Exception("Proof file or Google Drive link is required")
-        }
-
+        val uid = currentUserId ?: throw Exception("User not logged in")
+        val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
         val user = getCurrentUser() ?: throw Exception("User profile not found")
         val today = DateHelper.getCurrentDate()
         var uploadedUrl = ""
         
         if (proofUri != null) {
             val extension = fileName?.substringAfterLast(".", "jpg") ?: "jpg"
-            val path = "${Constants.PERMISSION_PROOFS_PATH}/$currentUserId/$today/proof.$extension"
+            val path = "${Constants.PERMISSION_PROOFS_PATH}/$uid/$today/proof.$extension"
             uploadedUrl = storageService.uploadFile(path, proofUri)
         }
 
         val permission = PermissionRequest(
-            id = firestore.collection(Constants.PERMISSIONS_COLLECTION).document().id,
-            userId = currentUserId,
+            id = firebaseFirestore.collection(Constants.PERMISSIONS_COLLECTION).document().id,
+            userId = uid,
             employeeName = user.name,
             employeeNip = user.nip,
             type = type,
@@ -65,18 +68,24 @@ class PermissionRepository {
             status = PermissionStatus.PENDING.name
         )
 
-        firestore.collection(Constants.PERMISSIONS_COLLECTION)
+        firebaseFirestore.collection(Constants.PERMISSIONS_COLLECTION)
             .document(permission.id)
             .set(permission)
             .await()
     }
 
     suspend fun getMyPermissions(): List<PermissionRequest> {
-        return firestore.collection(Constants.PERMISSIONS_COLLECTION)
-            .whereEqualTo("userId", currentUserId)
-            .orderBy("createdAt", com.google.firebase.firestore.Query.Direction.DESCENDING)
-            .get()
-            .await()
-            .toObjects(PermissionRequest::class.java)
+        val uid = currentUserId ?: return emptyList()
+        val firebaseFirestore = firestore ?: return emptyList()
+        return try {
+            firebaseFirestore.collection(Constants.PERMISSIONS_COLLECTION)
+                .whereEqualTo("userId", uid)
+                .orderBy("createdAt", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                .get()
+                .await()
+                .toObjects(PermissionRequest::class.java)
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 }

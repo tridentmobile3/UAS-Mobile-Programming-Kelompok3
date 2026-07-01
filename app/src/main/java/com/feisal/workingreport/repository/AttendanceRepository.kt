@@ -14,27 +14,38 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
 class AttendanceRepository {
-    private val firestore = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
+    private val firestore by lazy { try { FirebaseFirestore.getInstance() } catch (e: Exception) { null } }
+    private val auth by lazy { try { FirebaseAuth.getInstance() } catch (e: Exception) { null } }
     private val storageService = StorageService()
 
-    private val currentUserId: String
-        get() = auth.currentUser?.uid ?: throw IllegalStateException("User not logged in")
+    private val currentUserId: String?
+        get() = try { auth?.currentUser?.uid } catch (e: Exception) { null }
 
     suspend fun getCurrentUser(): User? {
-        return firestore.collection(Constants.USERS_COLLECTION)
-            .document(currentUserId)
-            .get()
-            .await()
-            .toObject(User::class.java)
+        val uid = currentUserId ?: return null
+        val firebaseFirestore = firestore ?: return null
+        return try {
+            firebaseFirestore.collection(Constants.USERS_COLLECTION)
+                .document(uid)
+                .get()
+                .await()
+                .toObject(User::class.java)
+        } catch (e: Exception) {
+            null
+        }
     }
 
     suspend fun getOfficeLocation(locationId: String = "padepokan79_main"): OfficeLocation? {
-        return firestore.collection(Constants.OFFICE_LOCATIONS_COLLECTION)
-            .document(locationId)
-            .get()
-            .await()
-            .toObject(OfficeLocation::class.java)
+        val firebaseFirestore = firestore ?: return null
+        return try {
+            firebaseFirestore.collection(Constants.OFFICE_LOCATIONS_COLLECTION)
+                .document(locationId)
+                .get()
+                .await()
+                .toObject(OfficeLocation::class.java)
+        } catch (e: Exception) {
+            null
+        }
     }
 
     suspend fun checkIn(
@@ -44,6 +55,9 @@ class AttendanceRepository {
         photoUri: Uri,
         faceVerified: Boolean
     ): Result<Unit> = runCatching {
+        val uid = currentUserId ?: throw Exception("User not logged in")
+        val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
+        
         if (!faceVerified) {
             throw Exception("Verifikasi wajah gagal")
         }
@@ -59,21 +73,21 @@ class AttendanceRepository {
         }
 
         val today = DateHelper.getCurrentDate()
-        val docId = "${currentUserId}_$today"
-        val existing = firestore.collection(Constants.ATTENDANCES_COLLECTION).document(docId).get().await()
+        val docId = "${uid}_$today"
+        val existing = firebaseFirestore.collection(Constants.ATTENDANCES_COLLECTION).document(docId).get().await()
 
         if (existing.exists()) {
             throw Exception("Already checked in today")
         }
 
         val photoUrl = storageService.uploadFile(
-            "${Constants.ATTENDANCE_PHOTOS_PATH}/$currentUserId/$today/check_in.jpg",
+            "${Constants.ATTENDANCE_PHOTOS_PATH}/$uid/$today/check_in.jpg",
             photoUri
         )
 
         val attendance = Attendance(
             id = docId,
-            userId = currentUserId,
+            userId = uid,
             employeeName = user.name,
             employeeNip = user.nip,
             date = today,
@@ -88,7 +102,7 @@ class AttendanceRepository {
             isLocked = true
         )
 
-        firestore.collection(Constants.ATTENDANCES_COLLECTION)
+        firebaseFirestore.collection(Constants.ATTENDANCES_COLLECTION)
             .document(docId)
             .set(attendance)
             .await()
@@ -100,9 +114,11 @@ class AttendanceRepository {
         accuracy: Float,
         photoUri: Uri
     ): Result<Unit> = runCatching {
+        val uid = currentUserId ?: throw Exception("User not logged in")
+        val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
         val today = DateHelper.getCurrentDate()
-        val docId = "${currentUserId}_$today"
-        val docRef = firestore.collection(Constants.ATTENDANCES_COLLECTION).document(docId)
+        val docId = "${uid}_$today"
+        val docRef = firebaseFirestore.collection(Constants.ATTENDANCES_COLLECTION).document(docId)
         val snapshot = docRef.get().await()
 
         if (!snapshot.exists()) {
@@ -124,7 +140,7 @@ class AttendanceRepository {
         }
 
         val photoUrl = storageService.uploadFile(
-            "${Constants.ATTENDANCE_PHOTOS_PATH}/$currentUserId/$today/check_out.jpg",
+            "${Constants.ATTENDANCE_PHOTOS_PATH}/$uid/$today/check_out.jpg",
             photoUri
         )
 
@@ -142,21 +158,33 @@ class AttendanceRepository {
     }
 
     suspend fun getTodayAttendance(): Attendance? {
+        val uid = currentUserId ?: return null
+        val firebaseFirestore = firestore ?: return null
         val today = DateHelper.getCurrentDate()
-        val docId = "${currentUserId}_$today"
-        return firestore.collection(Constants.ATTENDANCES_COLLECTION)
-            .document(docId)
-            .get()
-            .await()
-            .toObject(Attendance::class.java)
+        val docId = "${uid}_$today"
+        return try {
+            firebaseFirestore.collection(Constants.ATTENDANCES_COLLECTION)
+                .document(docId)
+                .get()
+                .await()
+                .toObject(Attendance::class.java)
+        } catch (e: Exception) {
+            null
+        }
     }
 
     suspend fun getAttendanceHistory() : List<Attendance> {
-        return firestore.collection(Constants.ATTENDANCES_COLLECTION)
-            .whereEqualTo("userId", currentUserId)
-            .orderBy("date", com.google.firebase.firestore.Query.Direction.DESCENDING)
-            .get()
-            .await()
-            .toObjects(Attendance::class.java)
+        val uid = currentUserId ?: return emptyList()
+        val firebaseFirestore = firestore ?: return emptyList()
+        return try {
+            firebaseFirestore.collection(Constants.ATTENDANCES_COLLECTION)
+                .whereEqualTo("userId", uid)
+                .orderBy("date", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                .get()
+                .await()
+                .toObjects(Attendance::class.java)
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 }

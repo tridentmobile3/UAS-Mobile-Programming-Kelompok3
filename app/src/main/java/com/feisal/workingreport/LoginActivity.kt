@@ -89,7 +89,7 @@ class LoginActivity : ComponentActivity() {
             var nip by remember { mutableStateOf("") }
             var password by remember { mutableStateOf("") }
 
-            val authRepository = remember { AuthRepository() }
+            val authRepository = remember { try { AuthRepository() } catch (e: Exception) { null } }
 
             Box(modifier = Modifier.fillMaxSize()) {
                 LiquidGlassBackground(colors = colors) { }
@@ -265,6 +265,10 @@ class LoginActivity : ComponentActivity() {
                                 // ----------------------------------------
 
                                 lifecycleScope.launch {
+                                    if (authRepository == null) {
+                                        Toast.makeText(this@LoginActivity, "Firebase tidak terinisialisasi", Toast.LENGTH_SHORT).show()
+                                        return@launch
+                                    }
                                     val result = authRepository.loginWithNip(nip, password)
 
                                     result.onSuccess { user ->

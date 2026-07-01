@@ -56,10 +56,10 @@ import com.feisal.workingreport.ui.theme.p79Colors
 import kotlinx.coroutines.launch
 
 class DashboardActivity : AppCompatActivity() {
-    private val attendanceRepository = AttendanceRepository()
-    private val authRepository = AuthRepository()
-    private val permissionRepository = PermissionRepository()
-    private val workingReportRepository = WorkingReportRepository()
+    private val attendanceRepository by lazy { AttendanceRepository() }
+    private val authRepository by lazy { AuthRepository() }
+    private val permissionRepository by lazy { PermissionRepository() }
+    private val workingReportRepository by lazy { WorkingReportRepository() }
 
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -100,11 +100,16 @@ class DashboardActivity : AppCompatActivity() {
 
             // Load Initial Data
             LaunchedEffect(Unit) {
-                coroutineScope.launch {
+                try {
                     currentUser = authRepository.getCurrentUserProfile()
-                    todayAttendance = attendanceRepository.getTodayAttendance()
-                    attendanceHistory = attendanceRepository.getAttendanceHistory()
-                    workingReports = workingReportRepository.getMyReports()
+                    if (currentUser != null) {
+                        todayAttendance = attendanceRepository.getTodayAttendance()
+                        attendanceHistory = attendanceRepository.getAttendanceHistory()
+                        workingReports = workingReportRepository.getMyReports()
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    // Silently fail or show minimal info for dummy testing
                 }
             }
 
@@ -156,7 +161,11 @@ class DashboardActivity : AppCompatActivity() {
                                     sharedPref.edit().putBoolean("isDarkMode", isDark).apply()
                                 },
                                 onLogoutClick = {
-                                    authRepository.logout()
+                                    try {
+                                        authRepository.logout()
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                    }
                                     startActivity(Intent(this@DashboardActivity, LoginActivity::class.java))
                                     finish()
                                 },
