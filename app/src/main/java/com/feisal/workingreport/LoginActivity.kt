@@ -255,10 +255,7 @@ class LoginActivity : ComponentActivity() {
 
                                     result.onSuccess { user ->
                                         if (user.role == "HC") {
-                                            // TODO: Create DashboardAdminActivity if it doesn't exist yet
-                                            // For now, redirect to DashboardActivity or show toast
-                                            Toast.makeText(this@LoginActivity, "Login HC berhasil (Dashboard Admin belum tersedia)", Toast.LENGTH_SHORT).show()
-                                            startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
+                                            startActivity(Intent(this@LoginActivity, DashboardAdminActivity::class.java))
                                         } else {
                                             startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
                                         }
