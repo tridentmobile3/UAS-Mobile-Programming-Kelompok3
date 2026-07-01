@@ -3,6 +3,7 @@ package com.feisal.workingreport
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.*
@@ -36,9 +37,17 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
+import com.feisal.workingreport.model.Attendance
+import com.feisal.workingreport.model.User
+import com.feisal.workingreport.model.WorkingReport
+import com.feisal.workingreport.repository.AttendanceRepository
+import com.feisal.workingreport.repository.AuthRepository
+import com.feisal.workingreport.repository.PermissionRepository
+import com.feisal.workingreport.repository.WorkingReportRepository
 import com.feisal.workingreport.ui.components.GlassCard
 import com.feisal.workingreport.ui.components.NoiseOverlay
 import com.feisal.workingreport.ui.theme.LiquidGlassBackground
@@ -47,6 +56,11 @@ import com.feisal.workingreport.ui.theme.p79Colors
 import kotlinx.coroutines.launch
 
 class DashboardActivity : AppCompatActivity() {
+    private val attendanceRepository = AttendanceRepository()
+    private val authRepository = AuthRepository()
+    private val permissionRepository = PermissionRepository()
+    private val workingReportRepository = WorkingReportRepository()
+
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,6 +92,22 @@ class DashboardActivity : AppCompatActivity() {
             val pagerState = rememberPagerState(pageCount = { 5 })
             val coroutineScope = rememberCoroutineScope()
 
+            // State for Data
+            var currentUser by remember { mutableStateOf<User?>(null) }
+            var todayAttendance by remember { mutableStateOf<Attendance?>(null) }
+            var attendanceHistory by remember { mutableStateOf<List<Attendance>>(emptyList()) }
+            var workingReports by remember { mutableStateOf<List<WorkingReport>>(emptyList()) }
+
+            // Load Initial Data
+            LaunchedEffect(Unit) {
+                coroutineScope.launch {
+                    currentUser = authRepository.getCurrentUserProfile()
+                    todayAttendance = attendanceRepository.getTodayAttendance()
+                    attendanceHistory = attendanceRepository.getAttendanceHistory()
+                    workingReports = workingReportRepository.getMyReports()
+                }
+            }
+
             Box(modifier = Modifier.fillMaxSize()) {
                 LiquidGlassBackground(colors = colors) { }
                 NoiseOverlay()
@@ -94,6 +124,8 @@ class DashboardActivity : AppCompatActivity() {
                                 colors = colors,
                                 isDarkMode = isDarkMode,
                                 activity = this@DashboardActivity,
+                                currentUser = currentUser,
+                                todayAttendance = todayAttendance,
                                 onLaporClick = { coroutineScope.launch { pagerState.animateScrollToPage(2) } },
                                 onRiwayatClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
                                 onIzinClick = { showIzinSheet = true },
@@ -103,20 +135,30 @@ class DashboardActivity : AppCompatActivity() {
                             1 -> RiwayatContent(
                                 colors = colors,
                                 isDarkMode = isDarkMode,
+                                currentUser = currentUser,
+                                history = attendanceHistory,
                                 onBackClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } }
                             )
                             2 -> LaporanContent(
                                 colors = colors,
                                 isDarkMode = isDarkMode,
+                                currentUser = currentUser,
+                                reports = workingReports,
                                 onBellClick = { showNotificationSheet = true },
                                 onAddClick = { showLaporanSheet = true }
                             )
                             3 -> ProfilContent(
                                 colors = colors,
                                 isDarkMode = isDarkMode,
+                                currentUser = currentUser,
                                 onThemeChange = { isDark ->
                                     isDarkMode = isDark
                                     sharedPref.edit().putBoolean("isDarkMode", isDark).apply()
+                                },
+                                onLogoutClick = {
+                                    authRepository.logout()
+                                    startActivity(Intent(this@DashboardActivity, LoginActivity::class.java))
+                                    finish()
                                 },
                                 onBackClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } }
                             )
@@ -161,7 +203,21 @@ class DashboardActivity : AppCompatActivity() {
                     containerColor = if (isDarkMode) Color(0xFF161D2F) else Color.White,
                     scrimColor = Color.Black.copy(alpha = 0.5f)
                 ) {
-                    IzinBottomSheetContent(colors = colors, isDarkMode = isDarkMode)
+                    IzinBottomSheetContent(
+                        colors = colors, 
+                        isDarkMode = isDarkMode,
+                        onSumbit = { type, reason ->
+                            coroutineScope.launch {
+                                val result = permissionRepository.submitPermission(type, reason)
+                                result.onSuccess {
+                                    showIzinSheet = false
+                                    Toast.makeText(context, "Pengajuan izin berhasil terkirim", Toast.LENGTH_SHORT).show()
+                                }.onFailure {
+                                    Toast.makeText(context, "Gagal: ${it.message}", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                    )
                 }
             }
 
@@ -183,7 +239,32 @@ class DashboardActivity : AppCompatActivity() {
                     containerColor = if (isDarkMode) Color(0xFF161D2F) else Color.White,
                     scrimColor = Color.Black.copy(alpha = 0.5f)
                 ) {
-                    LaporanBottomSheetContent(colors = colors, isDarkMode = isDarkMode)
+                    LaporanBottomSheetContent(
+                        colors = colors, 
+                        isDarkMode = isDarkMode,
+                        onSubmit = { tanggal, judul, deskripsi, mulai, selesai ->
+                            coroutineScope.launch {
+                                val result = workingReportRepository.submitReport(
+                                    startTime = mulai,
+                                    endTime = selesai,
+                                    workLocation = "WFH/WFO", // Default
+                                    title = judul,
+                                    description = deskripsi,
+                                    progress = "100%", // Default
+                                    obstacle = "-", // Default
+                                    nextPlan = "-" // Default
+                                )
+                                result.onSuccess {
+                                    showLaporanSheet = false
+                                    Toast.makeText(context, "Laporan kerja berhasil terkirim", Toast.LENGTH_SHORT).show()
+                                    // Refresh laporan
+                                    workingReports = workingReportRepository.getMyReports()
+                                }.onFailure {
+                                    Toast.makeText(context, "Gagal: ${it.message}", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                    )
                 }
             }
         }
@@ -262,7 +343,11 @@ fun TimePickerBox(value: String, onValueChange: (String) -> Unit, placeholder: S
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LaporanBottomSheetContent(colors: P79Colors, isDarkMode: Boolean) {
+fun LaporanBottomSheetContent(
+    colors: P79Colors, 
+    isDarkMode: Boolean,
+    onSubmit: (String, String, String, String, String) -> Unit
+) {
     val inputBgColor = if (isDarkMode) Color(0xFF222831) else Color(0xFFF3F4F6)
     var tanggal by remember { mutableStateOf("") }
     var judul by remember { mutableStateOf("") }
@@ -354,7 +439,9 @@ fun LaporanBottomSheetContent(colors: P79Colors, isDarkMode: Boolean) {
         }
         Spacer(modifier = Modifier.height(24.dp))
         Box(
-            modifier = Modifier.fillMaxWidth().height(55.dp).background(Brush.horizontalGradient(listOf(colors.blue, colors.green)), RoundedCornerShape(12.dp)).clickable { },
+            modifier = Modifier.fillMaxWidth().height(55.dp).background(Brush.horizontalGradient(listOf(colors.blue, colors.green)), RoundedCornerShape(12.dp)).clickable { 
+                onSubmit(tanggal, judul, deskripsi, jamMulai, jamSelesai)
+            },
             contentAlignment = Alignment.Center
         ) {
             Text("Kirim Laporan", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
@@ -365,8 +452,14 @@ fun LaporanBottomSheetContent(colors: P79Colors, isDarkMode: Boolean) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IzinBottomSheetContent(colors: P79Colors, isDarkMode: Boolean) {
+fun IzinBottomSheetContent(
+    colors: P79Colors, 
+    isDarkMode: Boolean,
+    onSumbit: (String, String) -> Unit
+) {
     val inputBgColor = if (isDarkMode) Color(0xFF222831) else Color(0xFFF3F4F6)
+    var type by remember { mutableStateOf("IZIN") }
+    var reason by remember { mutableStateOf("") }
 
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp)) {
         Text("Ajukan Izin", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold)
@@ -375,7 +468,7 @@ fun IzinBottomSheetContent(colors: P79Colors, isDarkMode: Boolean) {
         Spacer(modifier = Modifier.height(8.dp))
         Box(modifier = Modifier.fillMaxWidth().background(inputBgColor, RoundedCornerShape(12.dp)).padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("", color = colors.text0, fontSize = 14.sp)
+                Text(type, color = colors.text0, fontSize = 14.sp)
                 Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = colors.text1)
             }
         }
@@ -383,10 +476,10 @@ fun IzinBottomSheetContent(colors: P79Colors, isDarkMode: Boolean) {
         Text("Keterangan", color = colors.text1, fontSize = 12.sp)
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
-            value = "",
-            onValueChange = {},
+            value = reason,
+            onValueChange = { reason = it },
             textStyle = androidx.compose.ui.text.TextStyle(color = colors.text0),
-            placeholder = { Text("", color = colors.text1) },
+            placeholder = { Text("Alasan izin...", color = colors.text1) },
             modifier = Modifier.fillMaxWidth().height(100.dp),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
@@ -421,11 +514,13 @@ fun IzinBottomSheetContent(colors: P79Colors, isDarkMode: Boolean) {
                 .border(1.dp, colors.border, RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Text("", color = colors.text1, fontSize = 12.sp)
+            Text("Pilih file bukti izin", color = colors.text1, fontSize = 12.sp)
         }
         Spacer(modifier = Modifier.height(24.dp))
         Box(
-            modifier = Modifier.fillMaxWidth().height(55.dp).background(Brush.horizontalGradient(listOf(colors.blue, colors.green)), RoundedCornerShape(12.dp)).clickable { },
+            modifier = Modifier.fillMaxWidth().height(55.dp).background(Brush.horizontalGradient(listOf(colors.blue, colors.green)), RoundedCornerShape(12.dp)).clickable { 
+                onSumbit(type, reason)
+            },
             contentAlignment = Alignment.Center
         ) {
             Text("Kirim Pengajuan", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
@@ -436,7 +531,7 @@ fun IzinBottomSheetContent(colors: P79Colors, isDarkMode: Boolean) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RiwayatContent(colors: P79Colors, isDarkMode: Boolean, onBackClick: () -> Unit) {
+fun RiwayatContent(colors: P79Colors, isDarkMode: Boolean, currentUser: User?, history: List<Attendance>, onBackClick: () -> Unit) {
     val cardBgColor = if (isDarkMode) Color(0xFF161D2F) else Color.White
     val innerCardBgColor = if (isDarkMode) Color(0xFF222831) else Color(0xFFF3F4F6)
 
@@ -448,11 +543,11 @@ fun RiwayatContent(colors: P79Colors, isDarkMode: Boolean, onBackClick: () -> Un
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text("", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Text("", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(currentUser?.name ?: "User", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(currentUser?.nip ?: "-", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
             }
             Box(modifier = Modifier.size(40.dp).background(colors.green, CircleShape), contentAlignment = Alignment.Center) {
-                Text("", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(currentUser?.name?.firstOrNull()?.toString() ?: "U", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
         }
         Spacer(modifier = Modifier.height(32.dp))
@@ -463,17 +558,17 @@ fun RiwayatContent(colors: P79Colors, isDarkMode: Boolean, onBackClick: () -> Un
             Box(modifier = Modifier.size(36.dp).background(cardBgColor, RoundedCornerShape(8.dp)).border(1.dp, colors.border, RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
                 Icon(Icons.Default.KeyboardArrowLeft, contentDescription = null, tint = colors.text1)
             }
-            Text("", color = colors.text0, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text("Juli 2026", color = colors.text0, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             Box(modifier = Modifier.size(36.dp).background(cardBgColor, RoundedCornerShape(8.dp)).border(1.dp, colors.border, RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
                 Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = colors.text1)
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = "-", subtitle = "KEHADIRAN", iconTint = colors.green, textColor = colors.text0)
-            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = "-", subtitle = "RATA² MASUK", iconTint = colors.blue, textColor = colors.text0)
-            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = "-", subtitle = "TERLAMBAT", iconTint = colors.amber, textColor = colors.text0)
-            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = "-", subtitle = "GPS GAGAL", iconTint = colors.red, textColor = colors.text0)
+            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = history.size.toString(), subtitle = "KEHADIRAN", iconTint = colors.green, textColor = colors.text0)
+            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = "08:00", subtitle = "RATA² MASUK", iconTint = colors.blue, textColor = colors.text0)
+            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = "0", subtitle = "TERLAMBAT", iconTint = colors.amber, textColor = colors.text0)
+            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = "0", subtitle = "GPS GAGAL", iconTint = colors.red, textColor = colors.text0)
         }
         Spacer(modifier = Modifier.height(24.dp))
         Column(modifier = Modifier.fillMaxWidth().background(cardBgColor, RoundedCornerShape(16.dp)).border(1.dp, colors.border, RoundedCornerShape(16.dp)).padding(16.dp)) {
@@ -483,6 +578,7 @@ fun RiwayatContent(colors: P79Colors, isDarkMode: Boolean, onBackClick: () -> Un
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
+            // Calendar implementation (simplified)
             val calendarData = List(5) { List(7) { innerCardBgColor } }
             calendarData.forEach { week ->
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
@@ -526,14 +622,25 @@ fun LegendItem(label: String, dotColor: Color, textColor: Color) {
 }
 
 @Composable
-fun HomeContent(colors: P79Colors, isDarkMode: Boolean, activity: AppCompatActivity, onLaporClick: () -> Unit, onRiwayatClick: () -> Unit, onIzinClick: () -> Unit, onLemburClick: () -> Unit, onBellClick: () -> Unit) {
+fun HomeContent(
+    colors: P79Colors, 
+    isDarkMode: Boolean, 
+    activity: AppCompatActivity, 
+    currentUser: User?,
+    todayAttendance: Attendance?,
+    onLaporClick: () -> Unit, 
+    onRiwayatClick: () -> Unit, 
+    onIzinClick: () -> Unit, 
+    onLemburClick: () -> Unit, 
+    onBellClick: () -> Unit
+) {
     val cardBgColor = if (isDarkMode) Color(0xFF161D2F) else Color.White
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Spacer(modifier = Modifier.height(48.dp))
-        TopBar(colors = colors, isDarkMode = isDarkMode, onBellClick = onBellClick)
+        TopBar(colors = colors, isDarkMode = isDarkMode, currentUser = currentUser, onBellClick = onBellClick)
         Spacer(modifier = Modifier.height(24.dp))
-        AbsenCard(colors = colors, isDarkMode = isDarkMode, activity = activity)
+        AbsenCard(colors = colors, isDarkMode = isDarkMode, todayAttendance = todayAttendance, activity = activity)
         Spacer(modifier = Modifier.height(16.dp))
         MenuRow(colors = colors, cardBgColor = cardBgColor, onIzinClick = onIzinClick, onLaporClick = onLaporClick, onRiwayatClick = onRiwayatClick, onLemburClick = onLemburClick)
         Spacer(modifier = Modifier.height(16.dp))
@@ -557,7 +664,14 @@ fun MenuRow(colors: P79Colors, cardBgColor: Color, onIzinClick: () -> Unit, onLa
 }
 
 @Composable
-fun ProfilContent(colors: P79Colors, isDarkMode: Boolean, onThemeChange: (Boolean) -> Unit, onBackClick: () -> Unit) {
+fun ProfilContent(
+    colors: P79Colors, 
+    isDarkMode: Boolean, 
+    currentUser: User?,
+    onThemeChange: (Boolean) -> Unit, 
+    onLogoutClick: () -> Unit,
+    onBackClick: () -> Unit
+) {
     val cardBgColor = if (isDarkMode) Color(0xFF161D2F) else Color.White
     val iconBgColor = if (isDarkMode) Color(0xFF222831) else Color(0xFFF3F4F6)
 
@@ -569,31 +683,31 @@ fun ProfilContent(colors: P79Colors, isDarkMode: Boolean, onThemeChange: (Boolea
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text("", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Text("", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(currentUser?.name ?: "User", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(currentUser?.nip ?: "-", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
             }
             Box(modifier = Modifier.size(40.dp).background(colors.green, CircleShape), contentAlignment = Alignment.Center) {
-                Text("", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(currentUser?.name?.firstOrNull()?.toString() ?: "U", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
         }
         Spacer(modifier = Modifier.height(32.dp))
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
             Box(modifier = Modifier.size(90.dp)) {
                 Box(modifier = Modifier.size(80.dp).align(Alignment.Center).background(Brush.linearGradient(listOf(colors.blue, colors.green)), RoundedCornerShape(24.dp)), contentAlignment = Alignment.Center) {
-                    Text("", color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.Bold)
+                    Text(currentUser?.name?.firstOrNull()?.toString() ?: "U", color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.Bold)
                 }
                 Box(modifier = Modifier.size(28.dp).align(Alignment.BottomEnd).background(cardBgColor, CircleShape).border(1.dp, colors.border, CircleShape), contentAlignment = Alignment.Center) {
                     Icon(Icons.Default.Edit, contentDescription = "Edit", tint = colors.text0, modifier = Modifier.size(14.dp))
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Text("", color = colors.text0, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(currentUser?.name ?: "User Name", color = colors.text0, fontSize = 18.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(4.dp))
-            Text("", color = colors.text1, fontSize = 14.sp)
+            Text(currentUser?.authEmail ?: "email@example.com", color = colors.text1, fontSize = 14.sp)
             Spacer(modifier = Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Box(modifier = Modifier.background(cardBgColor, RoundedCornerShape(16.dp)).border(1.dp, colors.border, RoundedCornerShape(16.dp)).padding(horizontal = 16.dp, vertical = 8.dp)) { Text("", color = colors.text1, fontSize = 12.sp) }
-                Box(modifier = Modifier.background(cardBgColor, RoundedCornerShape(16.dp)).border(1.dp, colors.border, RoundedCornerShape(16.dp)).padding(horizontal = 16.dp, vertical = 8.dp)) { Text("", color = colors.text1, fontSize = 12.sp) }
+                Box(modifier = Modifier.background(cardBgColor, RoundedCornerShape(16.dp)).border(1.dp, colors.border, RoundedCornerShape(16.dp)).padding(horizontal = 16.dp, vertical = 8.dp)) { Text(currentUser?.department ?: "Dept", color = colors.text1, fontSize = 12.sp) }
+                Box(modifier = Modifier.background(cardBgColor, RoundedCornerShape(16.dp)).border(1.dp, colors.border, RoundedCornerShape(16.dp)).padding(horizontal = 16.dp, vertical = 8.dp)) { Text(currentUser?.position ?: "Position", color = colors.text1, fontSize = 12.sp) }
             }
         }
         Spacer(modifier = Modifier.height(32.dp))
@@ -625,7 +739,7 @@ fun ProfilContent(colors: P79Colors, isDarkMode: Boolean, onThemeChange: (Boolea
             SettingsItem(colors, iconBgColor, Icons.Default.Info, colors.text1, "Tentang Aplikasi", "", showArrow = false)
         }
         Spacer(modifier = Modifier.height(24.dp))
-        Box(modifier = Modifier.fillMaxWidth().height(55.dp).background(colors.red.copy(alpha = 0.05f), RoundedCornerShape(16.dp)).border(1.dp, colors.red.copy(alpha = 0.5f), RoundedCornerShape(16.dp)).clickable { }, contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.fillMaxWidth().height(55.dp).background(colors.red.copy(alpha = 0.05f), RoundedCornerShape(16.dp)).border(1.dp, colors.red.copy(alpha = 0.5f), RoundedCornerShape(16.dp)).clickable { onLogoutClick() }, contentAlignment = Alignment.Center) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.ExitToApp, contentDescription = "Keluar", tint = colors.red, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(8.dp))
@@ -652,12 +766,19 @@ fun SettingsItem(colors: P79Colors, iconBgColor: Color, icon: ImageVector, iconT
 }
 
 @Composable
-fun LaporanContent(colors: P79Colors, isDarkMode: Boolean, onBellClick: () -> Unit, onAddClick: () -> Unit) {
+fun LaporanContent(
+    colors: P79Colors, 
+    isDarkMode: Boolean, 
+    currentUser: User?,
+    reports: List<WorkingReport>,
+    onBellClick: () -> Unit, 
+    onAddClick: () -> Unit
+) {
     val cardBgColor = if (isDarkMode) Color(0xFF161D2F) else Color.White
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
             Spacer(modifier = Modifier.height(48.dp))
-            TopBar(colors = colors, isDarkMode = isDarkMode, onBellClick = onBellClick)
+            TopBar(colors = colors, isDarkMode = isDarkMode, currentUser = currentUser, onBellClick = onBellClick)
             Spacer(modifier = Modifier.height(24.dp))
             Column(modifier = Modifier.padding(horizontal = 24.dp)) { Text("Laporan Kerja", color = colors.text0, fontSize = 24.sp, fontWeight = FontWeight.Bold); Text("Riwayat & pengajuan laporan harian", color = colors.text1, fontSize = 12.sp) }
             Spacer(modifier = Modifier.height(20.dp))
@@ -669,10 +790,36 @@ fun LaporanContent(colors: P79Colors, isDarkMode: Boolean, onBellClick: () -> Un
             }
             Spacer(modifier = Modifier.height(24.dp))
             Column(modifier = Modifier.padding(horizontal = 24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                reports.forEach { report ->
+                    WorkingReportItem(colors = colors, cardBgColor = cardBgColor, report = report)
+                }
             }
             Spacer(modifier = Modifier.height(130.dp))
         }
         Box(modifier = Modifier.align(Alignment.BottomEnd).padding(end = 24.dp, bottom = 100.dp).size(60.dp).clip(RoundedCornerShape(20.dp)).background(Brush.linearGradient(listOf(colors.blue, colors.green))).clickable { onAddClick() }, contentAlignment = Alignment.Center) { Text("+", color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Light, modifier = Modifier.padding(bottom = 6.dp)) }
+    }
+}
+
+@Composable
+fun WorkingReportItem(colors: P79Colors, cardBgColor: Color, report: WorkingReport) {
+    Column(modifier = Modifier.fillMaxWidth().background(cardBgColor, RoundedCornerShape(16.dp)).border(1.dp, colors.border, RoundedCornerShape(16.dp)).padding(16.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(report.title, color = colors.text0, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(report.date, color = colors.text1, fontSize = 12.sp)
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(report.description, color = colors.text1, fontSize = 14.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        Spacer(modifier = Modifier.height(12.dp))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.DateRange, null, tint = colors.blue, modifier = Modifier.size(14.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("${report.startTime} - ${report.endTime}", color = colors.text1, fontSize = 12.sp)
+            }
+            Box(modifier = Modifier.background(colors.blue.copy(alpha = 0.1f), RoundedCornerShape(8.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
+                Text(report.status, color = colors.blue, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            }
+        }
     }
 }
 
@@ -684,26 +831,93 @@ fun LaporanTab(text: String, isSelected: Boolean, colors: P79Colors, cardBgColor
 }
 
 @Composable
-fun TopBar(colors: P79Colors, isDarkMode: Boolean, onBellClick: () -> Unit) {
+fun TopBar(colors: P79Colors, isDarkMode: Boolean, currentUser: User?, onBellClick: () -> Unit) {
     val iconBgColor = if (isDarkMode) Color(0xFF161D2F) else Color.White
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Column(modifier = Modifier.weight(1f)) { Text(text = "", color = colors.text0, fontSize = 24.sp, fontWeight = FontWeight.Bold); Text(text = "", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp) }
+        Column(modifier = Modifier.weight(1f)) { 
+            Text(text = "Halo, ${currentUser?.name?.split(" ")?.firstOrNull() ?: "Sobat"}", color = colors.text0, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text(text = "Padepokan Tujuh Sembilan", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp) 
+        }
         Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(iconBgColor).border(1.dp, colors.border, CircleShape).clickable { onBellClick() }, contentAlignment = Alignment.Center) { Icon(Icons.Default.Notifications, contentDescription = "Notifikasi", tint = colors.text1, modifier = Modifier.size(20.dp)); Box(modifier = Modifier.size(8.dp).background(colors.red, CircleShape).align(Alignment.TopEnd).padding(2.dp)) }
         Spacer(modifier = Modifier.width(12.dp))
-        Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(Brush.linearGradient(listOf(colors.blue, colors.green))), contentAlignment = Alignment.Center) { Text("", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp) }
+        Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(Brush.linearGradient(listOf(colors.blue, colors.green))), contentAlignment = Alignment.Center) { 
+            Text(currentUser?.name?.firstOrNull()?.toString() ?: "U", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp) 
+        }
     }
 }
 
 @Composable
-fun AbsenCard(colors: P79Colors, isDarkMode: Boolean, activity: AppCompatActivity) {
+fun AbsenCard(colors: P79Colors, isDarkMode: Boolean, todayAttendance: Attendance?, activity: AppCompatActivity) {
     val iconBgColor = if (isDarkMode) Color(0xFF222831) else Color(0xFFF3F4F6)
+    val hasCheckedIn = todayAttendance != null
+    val hasCheckedOut = todayAttendance?.checkOutTime?.isNotEmpty() == true
+    
     Box(modifier = Modifier.padding(horizontal = 24.dp)) {
         GlassCard(colors = colors, modifier = Modifier.fillMaxWidth()) {
-            Row(verticalAlignment = Alignment.CenterVertically) { Box(modifier = Modifier.size(40.dp).background(iconBgColor, RoundedCornerShape(10.dp)), contentAlignment = Alignment.Center) { Icon(Icons.Default.Warning, contentDescription = null, tint = colors.amber, modifier = Modifier.size(20.dp)) }; Spacer(modifier = Modifier.width(16.dp)); Column { Text("Belum Absen Masuk", color = colors.text0, fontSize = 16.sp, fontWeight = FontWeight.Bold); Text("Kantor Pusat · radius 100m", color = colors.text1, fontSize = 12.sp) } }
+            Row(verticalAlignment = Alignment.CenterVertically) { 
+                Box(modifier = Modifier.size(40.dp).background(iconBgColor, RoundedCornerShape(10.dp)), contentAlignment = Alignment.Center) { 
+                    Icon(
+                        if (hasCheckedIn) Icons.Default.CheckCircle else Icons.Default.Warning, 
+                        contentDescription = null, 
+                        tint = if (hasCheckedIn) colors.green else colors.amber, 
+                        modifier = Modifier.size(20.dp)
+                    ) 
+                }; 
+                Spacer(modifier = Modifier.width(16.dp)); 
+                Column { 
+                    Text(
+                        if (hasCheckedOut) "Sudah Selesai Kerja" else if (hasCheckedIn) "Sedang Bekerja" else "Belum Absen Masuk", 
+                        color = colors.text0, 
+                        fontSize = 16.sp, 
+                        fontWeight = FontWeight.Bold
+                    ); 
+                    Text("Kantor Pusat · radius 100m", color = colors.text1, fontSize = 12.sp) 
+                } 
+            }
             Spacer(modifier = Modifier.height(24.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) { Column(horizontalAlignment = Alignment.CenterHorizontally) { Text("MASUK", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp); Spacer(modifier = Modifier.height(4.dp)); Text("--:--", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold) }; Box(modifier = Modifier.width(1.dp).height(40.dp).background(colors.border)); Column(horizontalAlignment = Alignment.CenterHorizontally) { Text("PULANG", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp); Spacer(modifier = Modifier.height(4.dp)); Text("--:--", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold) } }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) { 
+                Column(horizontalAlignment = Alignment.CenterHorizontally) { 
+                    Text("MASUK", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp); 
+                    Spacer(modifier = Modifier.height(4.dp)); 
+                    Text(todayAttendance?.checkInTime ?: "--:--", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold) 
+                }; 
+                Box(modifier = Modifier.width(1.dp).height(40.dp).background(colors.border)); 
+                Column(horizontalAlignment = Alignment.CenterHorizontally) { 
+                    Text("PULANG", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp); 
+                    Spacer(modifier = Modifier.height(4.dp)); 
+                    Text(todayAttendance?.checkOutTime ?: "--:--", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold) 
+                } 
+            }
             Spacer(modifier = Modifier.height(24.dp))
-            Button(onClick = { activity.startActivity(Intent(activity, CameraAbsenActivity::class.java)) }, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent), contentPadding = PaddingValues(), modifier = Modifier.fillMaxWidth().height(55.dp)) { Box(modifier = Modifier.fillMaxSize().background(Brush.horizontalGradient(listOf(colors.blue, colors.green)), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) { Text("ABSEN MASUK", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold) } }
+            
+            val buttonText = if (hasCheckedOut) "SUDAH ABSEN PULANG" else if (hasCheckedIn) "ABSEN PULANG" else "ABSEN MASUK"
+            val buttonEnabled = !hasCheckedOut
+            
+            Button(
+                onClick = { 
+                    val intent = Intent(activity, CameraAbsenActivity::class.java)
+                    if (!hasCheckedIn) {
+                        intent.putExtra("type", "CHECK_IN")
+                    } else {
+                        intent.putExtra("type", "CHECK_OUT")
+                    }
+                    activity.startActivity(intent)
+                }, 
+                enabled = buttonEnabled,
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, disabledContainerColor = Color.Gray.copy(alpha = 0.2f)), 
+                contentPadding = PaddingValues(), 
+                modifier = Modifier.fillMaxWidth().height(55.dp)
+            ) { 
+                Box(
+                    modifier = Modifier.fillMaxSize().background(
+                        if (buttonEnabled) Brush.horizontalGradient(listOf(colors.blue, colors.green)) else SolidColor(Color.Transparent), 
+                        RoundedCornerShape(12.dp)
+                    ), 
+                    contentAlignment = Alignment.Center
+                ) { 
+                    Text(buttonText, color = if (buttonEnabled) Color.White else colors.text1, fontSize = 14.sp, fontWeight = FontWeight.Bold) 
+                } 
+            }
         }
     }
 }

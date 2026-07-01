@@ -58,10 +58,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.lifecycleScope
+import com.feisal.workingreport.repository.AuthRepository
 import com.feisal.workingreport.ui.components.GlassCard
 import com.feisal.workingreport.ui.components.NoiseOverlay
 import com.feisal.workingreport.ui.theme.LiquidGlassBackground
 import com.feisal.workingreport.ui.theme.p79Colors
+import kotlinx.coroutines.launch
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,6 +88,8 @@ class LoginActivity : ComponentActivity() {
 
             var nip by remember { mutableStateOf("") }
             var password by remember { mutableStateOf("") }
+
+            val authRepository = remember { AuthRepository() }
 
             Box(modifier = Modifier.fillMaxSize()) {
                 LiquidGlassBackground(colors = colors) { }
@@ -245,12 +250,26 @@ class LoginActivity : ComponentActivity() {
 
                         Button(
                             onClick = {
-                                if (nip == "123456" && password == "admin123") {
-                                    val pindahHalaman = Intent(this@LoginActivity, DashboardActivity::class.java)
-                                    startActivity(pindahHalaman)
-                                    finish()
-                                } else {
-                                    Toast.makeText(this@LoginActivity, "NIP atau password salah!", Toast.LENGTH_SHORT).show()
+                                lifecycleScope.launch {
+                                    val result = authRepository.loginWithNip(nip, password)
+
+                                    result.onSuccess { user ->
+                                        if (user.role == "HC") {
+                                            // TODO: Create DashboardAdminActivity if it doesn't exist yet
+                                            // For now, redirect to DashboardActivity or show toast
+                                            Toast.makeText(this@LoginActivity, "Login HC berhasil (Dashboard Admin belum tersedia)", Toast.LENGTH_SHORT).show()
+                                            startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
+                                        } else {
+                                            startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
+                                        }
+                                        finish()
+                                    }.onFailure {
+                                        Toast.makeText(
+                                            this@LoginActivity,
+                                            it.message ?: "Login gagal",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
@@ -275,7 +294,7 @@ class LoginActivity : ComponentActivity() {
                         Spacer(modifier = Modifier.height(24.dp))
 
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                            Divider(color = colors.border, modifier = Modifier.weight(1f))
+                            Divider(color = colors.border, modifier = Modifier.padding(horizontal = 16.dp))
                             Text("OR CONTINUE WITH", color = colors.text1, fontSize = 10.sp, modifier = Modifier.padding(horizontal = 16.dp))
                             Divider(color = colors.border, modifier = Modifier.weight(1f))
                         }
