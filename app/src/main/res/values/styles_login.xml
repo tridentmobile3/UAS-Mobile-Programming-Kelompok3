@@ -1,0 +1,17 @@
+<resources>
+
+    <style name="LoginInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">#4DA3FF</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="hintTextColor">#8C9BAB</item>
+        <item name="android:textColorHint">#6B7686</item>
+        <item name="boxBackgroundColor">#1A1F2E</item>
+        <item name="boxCornerRadiusTopStart">16dp</item>
+        <item name="boxCornerRadiusTopEnd">16dp</item>
+        <item name="boxCornerRadiusBottomStart">16dp</item>
+        <item name="boxCornerRadiusBottomEnd">16dp</item>
+        <item name="startIconTint">#6B7686</item>
+        <item name="endIconTint">#6B7686</item>
+    </style>
+
+</resources>

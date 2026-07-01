@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#161D2F"
+    android:orientation="vertical"
+    android:padding="24dp"
+    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="24dp"
+        android:background="#4A5568" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ajukan Izin"
+        android:textColor="@android:color/white"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Jenis Izin"
+        android:textColor="#8B95A5"
+        android:textSize="12sp"
+        android:layout_marginBottom="8dp"/>
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        app:cardBackgroundColor="#222831"
+        app:cardCornerRadius="12dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="#2D3548"
+        android:layout_marginBottom="16dp">
+        <Spinner
+            android:id="@+id/spinnerJenisIzin"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingHorizontal="12dp"
+            android:backgroundTint="#8B95A5"/>
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Keterangan"
+        android:textColor="#8B95A5"
+        android:textSize="12sp"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/etKeterangan"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@drawable/bg_dashed_box_rect"
+        android:backgroundTint="#222831"
+        android:backgroundTintMode="src_over"
+        android:gravity="top|start"
+        android:hint="Tulis alasan izin..."
+        android:textColorHint="#4A5568"
+        android:textColor="@android:color/white"
+        android:padding="16dp"
+        android:textSize="14sp"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Upload Bukti"
+        android:textColor="#8B95A5"
+        android:textSize="12sp"
+        android:layout_marginBottom="8dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="3"
+        android:layout_marginBottom="16dp">
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/tabFile"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            app:cardBackgroundColor="#1E3A8A"
+            app:cardCornerRadius="8dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="#2D3548">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="📄 File"
+                android:textColor="@android:color/white"
+                android:textSize="12sp"/>
+        </com.google.android.material.card.MaterialCardView>
+
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/tabFoto"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="4dp"
+            app:cardBackgroundColor="#222831"
+            app:cardCornerRadius="8dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="#2D3548">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="📷 Foto"
+                android:textColor="#8B95A5"
+                android:textSize="12sp"/>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/tabLink"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:layout_marginStart="4dp"
+            app:cardBackgroundColor="#222831"
+            app:cardCornerRadius="8dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="#2D3548">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="🔗 Link Drive"
+                android:textColor="#8B95A5"
+                android:textSize="12sp"/>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/boxUpload"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:background="@drawable/bg_dashed_box_rect"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_marginBottom="24dp">
+
+        <TextView
+            android:id="@+id/tvUploadHint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tarik file PDF/DOC di sini atau pilih file"
+            android:textColor="#8B95A5"
+            android:textSize="12sp"
+            android:gravity="center"/>
+
+        <EditText
+            android:id="@+id/etLinkDrive"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            android:hint="Tempel link Google Drive di sini..."
+            android:textColorHint="#4A5568"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            android:paddingHorizontal="16dp"
+            android:gravity="center_vertical"
+            android:visibility="gone" />
+    </LinearLayout>
+    <Button
+        android:id="@+id/btnKirimPengajuan"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:background="@drawable/bg_btn_gradient_absen"
+        app:backgroundTint="@null"
+        android:text="Kirim Pengajuan"
+        android:textColor="@android:color/white"
+        android:textAllCaps="false"
+        android:textSize="16sp" />
+
+</LinearLayout>
