@@ -19,21 +19,24 @@ Sapta Work adalah aplikasi Android Native Kotlin untuk absensi karyawan dan work
 - **Backend**: Firebase Authentication (NIP mapping to Email)
 - **Database**: Cloud Firestore
 - **Storage**: Firebase Storage (Foto absensi & Bukti izin)
-- **Komponen UI**: Activity, Fragment, RecyclerView, Intent
+- **Komponen UI**: Activity, Fragment, RecyclerView, Intent, ViewBinding (Admin), Compose (Karyawan)
 - **Arsitektur**: Repository Pattern dengan Kotlin Coroutines
 
 ## Struktur Proyek
 
-- `Frontend/`: Kode sumber Android Studio (Kotlin).
-- `Backend/absensi/`: Logika repository, model data, dan Firebase security rules.
-- `docs/` atau `ooad/`: Dokumen analisis dan perancangan sistem.
+- `app/`: Kode sumber utama Android (setelah integrasi).
+- `Backend/absensi/`: (Legacy) Logika repository awal dan model data.
+- `docs/`: Dokumentasi teknis dan walkthrough integrasi.
+- `apk/`: Lokasi penyimpanan file APK hasil build.
 
 ## Cara Menjalankan
 
 1. Clone repositori ini.
-2. Buka folder `Frontend` menggunakan Android Studio.
-3. Hubungkan dengan project Firebase Anda (pastikan `google-services.json` sudah terpasang).
-4. Build dan jalankan di perangkat Android atau Emulator.
+2. Pindah ke branch `arga`: `git checkout arga`.
+3. Buka folder root menggunakan **Android Studio**.
+4. **PENTING**: Masukkan file `google-services.json` asli ke folder `app/`.
+5. Pastikan data seed (User & Office Location) sudah tersedia di Firebase Console.
+6. Build dan jalankan di perangkat Android atau Emulator.
 
 ---
 
