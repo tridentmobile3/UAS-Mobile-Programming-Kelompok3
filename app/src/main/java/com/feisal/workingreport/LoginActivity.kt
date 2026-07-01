@@ -250,6 +250,20 @@ class LoginActivity : ComponentActivity() {
 
                         Button(
                             onClick = {
+                                // --- LOGIKA LOGIN DUMMY UNTUK TESTING ---
+                                if (nip == "12345678" && password == "12345678") {
+                                    Toast.makeText(this@LoginActivity, "Login Karyawan (Dummy) Berhasil", Toast.LENGTH_SHORT).show()
+                                    startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
+                                    finish()
+                                    return@Button
+                                } else if (nip == "hc1234" && password == "hc1234") {
+                                    Toast.makeText(this@LoginActivity, "Login HC (Dummy) Berhasil", Toast.LENGTH_SHORT).show()
+                                    startActivity(Intent(this@LoginActivity, DashboardAdminActivity::class.java))
+                                    finish()
+                                    return@Button
+                                }
+                                // ----------------------------------------
+
                                 lifecycleScope.launch {
                                     val result = authRepository.loginWithNip(nip, password)
 
