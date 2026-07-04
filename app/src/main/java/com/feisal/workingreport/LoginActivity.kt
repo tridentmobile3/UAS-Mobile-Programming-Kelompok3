@@ -75,15 +75,11 @@ class LoginActivity : ComponentActivity() {
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
 
         setContent {
-            // 1. Baca preferensi tema yang tersimpan
             val context = LocalContext.current
             val sharedPref = remember { context.getSharedPreferences("AppPref", Context.MODE_PRIVATE) }
-            val isDarkMode = sharedPref.getBoolean("isDarkMode", true) // Default Dark Mode
+            val isDarkMode = sharedPref.getBoolean("isDarkMode", true)
 
-            // 2. Terapkan warna berdasarkan tema
             val colors = p79Colors(isDark = isDarkMode)
-
-            // Variabel Warna Dinamis untuk Komponen
             val cardBgColor = if (isDarkMode) Color(0xFF161D2F) else Color.White
 
             var nip by remember { mutableStateOf("") }
@@ -178,7 +174,7 @@ class LoginActivity : ComponentActivity() {
                             }
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
-                                Text(text = "PT · EST. 79", color = colors.text1, fontSize = 10.sp)
+                                Text(text = "Always Improving You", color = colors.text1, fontSize = 10.sp)
                                 Text(text = "Padepokan 79", color = colors.text0, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                             }
                         }
@@ -199,7 +195,11 @@ class LoginActivity : ComponentActivity() {
                             onValueChange = { nip = it },
                             label = { Text("NIP (Nomor Induk Pegawai)", color = colors.text1) },
                             leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = colors.text1) },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = androidx.compose.ui.text.input.ImeAction.Next
+                            ),
                             shape = RoundedCornerShape(16.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = colors.blue,
@@ -221,6 +221,11 @@ class LoginActivity : ComponentActivity() {
                             label = { Text("Password", color = colors.text1) },
                             leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = colors.text1) },
                             visualTransformation = PasswordVisualTransformation(),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Password,
+                                imeAction = androidx.compose.ui.text.input.ImeAction.Done
+                            ),
                             shape = RoundedCornerShape(16.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = colors.blue,
@@ -250,19 +255,17 @@ class LoginActivity : ComponentActivity() {
 
                         Button(
                             onClick = {
-                                // --- LOGIKA LOGIN DUMMY UNTUK TESTING ---
                                 if (nip == "12345678" && password == "12345678") {
                                     Toast.makeText(this@LoginActivity, "Login Karyawan (Dummy) Berhasil", Toast.LENGTH_SHORT).show()
                                     startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
                                     finish()
                                     return@Button
-                                } else if (nip == "hc1234" && password == "hc1234") {
+                                } else if (nip == "1234" && password == "hc1234") {
                                     Toast.makeText(this@LoginActivity, "Login HC (Dummy) Berhasil", Toast.LENGTH_SHORT).show()
                                     startActivity(Intent(this@LoginActivity, DashboardAdminActivity::class.java))
                                     finish()
                                     return@Button
                                 }
-                                // ----------------------------------------
 
                                 lifecycleScope.launch {
                                     if (authRepository == null) {
@@ -309,9 +312,9 @@ class LoginActivity : ComponentActivity() {
                         Spacer(modifier = Modifier.height(24.dp))
 
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                            Divider(color = colors.border, modifier = Modifier.padding(horizontal = 16.dp))
-                            Text("OR CONTINUE WITH", color = colors.text1, fontSize = 10.sp, modifier = Modifier.padding(horizontal = 16.dp))
-                            Divider(color = colors.border, modifier = Modifier.weight(1f))
+                            Divider(color = colors.border, modifier = Modifier.weight(1f).padding(horizontal = 16.dp))
+                            Text("OR CONTINUE WITH", color = colors.text1, fontSize = 10.sp)
+                            Divider(color = colors.border, modifier = Modifier.weight(1f).padding(horizontal = 16.dp))
                         }
 
                         Spacer(modifier = Modifier.height(24.dp))

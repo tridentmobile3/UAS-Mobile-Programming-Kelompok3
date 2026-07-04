@@ -45,6 +45,7 @@ dependencies {
     implementation("androidx.compose.foundation:foundation:1.9.2")
     implementation("androidx.compose.ui:ui:1.9.2")
     implementation("androidx.compose.material3:material3")
+    implementation(libs.androidx.activity.ktx)
 
     val camerax_version = "1.3.0-rc01"
     implementation("androidx.camera:camera-core:${camerax_version}")

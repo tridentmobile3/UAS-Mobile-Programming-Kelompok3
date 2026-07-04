@@ -1,6 +1,8 @@
 package com.feisal.workingreport
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -97,5 +99,20 @@ fun LemburBottomSheetContent(colors: P79Colors, isDarkMode: Boolean) {
         Button(onClick = {}, modifier = Modifier.fillMaxWidth().height(55.dp), colors = ButtonDefaults.buttonColors(containerColor = colors.blue)) {
             Text("Kirim Pengajuan", color = Color.White, fontWeight = FontWeight.Bold)
         }
+    }
+}
+@Composable
+fun StatCard(modifier: Modifier, bg: Color, border: Color, title: String, subtitle: String, iconTint: Color, textColor: Color) {
+    Column(
+        modifier = modifier
+            .background(bg, RoundedCornerShape(12.dp))
+            .border(1.dp, border, RoundedCornerShape(12.dp))
+            .padding(vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(modifier = Modifier.size(8.dp).background(iconTint, CircleShape))
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(title, color = textColor, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Text(subtitle, color = textColor.copy(alpha = 0.5f), fontSize = 8.sp, fontWeight = FontWeight.Bold)
     }
 }

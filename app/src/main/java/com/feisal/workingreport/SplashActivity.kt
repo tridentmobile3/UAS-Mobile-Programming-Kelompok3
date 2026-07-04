@@ -2,6 +2,7 @@ package com.feisal.workingreport
 
 import android.content.Context
 import android.content.Intent
+import android.media.MediaPlayer
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -67,6 +69,7 @@ class SplashActivity : ComponentActivity() {
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun SplashScreenContent(onFinish: () -> Unit) {
+    val context = LocalContext.current
     val greetings = listOf("Hello", "Bonjour", "こんにちは", "안녕하세요", "你好", "Padepokan 79")
     val padepokanColors = listOf(Color(0xFFE53935), Color(0xFF4CAF50), Color(0xFF1E88E5), Color(0xFFFBC02D))
 
@@ -75,6 +78,17 @@ fun SplashScreenContent(onFinish: () -> Unit) {
     LaunchedEffect(Unit) {
         for (i in greetings.indices) {
             currentIndex = i
+
+            if (i == greetings.size - 1) {
+                try {
+                    val mediaPlayer = MediaPlayer.create(context, R.raw.padepokan_sound)
+                    mediaPlayer.start()
+                    mediaPlayer.setOnCompletionListener { it.release() }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
             delay(400)
         }
         delay(200)
@@ -85,9 +99,7 @@ fun SplashScreenContent(onFinish: () -> Unit) {
         AnimatedContent(
             targetState = currentIndex,
             transitionSpec = {
-                (slideInVertically(animationSpec = tween(300)) { height -> height } + fadeIn(animationSpec = tween(300))).togetherWith(
-                    slideOutVertically(animationSpec = tween(300)) { height -> -height } + fadeOut(animationSpec = tween(300)))
-            },
+                (slideInVertically(animationSpec = tween(300)) { height -> height } + fadeIn(animationSpec = tween(300))).togetherWith( slideOutVertically(animationSpec = tween(300)) { height -> -height } + fadeOut(animationSpec = tween(300))) },
             contentAlignment = Alignment.Center,
             label = "splash_anim"
         ) { targetIndex ->
