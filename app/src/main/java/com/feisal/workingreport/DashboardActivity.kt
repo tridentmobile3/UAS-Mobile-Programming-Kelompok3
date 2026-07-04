@@ -412,24 +412,52 @@ fun LaporanBottomSheetContent(
             TimePickerBox(value = jamSelesai, onValueChange = { jamSelesai = it }, placeholder = "", colors = colors, inputBgColor = inputBgColor, modifier = Modifier.weight(1f))
         }
         Spacer(modifier = Modifier.height(16.dp))
+        val context = LocalContext.current
         Text("Lampiran (opsional)", color = colors.text1, fontSize = 12.sp)
         Spacer(modifier = Modifier.height(8.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Box(modifier = Modifier.weight(1f).background(colors.blue, RoundedCornerShape(8.dp)).padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .background(colors.blue, RoundedCornerShape(8.dp))
+                    .clickable {
+                        Toast.makeText(context, "Upload file belum tersedia", Toast.LENGTH_SHORT).show()
+                    }
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
                 Row {
                     Icon(Icons.Default.AddCircle, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("File", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
-            Box(modifier = Modifier.weight(1f).background(inputBgColor, RoundedCornerShape(8.dp)).padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .background(inputBgColor, RoundedCornerShape(8.dp))
+                    .clickable {
+                        Toast.makeText(context, "Fitur belum tersedia", Toast.LENGTH_SHORT).show()
+                    }
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
                 Row {
                     Icon(Icons.Default.AddCircle, contentDescription = null, tint = colors.text1, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("Foto", color = colors.text1, fontSize = 12.sp)
                 }
             }
-            Box(modifier = Modifier.weight(1f).background(inputBgColor, RoundedCornerShape(8.dp)).padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .background(inputBgColor, RoundedCornerShape(8.dp))
+                    .clickable {
+                        Toast.makeText(context, "Fitur belum tersedia", Toast.LENGTH_SHORT).show()
+                    }
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
                 Row {
                     Icon(Icons.Default.AddCircle, contentDescription = null, tint = colors.text1, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
@@ -607,6 +635,30 @@ fun RiwayatContent(colors: P79Colors, isDarkMode: Boolean, currentUser: User?, h
                 LegendItem("Libur", innerCardBgColor, colors.text1)
             }
         }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (history.isEmpty()) {
+            EmptyState(
+                colors = colors,
+                cardBgColor = cardBgColor,
+                message = "Tidak ada riwayat absensi"
+            )
+        } else {
+            history.forEach { item ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(cardBgColor, RoundedCornerShape(16.dp))
+                        .border(1.dp, colors.border, RoundedCornerShape(16.dp))
+                        .padding(16.dp)
+                ) {
+                    Text(item.date, color = colors.text0, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text("Masuk: ${item.checkInTime.ifBlank { "--:--" }}", color = colors.text1, fontSize = 12.sp)
+                    Text("Pulang: ${item.checkOutTime.ifBlank { "--:--" }}", color = colors.text1, fontSize = 12.sp)
+                    Text("Status: ${item.status.ifBlank { "Tidak tersedia" }}", color = colors.text1, fontSize = 12.sp)
+                }
+            }
+        }
         Spacer(modifier = Modifier.height(130.dp))
     }
 }
@@ -684,6 +736,7 @@ fun ProfilContent(
     val cardBgColor = if (isDarkMode) Color(0xFF161D2F) else Color.White
     val iconBgColor = if (isDarkMode) Color(0xFF222831) else Color(0xFFF3F4F6)
 
+    val context = LocalContext.current
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp)) {
         Spacer(modifier = Modifier.height(48.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -731,21 +784,102 @@ fun ProfilContent(
         Text("AKUN", color = colors.text1, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
         Spacer(modifier = Modifier.height(8.dp))
         Column(modifier = Modifier.fillMaxWidth().background(cardBgColor, RoundedCornerShape(16.dp)).border(1.dp, colors.border, RoundedCornerShape(16.dp))) {
-            SettingsItem(colors, iconBgColor, Icons.Default.Edit, colors.green, "Edit Profil", null)
+            SettingsItem(
+                colors,
+                iconBgColor,
+                Icons.Default.Edit,
+                colors.green,
+                "Edit Profil",
+                null,
+                onClick = {
+                    Toast.makeText(context, "Fitur edit profil belum tersedia", Toast.LENGTH_SHORT).show()
+                }
+            )
+
             Divider(color = colors.border, modifier = Modifier.padding(horizontal = 16.dp))
-            SettingsItem(colors, iconBgColor, Icons.Default.Lock, colors.amber, "Ubah Kata Sandi", null)
+
+            SettingsItem(
+                colors,
+                iconBgColor,
+                Icons.Default.Lock,
+                colors.amber,
+                "Ubah Kata Sandi",
+                null,
+                onClick = {
+                    Toast.makeText(context, "Fitur ubah kata sandi belum tersedia", Toast.LENGTH_SHORT).show()
+                }
+            )
+
             Divider(color = colors.border, modifier = Modifier.padding(horizontal = 16.dp))
-            SettingsItem(colors, iconBgColor, Icons.Default.LocationOn, colors.blue, "Lokasi Kantor Terdaftar", "")
+
+            SettingsItem(
+                colors,
+                iconBgColor,
+                Icons.Default.LocationOn,
+                colors.blue,
+                "Lokasi Kantor Terdaftar",
+                currentUser?.department ?: "Tidak tersedia",
+                onClick = {
+                    Toast.makeText(context, "Lokasi kantor belum tersedia", Toast.LENGTH_SHORT).show()
+                }
+            )
         }
         Spacer(modifier = Modifier.height(24.dp))
         Text("LAINNYA", color = colors.text1, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
         Spacer(modifier = Modifier.height(8.dp))
         Column(modifier = Modifier.fillMaxWidth().background(cardBgColor, RoundedCornerShape(16.dp)).border(1.dp, colors.border, RoundedCornerShape(16.dp))) {
-            SettingsItem(colors, iconBgColor, Icons.Default.Notifications, colors.red, "Notifikasi", null, trailing = { Switch(checked = true, onCheckedChange = {}, colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = colors.blue)) })
+            SettingsItem(
+                colors,
+                iconBgColor,
+                Icons.Default.Notifications,
+                colors.red,
+                "Notifikasi",
+                null,
+                trailing = {
+                    Switch(
+                        checked = true,
+                        onCheckedChange = {
+                            Toast.makeText(context, "Pengaturan notifikasi belum tersedia", Toast.LENGTH_SHORT).show()
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = colors.blue
+                        )
+                    )
+                },
+                onClick = {
+                    Toast.makeText(context, "Notifikasi belum tersedia", Toast.LENGTH_SHORT).show()
+                }
+            )
+
             Divider(color = colors.border, modifier = Modifier.padding(horizontal = 16.dp))
-            SettingsItem(colors, iconBgColor, Icons.Default.Info, colors.text1, "Bantuan & Dukungan", null)
+
+            SettingsItem(
+                colors,
+                iconBgColor,
+                Icons.Default.Info,
+                colors.text1,
+                "Bantuan & Dukungan",
+                null,
+                onClick = {
+                    Toast.makeText(context, "Bantuan belum tersedia", Toast.LENGTH_SHORT).show()
+                }
+            )
+
             Divider(color = colors.border, modifier = Modifier.padding(horizontal = 16.dp))
-            SettingsItem(colors, iconBgColor, Icons.Default.Info, colors.text1, "Tentang Aplikasi", "", showArrow = false)
+
+            SettingsItem(
+                colors,
+                iconBgColor,
+                Icons.Default.Info,
+                colors.text1,
+                "Tentang Aplikasi",
+                "Sapta Work v1.0",
+                showArrow = true,
+                onClick = {
+                    Toast.makeText(context, "Sapta Work - Absensi dan Working Report", Toast.LENGTH_LONG).show()
+                }
+            )
         }
         Spacer(modifier = Modifier.height(24.dp))
         Box(modifier = Modifier.fillMaxWidth().height(55.dp).background(colors.red.copy(alpha = 0.05f), RoundedCornerShape(16.dp)).border(1.dp, colors.red.copy(alpha = 0.5f), RoundedCornerShape(16.dp)).clickable { onLogoutClick() }, contentAlignment = Alignment.Center) {
@@ -762,50 +896,146 @@ fun ProfilContent(
 }
 
 @Composable
-fun SettingsItem(colors: P79Colors, iconBgColor: Color, icon: ImageVector, iconTint: Color, title: String, subtitle: String?, showArrow: Boolean = true, trailing: @Composable (() -> Unit)? = null) {
-    Row(modifier = Modifier.fillMaxWidth().clickable { }.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(modifier = Modifier.size(36.dp).background(iconBgColor, RoundedCornerShape(10.dp)), contentAlignment = Alignment.Center) { Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(20.dp)) }
+fun SettingsItem(
+    colors: P79Colors,
+    iconBgColor: Color,
+    icon: ImageVector,
+    iconTint: Color,
+    title: String,
+    subtitle: String?,
+    showArrow: Boolean = true,
+    trailing: @Composable (() -> Unit)? = null,
+    onClick: () -> Unit = {}
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .background(iconBgColor, RoundedCornerShape(10.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(20.dp))
+        }
+
         Spacer(modifier = Modifier.width(16.dp))
+
         Column(modifier = Modifier.weight(1f)) {
             Text(title, color = colors.text0, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            if (subtitle != null) { Spacer(modifier = Modifier.height(2.dp)); Text(subtitle, color = colors.text1, fontSize = 12.sp) }
+            if (subtitle != null) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    subtitle.ifBlank { "Tidak tersedia" },
+                    color = colors.text1,
+                    fontSize = 12.sp
+                )
+            }
         }
-        if (trailing != null) trailing() else if (showArrow) Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = colors.text1, modifier = Modifier.size(20.dp))
+
+        if (trailing != null) {
+            trailing()
+        } else if (showArrow) {
+            Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = colors.text1, modifier = Modifier.size(20.dp))
+        }
     }
 }
 
 @Composable
 fun LaporanContent(
-    colors: P79Colors, 
-    isDarkMode: Boolean, 
+    colors: P79Colors,
+    isDarkMode: Boolean,
     currentUser: User?,
     reports: List<WorkingReport>,
-    onBellClick: () -> Unit, 
+    onBellClick: () -> Unit,
     onAddClick: () -> Unit
 ) {
     val cardBgColor = if (isDarkMode) Color(0xFF161D2F) else Color.White
+    var selectedTab by remember { mutableStateOf("Semua") }
+
+    val filteredReports = when (selectedTab) {
+        "Disetujui" -> reports.filter {
+            it.status.equals("APPROVED", true) || it.status.equals("REVIEWED", true)
+        }
+        "Menunggu" -> reports.filter {
+            it.status.equals("PENDING", true) || it.status.equals("SUBMITTED", true)
+        }
+        "Revisi" -> reports.filter {
+            it.status.equals("REVISI", true) || it.status.equals("REVISION", true)
+        }
+        else -> reports
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
             Spacer(modifier = Modifier.height(48.dp))
             TopBar(colors = colors, isDarkMode = isDarkMode, currentUser = currentUser, onBellClick = onBellClick)
+
             Spacer(modifier = Modifier.height(24.dp))
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) { Text("Laporan Kerja", color = colors.text0, fontSize = 24.sp, fontWeight = FontWeight.Bold); Text("Riwayat & pengajuan laporan harian", color = colors.text1, fontSize = 12.sp) }
-            Spacer(modifier = Modifier.height(20.dp))
-            Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 24.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                LaporanTab(text = "Semua", isSelected = true, colors = colors, cardBgColor = cardBgColor)
-                LaporanTab(text = "Disetujui", isSelected = false, colors = colors, cardBgColor = cardBgColor)
-                LaporanTab(text = "Menunggu", isSelected = false, colors = colors, cardBgColor = cardBgColor)
-                LaporanTab(text = "Revisi", isSelected = false, colors = colors, cardBgColor = cardBgColor)
+
+            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                Text("Laporan Kerja", color = colors.text0, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                Text("Riwayat & pengajuan laporan harian", color = colors.text1, fontSize = 12.sp)
             }
-            Spacer(modifier = Modifier.height(24.dp))
-            Column(modifier = Modifier.padding(horizontal = 24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                reports.forEach { report ->
-                    WorkingReportItem(colors = colors, cardBgColor = cardBgColor, report = report)
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                listOf("Semua", "Disetujui", "Menunggu", "Revisi").forEach { tab ->
+                    LaporanTab(
+                        text = tab,
+                        isSelected = selectedTab == tab,
+                        colors = colors,
+                        cardBgColor = cardBgColor,
+                        onClick = { selectedTab = tab }
+                    )
                 }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Column(
+                modifier = Modifier.padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                if (filteredReports.isEmpty()) {
+                    EmptyState(
+                        colors = colors,
+                        cardBgColor = cardBgColor,
+                        message = "Tidak ada laporan tersedia"
+                    )
+                } else {
+                    filteredReports.forEach { report ->
+                        WorkingReportItem(colors = colors, cardBgColor = cardBgColor, report = report)
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(130.dp))
         }
-        Box(modifier = Modifier.align(Alignment.BottomEnd).padding(end = 24.dp, bottom = 100.dp).size(60.dp).clip(RoundedCornerShape(20.dp)).background(Brush.linearGradient(listOf(colors.blue, colors.green))).clickable { onAddClick() }, contentAlignment = Alignment.Center) { Text("+", color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Light, modifier = Modifier.padding(bottom = 6.dp)) }
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 24.dp, bottom = 100.dp)
+                .size(60.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(Brush.linearGradient(listOf(colors.blue, colors.green)))
+                .clickable { onAddClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text("+", color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Light, modifier = Modifier.padding(bottom = 6.dp))
+        }
     }
 }
 
@@ -833,9 +1063,28 @@ fun WorkingReportItem(colors: P79Colors, cardBgColor: Color, report: WorkingRepo
 }
 
 @Composable
-fun LaporanTab(text: String, isSelected: Boolean, colors: P79Colors, cardBgColor: Color) {
-    Box(modifier = Modifier.clip(RoundedCornerShape(20.dp)).background(if (isSelected) colors.blue.copy(alpha = 0.2f) else cardBgColor).border(1.dp, if (isSelected) colors.blue else colors.border, RoundedCornerShape(20.dp)).clickable { }.padding(horizontal = 20.dp, vertical = 10.dp), contentAlignment = Alignment.Center) {
-        Text(text, color = if (isSelected) colors.blue else colors.text1, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+fun LaporanTab(
+    text: String,
+    isSelected: Boolean,
+    colors: P79Colors,
+    cardBgColor: Color,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(if (isSelected) colors.blue.copy(alpha = 0.2f) else cardBgColor)
+            .border(1.dp, if (isSelected) colors.blue else colors.border, RoundedCornerShape(20.dp))
+            .clickable { onClick() }
+            .padding(horizontal = 20.dp, vertical = 10.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text,
+            color = if (isSelected) colors.blue else colors.text1,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
@@ -948,7 +1197,11 @@ fun SummaryItem(colors: P79Colors, count: String, label: String, color: Color) {
 
 @Composable
 fun HistoryList(colors: P79Colors, cardBgColor: Color) {
-    Column(modifier = Modifier.padding(horizontal = 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) { }
+    EmptyState(
+        colors = colors,
+        cardBgColor = cardBgColor,
+        message = "Tidak ada riwayat terbaru"
+    )
 }
 
 @Composable
@@ -974,9 +1227,34 @@ fun BottomNavItem(colors: P79Colors, icon: ImageVector, label: String, isSelecte
 
 @Composable
 fun NotificationSheetContent(colors: P79Colors, isDarkMode: Boolean) {
+    val cardBgColor = if (isDarkMode) Color(0xFF161D2F) else Color.White
     Column(modifier = Modifier.fillMaxWidth().padding(24.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) { Text("Notifikasi", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold); Text("Tandai semua dibaca", color = colors.blue, fontSize = 12.sp, fontWeight = FontWeight.Medium) }
         Spacer(modifier = Modifier.height(24.dp))
+        EmptyState(colors = colors, cardBgColor = cardBgColor, message = "Tidak ada notifikasi baru")
         Spacer(modifier = Modifier.height(24.dp))
+    }
+}
+
+@Composable
+fun EmptyState(
+    colors: P79Colors,
+    cardBgColor: Color,
+    message: String
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(cardBgColor, RoundedCornerShape(16.dp))
+            .border(1.dp, colors.border, RoundedCornerShape(16.dp))
+            .padding(24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = message,
+            color = colors.text1,
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center
+        )
     }
 }
