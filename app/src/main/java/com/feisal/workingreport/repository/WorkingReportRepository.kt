@@ -110,4 +110,20 @@ class WorkingReportRepository {
             emptyList()
         }
     }
+
+    suspend fun getAllReports(): List<WorkingReport> {
+        val firebaseFirestore = firestore ?: return emptyList()
+        return try {
+            firebaseFirestore.collection(Constants.WORKING_REPORTS_COLLECTION)
+                .get()
+                .await()
+                .toObjects(WorkingReport::class.java)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun getPendingReports(): List<WorkingReport> {
+        return getAllReports().filter { it.status == "PENDING" || it.status == "SUBMITTED" }
+    }
 }

@@ -88,4 +88,20 @@ class PermissionRepository {
             emptyList()
         }
     }
+
+    suspend fun getAllPermissions(): List<PermissionRequest> {
+        val firebaseFirestore = firestore ?: return emptyList()
+        return try {
+            firebaseFirestore.collection(Constants.PERMISSIONS_COLLECTION)
+                .get()
+                .await()
+                .toObjects(PermissionRequest::class.java)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun getPendingPermissions(): List<PermissionRequest> {
+        return getAllPermissions().filter { it.status == "PENDING" || it.status == "SUBMITTED" }
+    }
 }

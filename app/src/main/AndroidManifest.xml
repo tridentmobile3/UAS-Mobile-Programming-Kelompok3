@@ -23,6 +23,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WorkingReport">
         <activity
+            android:name=".AttendanceDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".ProfilActivity"
             android:exported="false" />
         <activity

@@ -220,6 +220,11 @@ class AttendanceRepository {
 
     suspend fun getAttendanceHistory() : List<Attendance> {
         val uid = currentUserId ?: return emptyList()
+        if (uid == "dummy_user_id") {
+            return listOf(
+                Attendance(id="1", userId=uid, employeeName="User Dummy", date=DateHelper.getCurrentDate(), status="HADIR", checkInTime="08:00", checkOutTime="17:00")
+            )
+        }
         val firebaseFirestore = firestore ?: return emptyList()
         return try {
             firebaseFirestore.collection(Constants.ATTENDANCES_COLLECTION)
@@ -231,5 +236,21 @@ class AttendanceRepository {
         } catch (e: Exception) {
             emptyList()
         }
+    }
+
+    suspend fun getAllAttendances(): List<Attendance> {
+        val firebaseFirestore = firestore ?: return emptyList()
+        return try {
+            firebaseFirestore.collection(Constants.ATTENDANCES_COLLECTION)
+                .get()
+                .await()
+                .toObjects(Attendance::class.java)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun getPendingAttendances(): List<Attendance> {
+        return getAllAttendances().filter { it.status == "PENDING" || it.status == "SUBMITTED" }
     }
 }
