@@ -272,6 +272,14 @@ class LoginActivity : ComponentActivity() {
                                             ).show()
                                             startActivity(Intent(this@LoginActivity, DashboardAdminActivity::class.java))
                                             finish()
+                                        } else if (inputNip == "12345678" && inputPassword == "12345678") {
+                                            Toast.makeText(
+                                                this@LoginActivity,
+                                                "Login Karyawan mode offline",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
+                                            finish()
                                         } else {
                                             Toast.makeText(
                                                 this@LoginActivity,
@@ -299,6 +307,14 @@ class LoginActivity : ComponentActivity() {
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                             startActivity(Intent(this@LoginActivity, DashboardAdminActivity::class.java))
+                                            finish()
+                                        } else if (inputNip == "12345678" && inputPassword == "12345678") {
+                                            Toast.makeText(
+                                                this@LoginActivity,
+                                                "Login Karyawan mode offline",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
                                             finish()
                                         } else {
                                             Toast.makeText(
