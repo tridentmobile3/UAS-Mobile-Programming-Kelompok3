@@ -37,7 +37,7 @@
                         android:id="@+id/tvNamaHeader"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Mode Admin 🛠️"
+                        android:text="Mode Admin"
                         android:textColor="@android:color/white"
                         android:textSize="24sp"
                         android:textStyle="bold" />

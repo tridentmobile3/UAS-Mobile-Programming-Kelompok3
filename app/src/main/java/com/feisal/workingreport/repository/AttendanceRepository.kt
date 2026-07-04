@@ -19,10 +19,32 @@ class AttendanceRepository {
     private val storageService = StorageService()
 
     private val currentUserId: String?
-        get() = try { auth?.currentUser?.uid } catch (e: Exception) { null }
+        get() = try { 
+            val uid = auth?.currentUser?.uid 
+            if (uid == null) {
+                // Dummy session for offline mode
+                "dummy_user_id"
+            } else {
+                uid
+            }
+        } catch (e: Exception) { 
+            "dummy_user_id" 
+        }
 
     suspend fun getCurrentUser(): User? {
         val uid = currentUserId ?: return null
+        if (uid == "dummy_user_id") {
+            return User(
+                id = "dummy_user_id",
+                nip = "12345678",
+                authEmail = "12345678@saptawork.app",
+                name = "User Dummy",
+                role = "KARYAWAN",
+                department = "IT",
+                position = "Staff",
+                status = "ACTIVE"
+            )
+        }
         val firebaseFirestore = firestore ?: return null
         return try {
             firebaseFirestore.collection(Constants.USERS_COLLECTION)
@@ -36,6 +58,17 @@ class AttendanceRepository {
     }
 
     suspend fun getOfficeLocation(locationId: String = "padepokan79_main"): OfficeLocation? {
+        val uid = currentUserId
+        if (uid == "dummy_user_id") {
+            return OfficeLocation(
+                id = "padepokan79_main",
+                name = "Padepokan 79",
+                latitude = -6.9174639,
+                longitude = 107.6191228,
+                radiusMeter = 1000,
+                active = true
+            )
+        }
         val firebaseFirestore = firestore ?: return null
         return try {
             firebaseFirestore.collection(Constants.OFFICE_LOCATIONS_COLLECTION)
@@ -74,6 +107,12 @@ class AttendanceRepository {
 
         val today = DateHelper.getCurrentDate()
         val docId = "${uid}_$today"
+
+        if (uid == "dummy_user_id") {
+            // Success dummy in offline mode
+            return@runCatching
+        }
+
         val existing = firebaseFirestore.collection(Constants.ATTENDANCES_COLLECTION).document(docId).get().await()
 
         if (existing.exists()) {
@@ -118,6 +157,12 @@ class AttendanceRepository {
         val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
         val today = DateHelper.getCurrentDate()
         val docId = "${uid}_$today"
+
+        if (uid == "dummy_user_id") {
+            // Success dummy in offline mode
+            return@runCatching
+        }
+
         val docRef = firebaseFirestore.collection(Constants.ATTENDANCES_COLLECTION).document(docId)
         val snapshot = docRef.get().await()
 
