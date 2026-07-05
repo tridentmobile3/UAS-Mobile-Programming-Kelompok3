@@ -19,7 +19,7 @@ class AttendanceRepository {
     private val storageService = StorageService()
 
     companion object {
-        private var dummyAttendance: Attendance? = null
+        private val dummyAttendances = mutableMapOf<String, Attendance>()
     }
 
     private val currentUserId: String?
@@ -74,7 +74,6 @@ class AttendanceRepository {
         faceVerified: Boolean
     ): Result<Unit> = runCatching {
         val uid = currentUserId ?: throw Exception("User not logged in")
-        val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
         
         if (!faceVerified) {
             throw Exception("Verifikasi wajah gagal")
@@ -94,7 +93,7 @@ class AttendanceRepository {
         val docId = "${uid}_$today"
 
         if (uid.startsWith("dummy")) {
-            dummyAttendance = Attendance(
+            dummyAttendances[uid] = Attendance(
                 id = docId,
                 userId = uid,
                 employeeName = user.name,
@@ -113,6 +112,7 @@ class AttendanceRepository {
             return@runCatching
         }
 
+        val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
         val existing = firebaseFirestore.collection(Constants.ATTENDANCES_COLLECTION).document(docId).get().await()
 
         if (existing.exists()) {
@@ -154,12 +154,12 @@ class AttendanceRepository {
         photoUri: Uri
     ): Result<Unit> = runCatching {
         val uid = currentUserId ?: throw Exception("User not logged in")
-        val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
         val today = DateHelper.getCurrentDate()
         val docId = "${uid}_$today"
 
         if (uid.startsWith("dummy")) {
-            dummyAttendance = dummyAttendance?.copy(
+            val att = dummyAttendances[uid] ?: throw Exception("No check-in record found for today")
+            dummyAttendances[uid] = att.copy(
                 checkOutTime = DateHelper.getCurrentTime(),
                 checkOutLatitude = latitude,
                 checkOutLongitude = longitude,
@@ -169,6 +169,7 @@ class AttendanceRepository {
             return@runCatching
         }
 
+        val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
         val docRef = firebaseFirestore.collection(Constants.ATTENDANCES_COLLECTION).document(docId)
         val snapshot = docRef.get().await()
 
@@ -211,7 +212,7 @@ class AttendanceRepository {
     suspend fun getTodayAttendance(): Attendance? {
         val uid = currentUserId ?: return null
         if (uid.startsWith("dummy")) {
-            return dummyAttendance
+            return dummyAttendances[uid]
         }
         val firebaseFirestore = firestore ?: return null
         val today = DateHelper.getCurrentDate()
@@ -231,7 +232,7 @@ class AttendanceRepository {
         val uid = currentUserId ?: return emptyList()
         if (uid.startsWith("dummy")) {
             val list = mutableListOf<Attendance>()
-            dummyAttendance?.let { list.add(it) }
+            dummyAttendances[uid]?.let { list.add(it) }
             return list
         }
         val firebaseFirestore = firestore ?: return emptyList()

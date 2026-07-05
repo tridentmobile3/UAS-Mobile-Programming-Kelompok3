@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "123456789",
-    "project_id": "saptawork-dummy",
-    "storage_bucket": "saptawork-dummy.appspot.com"
+    "project_number": "884629363371",
+    "project_id": "saptawork-ca0e9",
+    "storage_bucket": "saptawork-ca0e9.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:123456789:android:123456789",
+        "mobilesdk_app_id": "1:884629363371:android:32724347970934f63ff5ee",
         "android_client_info": {
           "package_name": "com.feisal.workingreport"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "dummy-key"
+          "current_key": "AIzaSyAoVtlTZe7Gf-RVkruZxBhCYxg1HziD1rQ"
         }
       ],
       "services": {
