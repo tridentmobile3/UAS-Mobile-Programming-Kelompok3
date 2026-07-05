@@ -54,15 +54,18 @@ class DashboardAdminActivity : AppCompatActivity() {
         }
 
         binding.cardVerifikasiKehadiran.setOnClickListener {
-            startActivity(Intent(this, RiwayatActivity::class.java))
+            val intent = Intent(this, RiwayatActivity::class.java)
+            startActivity(intent)
         }
 
         binding.cardLaporanRutin.setOnClickListener {
-            startActivity(Intent(this, LaporanKerjaActivity::class.java))
+            val intent = Intent(this, LaporanKerjaActivity::class.java)
+            startActivity(intent)
         }
 
         binding.cardLaporanLembur.setOnClickListener {
-            startActivity(Intent(this, LemburActivity::class.java))
+            val intent = Intent(this, LemburActivity::class.java)
+            startActivity(intent)
         }
     }
 
@@ -70,11 +73,13 @@ class DashboardAdminActivity : AppCompatActivity() {
         binding.navAdminHome.setOnClickListener { }
 
         binding.navAdminKaryawan.setOnClickListener {
-            startActivity(Intent(this, RiwayatActivity::class.java))
+            val intent = Intent(this, RiwayatActivity::class.java)
+            startActivity(intent)
         }
 
         binding.navAdminPersetujuan.setOnClickListener {
-            startActivity(Intent(this, LaporanKerjaActivity::class.java))
+            val intent = Intent(this, LaporanKerjaActivity::class.java)
+            startActivity(intent)
         }
 
         binding.navAdminProfil.setOnClickListener {

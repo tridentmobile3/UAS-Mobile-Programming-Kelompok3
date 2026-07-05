@@ -26,6 +26,9 @@
             android:name=".AttendanceDetailActivity"
             android:exported="false" />
         <activity
+            android:name=".LemburActivity"
+            android:exported="false" />
+        <activity
             android:name=".ProfilActivity"
             android:exported="false" />
         <activity

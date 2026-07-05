@@ -16,7 +16,39 @@ class AuthRepository {
         return "${nip.trim()}@saptawork.app"
     }
 
+    companion object {
+        private var dummyUser: User? = null
+    }
+
     suspend fun loginWithNip(nip: String, password: String): Result<User> = runCatching {
+        if (nip == "1234" && password == "1234") {
+            val user = User(
+                id = "dummy_hc_id",
+                nip = "1234",
+                authEmail = "1234@saptawork.app",
+                name = "Human Capital",
+                role = "HC",
+                department = "Human Capital",
+                position = "HC Staff",
+                status = "ACTIVE"
+            )
+            dummyUser = user
+            return@runCatching user
+        } else if (nip == "12345678" && password == "12345678") {
+            val user = User(
+                id = "dummy_user_id",
+                nip = "12345678",
+                authEmail = "12345678@saptawork.app",
+                name = "User Dummy",
+                role = "KARYAWAN",
+                department = "IT",
+                position = "Staff",
+                status = "ACTIVE"
+            )
+            dummyUser = user
+            return@runCatching user
+        }
+
         val firebaseAuth = auth ?: throw Exception("Firebase Auth not initialized")
         val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
 
@@ -45,6 +77,8 @@ class AuthRepository {
     }
 
     suspend fun getCurrentUserProfile(): User? {
+        if (dummyUser != null) return dummyUser
+        
         return try {
             val firebaseAuth = auth ?: return null
             val firebaseFirestore = firestore ?: return null
@@ -62,10 +96,12 @@ class AuthRepository {
     }
 
     fun getCurrentUserId(): String? {
+        if (dummyUser != null) return dummyUser?.id
         return try { auth?.currentUser?.uid } catch (e: Exception) { null }
     }
 
     fun logout() {
+        dummyUser = null
         try { auth?.signOut() } catch (e: Exception) {}
     }
 }

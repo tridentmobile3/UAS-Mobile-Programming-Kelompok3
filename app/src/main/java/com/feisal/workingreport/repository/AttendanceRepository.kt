@@ -23,31 +23,12 @@ class AttendanceRepository {
     }
 
     private val currentUserId: String?
-        get() = try { 
-            val uid = auth?.currentUser?.uid 
-            if (uid == null) {
-                // Dummy session for offline mode
-                "dummy_user_id"
-            } else {
-                uid
-            }
-        } catch (e: Exception) { 
-            "dummy_user_id" 
-        }
+        get() = AuthRepository().getCurrentUserId()
 
     suspend fun getCurrentUser(): User? {
         val uid = currentUserId ?: return null
-        if (uid == "dummy_user_id") {
-            return User(
-                id = "dummy_user_id",
-                nip = "12345678",
-                authEmail = "12345678@saptawork.app",
-                name = "User Dummy",
-                role = "KARYAWAN",
-                department = "IT",
-                position = "Staff",
-                status = "ACTIVE"
-            )
+        if (uid.startsWith("dummy")) {
+            return AuthRepository().getCurrentUserProfile()
         }
         val firebaseFirestore = firestore ?: return null
         return try {
@@ -63,7 +44,7 @@ class AttendanceRepository {
 
     suspend fun getOfficeLocation(locationId: String = "padepokan79_main"): OfficeLocation? {
         val uid = currentUserId
-        if (uid == "dummy_user_id") {
+        if (uid != null && uid.startsWith("dummy")) {
             return OfficeLocation(
                 id = "padepokan79_main",
                 name = "Padepokan 79",
@@ -112,7 +93,7 @@ class AttendanceRepository {
         val today = DateHelper.getCurrentDate()
         val docId = "${uid}_$today"
 
-        if (uid == "dummy_user_id") {
+        if (uid.startsWith("dummy")) {
             dummyAttendance = Attendance(
                 id = docId,
                 userId = uid,
@@ -177,7 +158,7 @@ class AttendanceRepository {
         val today = DateHelper.getCurrentDate()
         val docId = "${uid}_$today"
 
-        if (uid == "dummy_user_id") {
+        if (uid.startsWith("dummy")) {
             dummyAttendance = dummyAttendance?.copy(
                 checkOutTime = DateHelper.getCurrentTime(),
                 checkOutLatitude = latitude,
@@ -229,7 +210,7 @@ class AttendanceRepository {
 
     suspend fun getTodayAttendance(): Attendance? {
         val uid = currentUserId ?: return null
-        if (uid == "dummy_user_id") {
+        if (uid.startsWith("dummy")) {
             return dummyAttendance
         }
         val firebaseFirestore = firestore ?: return null
@@ -248,7 +229,7 @@ class AttendanceRepository {
 
     suspend fun getAttendanceHistory() : List<Attendance> {
         val uid = currentUserId ?: return emptyList()
-        if (uid == "dummy_user_id") {
+        if (uid.startsWith("dummy")) {
             val list = mutableListOf<Attendance>()
             dummyAttendance?.let { list.add(it) }
             return list
