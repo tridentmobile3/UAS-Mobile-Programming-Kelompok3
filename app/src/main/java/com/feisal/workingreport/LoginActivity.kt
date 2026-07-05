@@ -243,7 +243,10 @@ class LoginActivity : ComponentActivity() {
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier
                                 .align(Alignment.End)
-                                .clickable { }
+                                .clickable {
+                                    val intent = Intent(this@LoginActivity, ForgotPasswordActivity::class.java)
+                                    startActivity(intent)
+                                }
                         )
 
                         Spacer(modifier = Modifier.height(24.dp))
