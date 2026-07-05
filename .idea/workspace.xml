@@ -45,7 +45,17 @@
           <theme>@style/Theme.WorkingReport</theme>
         </config>
       </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_work_report.xml">
+        <config>
+          <theme>@style/Theme.WorkingReport</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/layout_bottom_sheet_izin.xml">
+        <config>
+          <theme>@style/Theme.WorkingReport</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/layout_bottom_sheet_laporan.xml">
         <config>
           <theme>@style/Theme.WorkingReport</theme>
         </config>
@@ -56,15 +66,10 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5862d9c-3807-4bdc-9ec5-64dbebf30b41" name="Changes" comment="">
+    <list default="true" id="a5862d9c-3807-4bdc-9ec5-64dbebf30b41" name="Changes" comment="menambahkan logika untuk pengajuan izin, merubah struktur permission, mengubah logika dashboard">
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/DashboardActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/DashboardActivity.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/IzinBottomSheetFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/IzinBottomSheetFragment.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/model/PermissionRequest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/model/PermissionRequest.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/repository/HcRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/repository/HcRepository.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/repository/PermissionRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/repository/PermissionRepository.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/local.properties" beforeDir="false" afterPath="$PROJECT_DIR$/local.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -106,12 +111,12 @@
     &quot;assignee&quot;: &quot;dafa1922&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/tridentmobile3/UAS-Mobile-Programming-Kelompok3",
-    "accountId": "e4a2ddf3-6e19-4583-a27d-574d8cb81797"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/tridentmobile3/UAS-Mobile-Programming-Kelompok3&quot;,
+    &quot;accountId&quot;: &quot;e4a2ddf3-6e19-4583-a27d-574d8cb81797&quot;
   }
-}]]></component>
+}</component>
   <component name="GradleScriptDefinitionsStorage" workingDir="$PROJECT_DIR$" gradleHome="C:\Users\irsya\.gradle\wrapper\dists\gradle-9.2.1-bin\2t0n5ozlw9xmuyvbp7dnzaxug\gradle-9.2.1" javaHome="C:\Program Files\Android\Android Studio1\jbr" gradleVersion="9.2.1" />
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4
@@ -217,7 +222,31 @@
       <option name="presentableId" value="Default" />
       <updated>1781873062575</updated>
     </task>
+    <task id="LOCAL-00001" summary="menambahkan logika untuk pengajuan izin, merubah struktur permission, mengubah logika dashboard">
+      <option name="closed" value="true" />
+      <created>1783248733699</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1783248733699</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="menambahkan logika untuk pengajuan izin, merubah struktur permission, mengubah logika dashboard" />
+    <option name="LAST_COMMIT_MESSAGE" value="menambahkan logika untuk pengajuan izin, merubah struktur permission, mengubah logika dashboard" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="kotlin-line">
+          <url>file://$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/DashboardActivity.kt</url>
+          <line>683</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="play_dynamic_filters_status">
     <option name="appIdToCheckInfo">
