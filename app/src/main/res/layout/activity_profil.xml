@@ -594,6 +594,7 @@
                 app:strokeWidth="1dp">
 
                 <LinearLayout
+                    android:id="@+id/layoutLogout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
@@ -613,6 +614,7 @@
                         android:textColor="#E74C3C"
                         android:textSize="16sp"
                         android:textStyle="bold" />
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

@@ -54,9 +54,57 @@ class SplashActivity : ComponentActivity() {
 
                 SplashScreenContent(
                     onFinish = {
-                        startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
-                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+
+                        val pref = getSharedPreferences(
+                            "AppPref",
+                            MODE_PRIVATE
+                        )
+
+                        val isLoggedIn = pref.getBoolean(
+                            "isLoggedIn",
+                            false
+                        )
+
+                        val role = pref.getString(
+                            "userRole",
+                            ""
+                        )
+
+                        if (isLoggedIn) {
+
+                            if (role == "HC") {
+
+                                startActivity(
+                                    Intent(
+                                        this@SplashActivity,
+                                        DashboardAdminActivity::class.java
+                                    )
+                                )
+
+                            } else {
+
+                                startActivity(
+                                    Intent(
+                                        this@SplashActivity,
+                                        DashboardActivity::class.java
+                                    )
+                                )
+
+                            }
+
+                        } else {
+
+                            startActivity(
+                                Intent(
+                                    this@SplashActivity,
+                                    LoginActivity::class.java
+                                )
+                            )
+
+                        }
+
                         finish()
+
                     }
                 )
             }

@@ -293,6 +293,17 @@ class LoginActivity : ComponentActivity() {
                                     val result = authRepository.loginWithNip(inputNip, inputPassword)
 
                                     result.onSuccess { user ->
+                                        val pref = getSharedPreferences("AppPref", MODE_PRIVATE)
+
+                                        pref.edit()
+                                            .putBoolean("isLoggedIn", true)
+                                            .putString("userRole", user.role)
+                                            .putString("userId", user.id)
+                                            .apply()
+
+
+
+
                                         if (user.role == "HC") {
                                             startActivity(Intent(this@LoginActivity, DashboardAdminActivity::class.java))
                                         } else {

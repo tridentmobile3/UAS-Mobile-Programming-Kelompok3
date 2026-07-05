@@ -8,7 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-
+import android.content.Context
+import android.content.Intent
+import android.widget.LinearLayout
 @Composable
 fun ProfilContent(onBackClick: () -> Unit) {
     AndroidView(
@@ -19,6 +21,23 @@ fun ProfilContent(onBackClick: () -> Unit) {
             val btnBackProfil = view.findViewById<ImageView>(R.id.btnBackProfil)
             btnBackProfil?.setOnClickListener {
                 onBackClick()
+            }
+            val layoutLogout = view.findViewById<LinearLayout>(R.id.layoutLogout)
+
+            layoutLogout.setOnClickListener {
+
+                val pref = context.getSharedPreferences("AppPref", Context.MODE_PRIVATE)
+
+                pref.edit().apply {
+                    putBoolean("isLoggedIn", false)
+                    remove("userRole")
+                    remove("userId")
+                    apply()
+                }
+
+                val intent = Intent(context, LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                context.startActivity(intent)
             }
             view
         },
