@@ -9,7 +9,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
 
-class HcRepository {
+class   HcRepository {
     private val firestore = FirebaseFirestore.getInstance()
 
     // --- User Management ---

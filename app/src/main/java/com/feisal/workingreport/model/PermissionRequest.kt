@@ -21,14 +21,5 @@ data class PermissionRequest(
     val updatedAt: Long = System.currentTimeMillis()
 )
 
-enum class PermissionType {
-    IZIN,
-    SAKIT,
-    CUTI
-}
-
-enum class PermissionStatus {
-    PENDING,
-    APPROVED,
-    REJECTED
-}
+enum class PermissionType { IZIN, SAKIT, CUTI }
+enum class PermissionStatus { PENDING, APPROVED, REJECTED }
