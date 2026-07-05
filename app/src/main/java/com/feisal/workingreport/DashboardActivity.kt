@@ -2,10 +2,13 @@ package com.feisal.workingreport
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -34,6 +37,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -42,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.view.WindowCompat
+import coil.compose.AsyncImage
 import com.feisal.workingreport.model.Attendance
 import com.feisal.workingreport.model.PermissionRequest
 import com.feisal.workingreport.model.User
@@ -59,8 +64,6 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import android.net.Uri
-import androidx.compose.ui.platform.LocalContext
 
 class DashboardActivity : AppCompatActivity() {
     private val attendanceRepository by lazy { AttendanceRepository() }
@@ -310,17 +313,20 @@ class DashboardActivity : AppCompatActivity() {
                     LaporanBottomSheetContent(
                         colors = colors,
                         isDarkMode = isDarkMode,
-                        onSubmit = { tanggal, judul, deskripsi, mulai, selesai ->
+                        onSubmit = { tanggal, judul, deskripsi, mulai, selesai, uri, fileName, mimeType ->
                             coroutineScope.launch {
                                 val result = workingReportRepository.submitReport(
                                     startTime = mulai,
                                     endTime = selesai,
-                                    workLocation = "WFH/WFO",
+                                    workLocation = "WFO",
                                     title = judul,
                                     description = deskripsi,
                                     progress = "100%",
                                     obstacle = "-",
-                                    nextPlan = "-"
+                                    nextPlan = "-",
+                                    attachmentUri = uri,
+                                    fileName = fileName ?: "",
+                                    mimeType = mimeType ?: ""
                                 )
                                 result.onSuccess {
                                     showLaporanSheet = false
@@ -413,130 +419,346 @@ fun TimePickerBox(value: String, onValueChange: (String) -> Unit, placeholder: S
 fun LaporanBottomSheetContent(
     colors: P79Colors,
     isDarkMode: Boolean,
-    onSubmit: (String, String, String, String, String) -> Unit
+    onSubmit: (String, String, String, String, String, Uri?, String?, String?) -> Unit
 ) {
-    val inputBgColor = if (isDarkMode) Color(0xFF222831) else Color(0xFFF3F4F6)
+    val context = LocalContext.current
+    val inputBgColor = if (isDarkMode) Color(0xFF222B3C) else Color(0xFFF3F4F6)
+
+    // Form Input States
     var tanggal by remember { mutableStateOf("") }
     var judul by remember { mutableStateOf("") }
     var deskripsi by remember { mutableStateOf("") }
     var jamMulai by remember { mutableStateOf("") }
     var jamSelesai by remember { mutableStateOf("") }
 
-    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp)) {
+    // Validation States
+    var tanggalError by remember { mutableStateOf(false) }
+    var judulError by remember { mutableStateOf(false) }
+    var deskripsiError by remember { mutableStateOf(false) }
+    var jamMulaiError by remember { mutableStateOf(false) }
+    var jamSelesaiError by remember { mutableStateOf(false) }
+    var waktuValidationError by remember { mutableStateOf<String?>(null) }
+
+    // Attachment States
+    var currentTab by remember { mutableStateOf("FILE") }
+    var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
+    var selectedFileName by remember { mutableStateOf<String?>(null) }
+    var selectedMimeType by remember { mutableStateOf<String?>(null) }
+    var linkDriveLaporan by remember { mutableStateOf("") }
+
+    // Dialog State
+    var showConfirmDialog by remember { mutableStateOf(false) }
+
+    // Launcher File Picker
+    val pickFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let {
+            selectedFileUri = it
+            selectedMimeType = context.contentResolver.getType(it)
+            context.contentResolver.query(it, null, null, null, null)?.use { cursor ->
+                val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                if (cursor.moveToFirst() && nameIndex != -1) {
+                    selectedFileName = cursor.getString(nameIndex)
+                }
+            }
+        }
+    }
+
+    // --- DIALOG KONFIRMASI ---
+    if (showConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfirmDialog = false },
+            title = { Text("Konfirmasi Laporan", fontWeight = FontWeight.Bold, color = colors.text0) },
+            text = { Text("Apakah data yang Anda masukkan sudah sesuai dan benar?", color = colors.text1) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showConfirmDialog = false
+                        val finalDesc = if (linkDriveLaporan.isNotEmpty()) "$deskripsi\nLink: $linkDriveLaporan" else deskripsi
+                        onSubmit(tanggal, judul, finalDesc, jamMulai, jamSelesai, selectedFileUri, selectedFileName, selectedMimeType)
+                    }
+                ) {
+                    Text("Sesuai", color = colors.blue, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showConfirmDialog = false }) {
+                    Text("Batal", color = Color.Red)
+                }
+            },
+            containerColor = if (isDarkMode) Color(0xFF1E2738) else Color.White
+        )
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp, vertical = 16.dp)
+    ) {
         Text("Buat Laporan Kerja", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(24.dp))
-        Text("Tanggal", color = colors.text1, fontSize = 12.sp)
+
+        // --- 1. FIELD TANGGAL ---
+        Text("Tanggal", color = if (tanggalError) Color.Red else colors.text1, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(8.dp))
-        DatePickerBox(value = tanggal, onValueChange = { tanggal = it }, placeholder = "", colors = colors, inputBgColor = inputBgColor)
+        DatePickerBox(value = tanggal, onValueChange = { tanggal = it; tanggalError = false }, placeholder = "Pilih Tanggal Laporan", colors = colors, inputBgColor = inputBgColor)
+        if (tanggalError) {
+            Text("Tanggal tidak boleh kosong", color = Color.Red, fontSize = 11.sp, modifier = Modifier.padding(top = 4.dp))
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
-        Text("Judul Aktivitas", color = colors.text1, fontSize = 12.sp)
+
+        // --- 2. FIELD JUDUL AKTIVITAS ---
+        Text("Judul Aktivitas", color = if (judulError) Color.Red else colors.text1, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = judul,
-            onValueChange = { judul = it },
+            onValueChange = { judul = it; judulError = false },
             textStyle = androidx.compose.ui.text.TextStyle(color = colors.text0),
-            placeholder = { Text("", color = colors.text1) },
+            placeholder = { Text("Contoh: Pembuatan API Login Karyawan", color = colors.text1.copy(alpha = 0.6f)) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
+            isError = judulError,
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color.Transparent,
+                unfocusedBorderColor = if (judulError) Color.Red else colors.border,
                 focusedBorderColor = colors.blue,
                 unfocusedContainerColor = inputBgColor,
                 focusedContainerColor = inputBgColor
             )
         )
+        if (judulError) {
+            Text("Judul aktivitas wajib diisi", color = Color.Red, fontSize = 11.sp, modifier = Modifier.padding(top = 4.dp))
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
-        Text("Deskripsi Pekerjaan", color = colors.text1, fontSize = 12.sp)
+
+        // --- 3. FIELD DESKRIPSI PEKERJAAN ---
+        Text("Deskripsi Pekerjaan", color = if (deskripsiError) Color.Red else colors.text1, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = deskripsi,
-            onValueChange = { deskripsi = it },
+            onValueChange = { deskripsi = it; deskripsiError = false },
             textStyle = androidx.compose.ui.text.TextStyle(color = colors.text0),
-            placeholder = { Text("", color = colors.text1) },
-            modifier = Modifier.fillMaxWidth().height(100.dp),
+            placeholder = { Text("Rincian tugas atau fitur yang diselesaikan hari ini...", color = colors.text1.copy(alpha = 0.6f)) },
+            modifier = Modifier.fillMaxWidth().height(120.dp),
             shape = RoundedCornerShape(12.dp),
+            isError = deskripsiError,
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color.Transparent,
+                unfocusedBorderColor = if (deskripsiError) Color.Red else colors.border,
                 focusedBorderColor = colors.blue,
                 unfocusedContainerColor = inputBgColor,
                 focusedContainerColor = inputBgColor
             )
         )
+        if (deskripsiError) {
+            Text("Deskripsi pekerjaan tidak boleh kosong", color = Color.Red, fontSize = 11.sp, modifier = Modifier.padding(top = 4.dp))
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
-        Text("Durasi Kerja", color = colors.text1, fontSize = 12.sp)
+
+        // --- 4. FIELD DURASI KERJA ---
+        Text("Durasi Kerja", color = if (jamMulaiError || jamSelesaiError || waktuValidationError != null) Color.Red else colors.text1, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            TimePickerBox(value = jamMulai, onValueChange = { jamMulai = it }, placeholder = "", colors = colors, inputBgColor = inputBgColor, modifier = Modifier.weight(1f))
-            TimePickerBox(value = jamSelesai, onValueChange = { jamSelesai = it }, placeholder = "", colors = colors, inputBgColor = inputBgColor, modifier = Modifier.weight(1f))
+            TimePickerBox(value = jamMulai, onValueChange = { jamMulai = it; jamMulaiError = false; waktuValidationError = null }, placeholder = "Jam Mulai", colors = colors, inputBgColor = inputBgColor, modifier = Modifier.weight(1f))
+            TimePickerBox(value = jamSelesai, onValueChange = { jamSelesai = it; jamSelesaiError = false; waktuValidationError = null }, placeholder = "Jam Selesai", colors = colors, inputBgColor = inputBgColor, modifier = Modifier.weight(1f))
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        val context = LocalContext.current
-        Text("Lampiran (opsional)", color = colors.text1, fontSize = 12.sp)
+
+        if (jamMulaiError || jamSelesaiError) {
+            Text("Jam mulai dan jam selesai wajib diisi", color = Color.Red, fontSize = 11.sp, modifier = Modifier.padding(top = 4.dp))
+        } else if (waktuValidationError != null) {
+            Text(waktuValidationError!!, color = Color.Red, fontSize = 11.sp, modifier = Modifier.padding(top = 4.dp))
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // --- 5. SEKSI LAMPIRAN ---
+        Text("Lampiran (opsional)", color = colors.text1, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(8.dp))
+
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .background(colors.blue, RoundedCornerShape(8.dp))
-                    .clickable {
-                        Toast.makeText(context, "Upload file belum tersedia", Toast.LENGTH_SHORT).show()
-                    }
-                    .padding(vertical = 12.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Row {
-                    Icon(Icons.Default.AddCircle, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("File", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .background(inputBgColor, RoundedCornerShape(8.dp))
-                    .clickable {
-                        Toast.makeText(context, "Fitur belum tersedia", Toast.LENGTH_SHORT).show()
-                    }
-                    .padding(vertical = 12.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Row {
-                    Icon(Icons.Default.AddCircle, contentDescription = null, tint = colors.text1, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Foto", color = colors.text1, fontSize = 12.sp)
-                }
-            }
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .background(inputBgColor, RoundedCornerShape(8.dp))
-                    .clickable {
-                        Toast.makeText(context, "Fitur belum tersedia", Toast.LENGTH_SHORT).show()
-                    }
-                    .padding(vertical = 12.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Row {
-                    Icon(Icons.Default.AddCircle, contentDescription = null, tint = colors.text1, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Link Drive", color = colors.text1, fontSize = 12.sp)
+            val sections = listOf("FILE" to "📄 File", "FOTO" to "📷 Foto", "LINK" to "🔗 Link Drive")
+            sections.forEach { (type, label) ->
+                val isSelected = currentTab == type
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(if (isSelected) colors.blue else inputBgColor, RoundedCornerShape(8.dp))
+                        .border(1.dp, if (isSelected) colors.blue else colors.border, RoundedCornerShape(8.dp))
+                        .clickable {
+                            currentTab = type
+                            if (type != "LINK") linkDriveLaporan = "" else { selectedFileName = null; selectedFileUri = null }
+                        }
+                        .padding(vertical = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(label, color = if (isSelected) Color.White else colors.text1, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        Box(
-            modifier = Modifier.fillMaxWidth().height(80.dp)
-                .background(Color.Transparent, RoundedCornerShape(12.dp))
-                .border(1.dp, colors.border, RoundedCornerShape(12.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("Tarik file/screenshot di sini atau pilih file", color = colors.text1, fontSize = 12.sp)
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // --- LOGIKA PRATINJAU (PREVIEW) BERKAS SECARA VISUAL ---
+        if (currentTab == "LINK") {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(55.dp)
+                    .background(inputBgColor, RoundedCornerShape(12.dp))
+                    .border(1.dp, colors.border, RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                OutlinedTextField(
+                    value = linkDriveLaporan,
+                    onValueChange = { linkDriveLaporan = it },
+                    textStyle = androidx.compose.ui.text.TextStyle(color = colors.text0),
+                    placeholder = { Text("Paste link berkas Google Drive di sini...", color = colors.text1.copy(alpha = 0.5f), fontSize = 13.sp) },
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 4.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = Color.Transparent, focusedBorderColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent, focusedContainerColor = Color.Transparent
+                    )
+                )
+            }
+        } else {
+            // Drop Area yang diperluas tingginya jika ada gambar preview
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .minimumInteractiveComponentSize()
+                    .background(inputBgColor, RoundedCornerShape(12.dp))
+                    .border(1.dp, if (selectedFileName != null) colors.green else colors.border, RoundedCornerShape(12.dp))
+                    .clickable {
+                        if (currentTab == "FILE") pickFileLauncher.launch("*/*")
+                        if (currentTab == "FOTO") pickFileLauncher.launch("image/*")
+                    }
+                    .padding(12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (selectedFileName != null) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        // --- LOGIKA MENAMPILKAN PRATINJAU FOTO / ICON FILE ---
+                        if (selectedMimeType?.startsWith("image/") == true && selectedFileUri != null) {
+                            // Menampilkan Thumbnail Foto asli menggunakan Coil
+                            AsyncImage(
+                                model = selectedFileUri,
+                                contentDescription = "Pratinjau Gambar",
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color.LightGray),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            // Menampilkan Ikon Dokumen Default untuk tipe data non-gambar (PDF, Docx, dll)
+                            Box(
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .background(colors.blue.copy(alpha = 0.2f), RoundedCornerShape(8.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Email,
+                                    contentDescription = "File Dokumen",
+                                    tint = colors.blue,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        // Informasi Nama Berkas
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = if (selectedMimeType?.startsWith("image/") == true) "📸 Gambar Terpilih:" else "📄 File Terpilih:",
+                                color = colors.text1, fontSize = 11.sp
+                            )
+                            Text(
+                                text = selectedFileName!!,
+                                color = colors.green, fontSize = 13.sp, fontWeight = FontWeight.Bold,
+                                maxLines = 2, overflow = TextOverflow.Ellipsis
+                            )
+                        }
+
+                        // Tombol Hapus Lampiran
+                        IconButton(onClick = {
+                            selectedFileName = null
+                            selectedFileUri = null
+                            selectedMimeType = null
+                        }) {
+                            Icon(
+                                imageVector = androidx.compose.material.icons.Icons.Default.Delete,
+                                contentDescription = "Hapus Berkas",
+                                tint = Color.Red.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                } else {
+                    val placeholderHint = if (currentTab == "FILE") "Ketuk untuk memilih berkas (.pdf/.doc/.docx)" else "Ketuk untuk memilih foto dari galeri"
+                    Text(
+                        placeholderHint,
+                        color = colors.text1.copy(alpha = 0.7f),
+                        fontSize = 13.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(vertical = 16.dp)
+                    )
+                }
+            }
         }
-        Spacer(modifier = Modifier.height(24.dp))
+
+        Spacer(modifier = Modifier.height(28.dp))
+
+        // --- BUTTON SUBMIT + VALIDATION CHECK ---
         Box(
-            modifier = Modifier.fillMaxWidth().height(55.dp).background(Brush.horizontalGradient(listOf(colors.blue, colors.green)), RoundedCornerShape(12.dp)).clickable {
-                onSubmit(tanggal, judul, deskripsi, jamMulai, jamSelesai)
-            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(55.dp)
+                .background(Brush.horizontalGradient(listOf(colors.blue, colors.green)), RoundedCornerShape(12.dp))
+                .clickable {
+                    // Validasi Field
+                    tanggalError = tanggal.isEmpty()
+                    judulError = judul.isEmpty()
+                    deskripsiError = deskripsi.isEmpty()
+                    jamMulaiError = jamMulai.isEmpty()
+                    jamSelesaiError = jamSelesai.isEmpty()
+
+                    if (tanggalError || judulError || deskripsiError || jamMulaiError || jamSelesaiError) {
+                        Toast.makeText(context, "Mohon isi semua field yang bertanda merah!", Toast.LENGTH_SHORT).show()
+                        return@clickable
+                    }
+
+                    // Validasi Logika Waktu
+                    try {
+                        val sdf = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
+                        val dateMulai = sdf.parse(jamMulai)
+                        val dateSelesai = sdf.parse(jamSelesai)
+
+                        if (dateMulai != null && dateSelesai != null) {
+                            if (dateMulai.time >= dateSelesai.time) {
+                                waktuValidationError = "Jam mulai tidak boleh lebih besar atau sama dengan jam selesai!"
+                                return@clickable
+                            }
+
+                            val diffMillis = dateSelesai.time - dateMulai.time
+                            if (diffMillis > 8 * 60 * 60 * 1000) {
+                                waktuValidationError = "Durasi kerja maksimal adalah 8 jam kerja!"
+                                return@clickable
+                            }
+                        }
+                    } catch (e: Exception) {
+                        waktuValidationError = "Format penulisan waktu tidak valid."
+                        return@clickable
+                    }
+
+                    showConfirmDialog = true
+                },
             contentAlignment = Alignment.Center
         ) {
             Text("Kirim Laporan", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
