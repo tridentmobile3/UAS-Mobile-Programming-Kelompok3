@@ -18,6 +18,10 @@ class AttendanceRepository {
     private val auth by lazy { try { FirebaseAuth.getInstance() } catch (e: Exception) { null } }
     private val storageService = StorageService()
 
+    companion object {
+        private var dummyAttendance: Attendance? = null
+    }
+
     private val currentUserId: String?
         get() = try { 
             val uid = auth?.currentUser?.uid 
@@ -109,7 +113,22 @@ class AttendanceRepository {
         val docId = "${uid}_$today"
 
         if (uid == "dummy_user_id") {
-            // Success dummy in offline mode
+            dummyAttendance = Attendance(
+                id = docId,
+                userId = uid,
+                employeeName = user.name,
+                employeeNip = user.nip,
+                date = today,
+                status = AttendanceStatus.HADIR.name,
+                checkInTime = DateHelper.getCurrentTime(),
+                checkInLatitude = latitude,
+                checkInLongitude = longitude,
+                checkInAccuracy = accuracy,
+                checkInDistance = distance,
+                checkInPhotoUrl = "",
+                faceVerified = faceVerified,
+                isLocked = true
+            )
             return@runCatching
         }
 
@@ -159,7 +178,13 @@ class AttendanceRepository {
         val docId = "${uid}_$today"
 
         if (uid == "dummy_user_id") {
-            // Success dummy in offline mode
+            dummyAttendance = dummyAttendance?.copy(
+                checkOutTime = DateHelper.getCurrentTime(),
+                checkOutLatitude = latitude,
+                checkOutLongitude = longitude,
+                checkOutAccuracy = accuracy,
+                checkOutDistance = 0f
+            )
             return@runCatching
         }
 
@@ -204,6 +229,9 @@ class AttendanceRepository {
 
     suspend fun getTodayAttendance(): Attendance? {
         val uid = currentUserId ?: return null
+        if (uid == "dummy_user_id") {
+            return dummyAttendance
+        }
         val firebaseFirestore = firestore ?: return null
         val today = DateHelper.getCurrentDate()
         val docId = "${uid}_$today"
@@ -221,9 +249,9 @@ class AttendanceRepository {
     suspend fun getAttendanceHistory() : List<Attendance> {
         val uid = currentUserId ?: return emptyList()
         if (uid == "dummy_user_id") {
-            return listOf(
-                Attendance(id="1", userId=uid, employeeName="User Dummy", date=DateHelper.getCurrentDate(), status="HADIR", checkInTime="08:00", checkOutTime="17:00")
-            )
+            val list = mutableListOf<Attendance>()
+            dummyAttendance?.let { list.add(it) }
+            return list
         }
         val firebaseFirestore = firestore ?: return emptyList()
         return try {
