@@ -93,7 +93,7 @@ class DashboardActivity : AppCompatActivity() {
             var showLaporanSheet by remember { mutableStateOf(false) }
 
             val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-            val pagerState = rememberPagerState(pageCount = { 5 })
+            val pagerState = rememberPagerState(pageCount = { 4 })
             val coroutineScope = rememberCoroutineScope()
 
             // State for Data
@@ -120,6 +120,12 @@ class DashboardActivity : AppCompatActivity() {
             // Load Initial Data
             LaunchedEffect(Unit) {
                 refreshData()
+                val targetPage = intent.getIntExtra("TARGET_PAGE", -1)
+                if (targetPage != -1) {
+                    coroutineScope.launch {
+                        pagerState.scrollToPage(targetPage)
+                    }
+                }
             }
 
             // Sync attendance when returning from camera (simple way)
@@ -156,7 +162,10 @@ class DashboardActivity : AppCompatActivity() {
                                 onLaporClick = { coroutineScope.launch { pagerState.animateScrollToPage(2) } },
                                 onRiwayatClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
                                 onIzinClick = { showIzinSheet = true },
-                                onLemburClick = { coroutineScope.launch { pagerState.animateScrollToPage(4) } },
+                                onLemburClick = { 
+                                    val intent = Intent(this@DashboardActivity, LemburActivity::class.java)
+                                    startActivity(intent)
+                                },
                                 onBellClick = { showNotificationSheet = true }
                             )
                             1 -> RiwayatContent(
@@ -193,12 +202,6 @@ class DashboardActivity : AppCompatActivity() {
                                 },
                                 onBackClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } }
                             )
-                            4 -> LemburContent(
-                                colors = colors,
-                                isDarkMode = isDarkMode,
-                                onBackClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } },
-                                onAjukanClick = { showLemburSheet = true }
-                            )
                         }
                     }
                 }
@@ -206,7 +209,7 @@ class DashboardActivity : AppCompatActivity() {
                 DockNavigationBar(
                     colors = colors,
                     isDarkMode = isDarkMode,
-                    selectedIndex = if (pagerState.currentPage == 4) 0 else pagerState.currentPage,
+                    selectedIndex = pagerState.currentPage,
                     isHc = currentUser?.role == "HC",
                     onItemSelected = { index ->
                         coroutineScope.launch {

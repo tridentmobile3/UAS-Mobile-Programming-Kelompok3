@@ -4,9 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -17,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.feisal.workingreport.ui.theme.P79Colors
@@ -60,9 +63,9 @@ fun LemburContent(colors: P79Colors, isDarkMode: Boolean, onBackClick: () -> Uni
 
         // Stats
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = "9.5j", subtitle = "BULAN INI", iconTint = colors.red, textColor = colors.text0)
-            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = "2", subtitle = "DISETUJUI", iconTint = colors.green, textColor = colors.text0)
-            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = "1", subtitle = "MENUNGGU", iconTint = colors.amber, textColor = colors.text0)
+            LemburStatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = "9.5j", subtitle = "BULAN INI", iconTint = colors.red, textColor = colors.text0)
+            LemburStatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = "2", subtitle = "DISETUJUI", iconTint = colors.green, textColor = colors.text0)
+            LemburStatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = "1", subtitle = "MENUNGGU", iconTint = colors.amber, textColor = colors.text0)
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -74,7 +77,19 @@ fun LemburContent(colors: P79Colors, isDarkMode: Boolean, onBackClick: () -> Uni
         ) { Text("Ajukan Lembur") }
 
         Spacer(modifier = Modifier.height(24.dp))
-        EmptyState(colors = colors, cardBgColor = cardBgColor, message = "Tidak ada riwayat lembur")
+        Box(modifier = Modifier.fillMaxWidth().background(cardBgColor, RoundedCornerShape(16.dp)).border(1.dp, colors.border, RoundedCornerShape(16.dp)).padding(24.dp), contentAlignment = Alignment.Center) { 
+            Text(text = "Tidak ada riwayat lembur", color = colors.text1, fontSize = 14.sp, textAlign = TextAlign.Center) 
+        }
+    }
+}
+
+@Composable
+fun LemburStatCard(modifier: Modifier, bg: Color, border: Color, title: String, subtitle: String, iconTint: Color, textColor: Color) {
+    Column(modifier = modifier.background(bg, RoundedCornerShape(12.dp)).border(1.dp, border, RoundedCornerShape(12.dp)).padding(vertical = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(modifier = Modifier.size(8.dp).background(iconTint, CircleShape))
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(title, color = textColor, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Text(subtitle, color = textColor.copy(alpha = 0.5f), fontSize = 8.sp, fontWeight = FontWeight.Bold)
     }
 }
 

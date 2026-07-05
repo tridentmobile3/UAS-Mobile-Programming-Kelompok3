@@ -78,7 +78,9 @@ class DashboardAdminActivity : AppCompatActivity() {
         }
 
         binding.navAdminProfil.setOnClickListener {
-            startActivity(Intent(this, DashboardActivity::class.java))
+            val intent = Intent(this, DashboardActivity::class.java)
+            intent.putExtra("TARGET_PAGE", 3)
+            startActivity(intent)
         }
     }
 }
