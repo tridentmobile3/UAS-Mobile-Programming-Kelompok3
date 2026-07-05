@@ -13,7 +13,12 @@ class AuthRepository {
     private val firestore by lazy { try { FirebaseFirestore.getInstance() } catch (e: Exception) { null } }
 
     private fun nipToAuthEmail(nip: String): String {
-        return "${nip.trim()}@saptawork.app"
+        val cleanNip = nip.trim()
+        return if (cleanNip.contains("@")) {
+            cleanNip
+        } else {
+            "$cleanNip@saptawork.app"
+        }
     }
 
     companion object {

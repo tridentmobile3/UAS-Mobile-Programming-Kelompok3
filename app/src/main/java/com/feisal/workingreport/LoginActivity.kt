@@ -197,9 +197,9 @@ class LoginActivity : ComponentActivity() {
                         OutlinedTextField(
                             value = nip,
                             onValueChange = { nip = it },
-                            label = { Text("NIP (Nomor Induk Pegawai)", color = colors.text1) },
+                            label = { Text("NIP atau Email", color = colors.text1) },
                             leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = colors.text1) },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                             shape = RoundedCornerShape(16.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = colors.blue,
