@@ -1,5 +1,5 @@
 package com.feisal.workingreport.model
-
+import com.google.firebase.Timestamp
 data class User(
     val id: String = "",
     val nip: String = "",
@@ -11,8 +11,8 @@ data class User(
     val photoProfileUrl: String = "",
     val fcmToken: String = "",
     val status: String = UserStatus.ACTIVE.name,
-    val createdAt: Long = System.currentTimeMillis(),
-    val updatedAt: Long = System.currentTimeMillis()
+    val createdAt: Timestamp? = null,
+    val updatedAt: Timestamp? = null
 )
 
 enum class Role {

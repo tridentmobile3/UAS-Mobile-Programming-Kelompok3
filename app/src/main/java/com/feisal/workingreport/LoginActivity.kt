@@ -345,36 +345,13 @@ class LoginActivity : ComponentActivity() {
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(24.dp))
 
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                            Divider(color = colors.border, modifier = Modifier.padding(horizontal = 16.dp))
-                            Text("OR CONTINUE WITH", color = colors.text1, fontSize = 10.sp, modifier = Modifier.padding(horizontal = 16.dp))
-                            Divider(color = colors.border, modifier = Modifier.weight(1f))
-                        }
 
-                        Spacer(modifier = Modifier.height(24.dp))
 
-                        OutlinedButton(
-                            onClick = { },
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.Transparent),
-                            border = BorderStroke(1.dp, colors.border),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(55.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_google),
-                                    contentDescription = "Google",
-                                    tint = Color.Unspecified,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Text("Continue with Google", color = colors.text0, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                            }
-                        }
+
+
+
+
                     }
 
                     Spacer(modifier = Modifier.height(48.dp))
