@@ -54,22 +54,15 @@ class DashboardAdminActivity : AppCompatActivity() {
         }
 
         binding.cardVerifikasiKehadiran.setOnClickListener {
-            val intent = Intent(this, AttendanceDetailActivity::class.java).apply {
-                putExtra("name", "Diky Raihan S.")
-                putExtra("date", "16 Apr 2022")
-                putExtra("checkIn", "08:12")
-                putExtra("checkOut", "--:--")
-                putExtra("status", "IZIN")
-            }
-            startActivity(intent)
+            startActivity(Intent(this, RiwayatActivity::class.java))
         }
 
         binding.cardLaporanRutin.setOnClickListener {
-            Toast.makeText(this, "Membuka Menu Laporan Rutin", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, LaporanKerjaActivity::class.java))
         }
 
         binding.cardLaporanLembur.setOnClickListener {
-            Toast.makeText(this, "Membuka Menu Laporan Lembur", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, LemburActivity::class.java))
         }
     }
 
@@ -77,11 +70,11 @@ class DashboardAdminActivity : AppCompatActivity() {
         binding.navAdminHome.setOnClickListener { }
 
         binding.navAdminKaryawan.setOnClickListener {
-            Toast.makeText(this, "Menu Presensi Karyawan", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, RiwayatActivity::class.java))
         }
 
         binding.navAdminPersetujuan.setOnClickListener {
-            Toast.makeText(this, "Menu Rekap Laporan Kerja", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, LaporanKerjaActivity::class.java))
         }
 
         binding.navAdminProfil.setOnClickListener {

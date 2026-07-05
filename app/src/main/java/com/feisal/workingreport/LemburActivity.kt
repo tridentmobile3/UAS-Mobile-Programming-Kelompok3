@@ -1,5 +1,8 @@
 package com.feisal.workingreport
 
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,6 +20,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.feisal.workingreport.ui.theme.P79Colors
+import com.feisal.workingreport.ui.theme.p79Colors
+
+class LemburActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            val colors = p79Colors(isDark = true)
+            Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF0B101E)) {
+                LemburContent(
+                    colors = colors,
+                    isDarkMode = true,
+                    onBackClick = { finish() },
+                    onAjukanClick = { }
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun LemburContent(colors: P79Colors, isDarkMode: Boolean, onBackClick: () -> Unit, onAjukanClick: () -> Unit) {
@@ -51,6 +72,9 @@ fun LemburContent(colors: P79Colors, isDarkMode: Boolean, onBackClick: () -> Uni
             modifier = Modifier.fillMaxWidth().height(55.dp),
             colors = ButtonDefaults.buttonColors(containerColor = colors.blue)
         ) { Text("Ajukan Lembur") }
+
+        Spacer(modifier = Modifier.height(24.dp))
+        EmptyState(colors = colors, cardBgColor = cardBgColor, message = "Tidak ada riwayat lembur")
     }
 }
 
