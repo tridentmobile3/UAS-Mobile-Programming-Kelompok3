@@ -45,7 +45,17 @@
           <theme>@style/Theme.WorkingReport</theme>
         </config>
       </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_work_report.xml">
+        <config>
+          <theme>@style/Theme.WorkingReport</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/layout_bottom_sheet_izin.xml">
+        <config>
+          <theme>@style/Theme.WorkingReport</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/layout_bottom_sheet_laporan.xml">
         <config>
           <theme>@style/Theme.WorkingReport</theme>
         </config>
@@ -56,15 +66,13 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a5862d9c-3807-4bdc-9ec5-64dbebf30b41" name="Changes" comment="">
+    <list default="true" id="a5862d9c-3807-4bdc-9ec5-64dbebf30b41" name="Changes" comment="menambahkan logika untuk pengajuan izin, merubah struktur permission, mengubah logika dashboard">
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/DashboardActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/DashboardActivity.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/IzinBottomSheetFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/IzinBottomSheetFragment.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/model/PermissionRequest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/model/PermissionRequest.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/repository/HcRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/repository/HcRepository.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/repository/PermissionRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/feisal/workingreport/repository/PermissionRepository.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/local.properties" beforeDir="false" afterPath="$PROJECT_DIR$/local.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/layout_bottom_sheet_laporan.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/layout_bottom_sheet_laporan.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -217,7 +225,20 @@
       <option name="presentableId" value="Default" />
       <updated>1781873062575</updated>
     </task>
+    <task id="LOCAL-00001" summary="menambahkan logika untuk pengajuan izin, merubah struktur permission, mengubah logika dashboard">
+      <option name="closed" value="true" />
+      <created>1783248733699</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1783248733699</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="menambahkan logika untuk pengajuan izin, merubah struktur permission, mengubah logika dashboard" />
+    <option name="LAST_COMMIT_MESSAGE" value="menambahkan logika untuk pengajuan izin, merubah struktur permission, mengubah logika dashboard" />
   </component>
   <component name="play_dynamic_filters_status">
     <option name="appIdToCheckInfo">

@@ -10,12 +10,10 @@ import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.MimeTypeMap
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.card.MaterialCardView
-import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -29,10 +27,10 @@ class IzinBottomSheetFragment : BottomSheetDialogFragment() {
 
     private var currentTab = "FILE"
     private var selectedFileUri: Uri? = null
-    private var attachmentBytes: ByteArray? = null
-    private var fileExtension = "tmp"
+    private var savedFileName: String = "" // Menampung teks nama file yang dipilih
 
-    var onSubmitCallback: ((type: String, reason: String, date: String, bytes: ByteArray?, driveLink: String, ext: String) -> Unit)? = null
+    // Callback Lambda mengirimkan teks nama file biasa (Firestore murni)
+    var onSubmitCallback: ((type: String, reason: String, date: String, fileNameText: String, driveLink: String) -> Unit)? = null
 
     private val pickFileLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         handleAttachmentResult(uri, "FILE")
@@ -42,45 +40,34 @@ class IzinBottomSheetFragment : BottomSheetDialogFragment() {
         handleAttachmentResult(uri, "FOTO")
     }
 
-    private fun getBytesFromUri(context: Context, uri: Uri): ByteArray? {
-        return try {
-            context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                val byteBuffer = ByteArrayOutputStream()
-                val buffer = ByteArray(1024)
-                var len: Int
-                while (inputStream.read(buffer).also { len = it } != -1) {
-                    byteBuffer.write(buffer, 0, len)
+    // Fungsi helper untuk mengekstrak nama berkas asli dari Uri Android
+    private fun getFileNameFromUri(context: Context, uri: Uri): String {
+        var name = "bukti_file"
+        val cursor = context.contentResolver.query(uri, null, null, null, null)
+        cursor?.use {
+            if (it.moveToFirst()) {
+                val nameIndex = it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                if (nameIndex != -1) {
+                    name = it.getString(nameIndex)
                 }
-                byteBuffer.toByteArray()
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
         }
+        return name
     }
 
     private fun handleAttachmentResult(uri: Uri?, tabType: String) {
         val safeContext = context ?: return
         if (uri != null) {
-            val bytes = getBytesFromUri(safeContext, uri)
-            if (bytes != null) {
-                selectedFileUri = uri
-                attachmentBytes = bytes
+            selectedFileUri = uri
+            // Mengambil teks nama file asli secara lokal
+            savedFileName = getFileNameFromUri(safeContext, uri)
 
-                // Perbaikan parameter getType yang aman
-                val mimeType = safeContext.contentResolver.getType(uri)
-                fileExtension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
-                    ?: if (tabType == "FILE") "pdf" else "jpg"
-
-                val labelText = if (tabType == "FILE") "File Dokumen" else "Foto Bukti"
-                tvUploadHint.text = Html.fromHtml(
-                    "$labelText berhasil dilampirkan! ✅<br><font color='#3498DB'><b>Klik di sini untuk melihat isi file</b></font>",
-                    Html.FROM_HTML_MODE_LEGACY
-                )
-                tvUploadHint.setTextColor(Color.parseColor("#2ECC71"))
-            } else {
-                Toast.makeText(safeContext, "Gagal membaca data file", Toast.LENGTH_SHORT).show()
-            }
+            val labelText = if (tabType == "FILE") "File Dokumen" else "Foto Bukti"
+            tvUploadHint.text = Html.fromHtml(
+                "Teks Terdeteksi: <b>$savedFileName</b> ✅<br><font color='#3498DB'><b>Klik di sini untuk melihat/pratinjau file</b></font>",
+                Html.FROM_HTML_MODE_LEGACY
+            )
+            tvUploadHint.setTextColor(Color.parseColor("#2ECC71"))
         } else {
             Toast.makeText(safeContext, "Batal mengambil file", Toast.LENGTH_SHORT).show()
         }
@@ -119,7 +106,7 @@ class IzinBottomSheetFragment : BottomSheetDialogFragment() {
             tvUploadHint.visibility = View.VISIBLE
             etLinkDrive.visibility = View.GONE
             selectedFileUri = null
-            attachmentBytes = null
+            savedFileName = ""
         }
 
         tabFile.setOnClickListener {
@@ -147,7 +134,7 @@ class IzinBottomSheetFragment : BottomSheetDialogFragment() {
 
         tabFile.performClick()
 
-        // Perbaikan Smart Cast Berantai Menggunakan '.let' lokal
+        // Klik Box: Jika file ada, buka preview lokal HP. Jika kosong, buka pemilih berkas.
         boxUpload.setOnClickListener {
             val currentUri = selectedFileUri
             if (currentUri != null && currentTab != "LINK") {
@@ -182,7 +169,7 @@ class IzinBottomSheetFragment : BottomSheetDialogFragment() {
                 return@setOnClickListener
             }
 
-            if ((currentTab == "FILE" || currentTab == "FOTO") && attachmentBytes == null) {
+            if ((currentTab == "FILE" || currentTab == "FOTO") && savedFileName.isEmpty()) {
                 Toast.makeText(context, "❌ Bukti fisik dokumen/foto belum dilampirkan!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
@@ -197,7 +184,7 @@ class IzinBottomSheetFragment : BottomSheetDialogFragment() {
                 .setTitle("Konfirmasi Pengajuan")
                 .setMessage("Apakah Anda yakin data yang diisi sudah benar dan ingin mengirim pengajuan izin ini?")
                 .setPositiveButton("Ya, Kirim") { dialog, _ ->
-                    onSubmitCallback?.invoke(selectedType, keterangan, currentDate, attachmentBytes, driveLink, fileExtension)
+                    onSubmitCallback?.invoke(selectedType, keterangan, currentDate, savedFileName, driveLink)
                     dialog.dismiss()
                     dismiss()
                 }

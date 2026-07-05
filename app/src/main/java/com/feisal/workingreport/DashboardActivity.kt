@@ -11,6 +11,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -33,7 +34,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -43,7 +46,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.view.WindowCompat
 import com.feisal.workingreport.model.Attendance
-import com.feisal.workingreport.model.PermissionRequest
 import com.feisal.workingreport.model.User
 import com.feisal.workingreport.model.WorkingReport
 import com.feisal.workingreport.repository.AttendanceRepository
@@ -56,11 +58,6 @@ import com.feisal.workingreport.ui.theme.LiquidGlassBackground
 import com.feisal.workingreport.ui.theme.P79Colors
 import com.feisal.workingreport.ui.theme.p79Colors
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import android.net.Uri
-import androidx.compose.ui.platform.LocalContext
 
 class DashboardActivity : AppCompatActivity() {
     private val attendanceRepository by lazy { AttendanceRepository() }
@@ -102,8 +99,6 @@ class DashboardActivity : AppCompatActivity() {
             // State for Data
             var currentUser by remember { mutableStateOf<User?>(null) }
             var todayAttendance by remember { mutableStateOf<Attendance?>(null) }
-            var todayPermission by remember { mutableStateOf<PermissionRequest?>(null) }
-            var permissionHistory by remember { mutableStateOf<List<PermissionRequest>>(emptyList()) }
             var attendanceHistory by remember { mutableStateOf<List<Attendance>>(emptyList()) }
             var workingReports by remember { mutableStateOf<List<WorkingReport>>(emptyList()) }
 
@@ -111,15 +106,10 @@ class DashboardActivity : AppCompatActivity() {
                 coroutineScope.launch {
                     try {
                         currentUser = authRepository.getCurrentUserProfile()
-                        currentUser?.let { user ->
+                        if (currentUser != null) {
                             todayAttendance = attendanceRepository.getTodayAttendance()
                             attendanceHistory = attendanceRepository.getAttendanceHistory()
                             workingReports = workingReportRepository.getMyReports()
-
-                            // Sinkronisasi data izin dari Firebase
-                            permissionHistory = permissionRepository.getMyPermissions(user.id)
-                            val todayStr = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
-                            todayPermission = permissionHistory.find { it.date == todayStr }
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -138,7 +128,7 @@ class DashboardActivity : AppCompatActivity() {
                 }
             }
 
-            // Sync attendance when returning from camera
+            // Sync attendance when returning from camera (simple way)
             DisposableEffect(Unit) {
                 val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
                     if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
@@ -169,11 +159,10 @@ class DashboardActivity : AppCompatActivity() {
                                 activity = this@DashboardActivity,
                                 currentUser = currentUser,
                                 todayAttendance = todayAttendance,
-                                hasActivePermission = (todayPermission != null),
                                 onLaporClick = { coroutineScope.launch { pagerState.animateScrollToPage(2) } },
                                 onRiwayatClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
                                 onIzinClick = { showIzinSheet = true },
-                                onLemburClick = {
+                                onLemburClick = { 
                                     val intent = Intent(this@DashboardActivity, LemburActivity::class.java)
                                     startActivity(intent)
                                 },
@@ -184,7 +173,6 @@ class DashboardActivity : AppCompatActivity() {
                                 isDarkMode = isDarkMode,
                                 currentUser = currentUser,
                                 history = attendanceHistory,
-                                permissionHistory = permissionHistory,
                                 onBackClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } }
                             )
                             2 -> LaporanContent(
@@ -246,47 +234,28 @@ class DashboardActivity : AppCompatActivity() {
                 }
             }
 
-            // Logika Bisnis Interaktif Pengajuan Izin via DialogFragment XML
             if (showIzinSheet) {
-                val sudahAbsenMasuk = todayAttendance != null && todayAttendance?.checkInTime?.isNotEmpty() == true
-
-                if (sudahAbsenMasuk) {
-                    LaunchedEffect(Unit) {
-                        Toast.makeText(context, "Anda sudah melakukan absen masuk hari ini. Tidak dapat mengajukan izin!", Toast.LENGTH_LONG).show()
-                        showIzinSheet = false
-                    }
-                } else {
-                    LaunchedEffect(Unit) {
-                        val izinFragment = IzinBottomSheetFragment().apply {
-                            // Menerima parameter byte data mentah dari fragment
-                            onSubmitCallback = { type, reason, dateString, bytes, driveLink, ext ->
-                                coroutineScope.launch {
-                                    currentUser?.let { user ->
-                                        val result = permissionRepository.submitPermission(
-                                            userId = user.id,
-                                            employeeName = user.name,
-                                            employeeNip = user.nip,
-                                            type = type,
-                                            reason = reason,
-                                            date = dateString,
-                                            fileBytes = bytes,
-                                            driveLink = driveLink,
-                                            extension = ext
-                                        )
-
-                                        result.onSuccess {
-                                            Toast.makeText(this@DashboardActivity, "Pengajuan izin berhasil disimpan ke database!", Toast.LENGTH_SHORT).show()
-                                            refreshData()
-                                        }.onFailure {
-                                            Toast.makeText(this@DashboardActivity, "Gagal menyimpan: ${it.message}", Toast.LENGTH_SHORT).show()
-                                        }
-                                    }
+                ModalBottomSheet(
+                    onDismissRequest = { showIzinSheet = false },
+                    sheetState = sheetState,
+                    containerColor = if (isDarkMode) Color(0xFF161D2F) else Color.White,
+                    scrimColor = Color.Black.copy(alpha = 0.5f)
+                ) {
+                    IzinBottomSheetContent(
+                        colors = colors, 
+                        isDarkMode = isDarkMode,
+                        onSumbit = { type, reason ->
+                            coroutineScope.launch {
+                                val result = permissionRepository.submitPermission(type, reason)
+                                result.onSuccess {
+                                    showIzinSheet = false
+                                    Toast.makeText(context, "Pengajuan izin berhasil terkirim", Toast.LENGTH_SHORT).show()
+                                }.onFailure {
+                                    Toast.makeText(context, "Gagal: ${it.message}", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         }
-                        izinFragment.show(supportFragmentManager, "IzinBottomSheetFragment")
-                        showIzinSheet = false
-                    }
+                    )
                 }
             }
 
@@ -309,7 +278,7 @@ class DashboardActivity : AppCompatActivity() {
                     scrimColor = Color.Black.copy(alpha = 0.5f)
                 ) {
                     LaporanBottomSheetContent(
-                        colors = colors,
+                        colors = colors, 
                         isDarkMode = isDarkMode,
                         onSubmit = { tanggal, judul, deskripsi, mulai, selesai ->
                             coroutineScope.launch {
@@ -412,7 +381,7 @@ fun TimePickerBox(value: String, onValueChange: (String) -> Unit, placeholder: S
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LaporanBottomSheetContent(
-    colors: P79Colors,
+    colors: P79Colors, 
     isDarkMode: Boolean,
     onSubmit: (String, String, String, String, String) -> Unit
 ) {
@@ -535,7 +504,7 @@ fun LaporanBottomSheetContent(
         }
         Spacer(modifier = Modifier.height(24.dp))
         Box(
-            modifier = Modifier.fillMaxWidth().height(55.dp).background(Brush.horizontalGradient(listOf(colors.blue, colors.green)), RoundedCornerShape(12.dp)).clickable {
+            modifier = Modifier.fillMaxWidth().height(55.dp).background(Brush.horizontalGradient(listOf(colors.blue, colors.green)), RoundedCornerShape(12.dp)).clickable { 
                 onSubmit(tanggal, judul, deskripsi, jamMulai, jamSelesai)
             },
             contentAlignment = Alignment.Center
@@ -548,14 +517,86 @@ fun LaporanBottomSheetContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RiwayatContent(
-    colors: P79Colors,
+fun IzinBottomSheetContent(
+    colors: P79Colors, 
     isDarkMode: Boolean,
-    currentUser: User?,
-    history: List<Attendance>,
-    permissionHistory: List<PermissionRequest>,
-    onBackClick: () -> Unit
+    onSumbit: (String, String) -> Unit
 ) {
+    val inputBgColor = if (isDarkMode) Color(0xFF222831) else Color(0xFFF3F4F6)
+    var type by remember { mutableStateOf("IZIN") }
+    var reason by remember { mutableStateOf("") }
+
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp)) {
+        Text("Ajukan Izin", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(24.dp))
+        Text("Jenis Izin", color = colors.text1, fontSize = 12.sp)
+        Spacer(modifier = Modifier.height(8.dp))
+        Box(modifier = Modifier.fillMaxWidth().background(inputBgColor, RoundedCornerShape(12.dp)).padding(16.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(type, color = colors.text0, fontSize = 14.sp)
+                Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = colors.text1)
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("Keterangan", color = colors.text1, fontSize = 12.sp)
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = reason,
+            onValueChange = { reason = it },
+            textStyle = androidx.compose.ui.text.TextStyle(color = colors.text0),
+            placeholder = { Text("Alasan izin...", color = colors.text1) },
+            modifier = Modifier.fillMaxWidth().height(100.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = colors.blue,
+                unfocusedContainerColor = inputBgColor,
+                focusedContainerColor = inputBgColor
+            )
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("Upload Bukti", color = colors.text1, fontSize = 12.sp)
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box(modifier = Modifier.weight(1f).background(colors.blue, RoundedCornerShape(8.dp)).padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
+                Row {
+                    Icon(Icons.Default.AddCircle, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("File", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+            Box(modifier = Modifier.weight(1f).background(inputBgColor, RoundedCornerShape(8.dp)).padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
+                Text("Foto", color = colors.text1, fontSize = 12.sp)
+            }
+            Box(modifier = Modifier.weight(1f).background(inputBgColor, RoundedCornerShape(8.dp)).padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
+                Text("Link Drive", color = colors.text1, fontSize = 12.sp)
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Box(
+            modifier = Modifier.fillMaxWidth().height(80.dp)
+                .background(Color.Transparent, RoundedCornerShape(12.dp))
+                .border(1.dp, colors.border, RoundedCornerShape(12.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Pilih file bukti izin", color = colors.text1, fontSize = 12.sp)
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        Box(
+            modifier = Modifier.fillMaxWidth().height(55.dp).background(Brush.horizontalGradient(listOf(colors.blue, colors.green)), RoundedCornerShape(12.dp)).clickable { 
+                onSumbit(type, reason)
+            },
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Kirim Pengajuan", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        }
+        Spacer(modifier = Modifier.height(32.dp))
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RiwayatContent(colors: P79Colors, isDarkMode: Boolean, currentUser: User?, history: List<Attendance>, onBackClick: () -> Unit) {
     val cardBgColor = if (isDarkMode) Color(0xFF161D2F) else Color.White
     val innerCardBgColor = if (isDarkMode) Color(0xFF222831) else Color(0xFFF3F4F6)
 
@@ -575,8 +616,8 @@ fun RiwayatContent(
             }
         }
         Spacer(modifier = Modifier.height(32.dp))
-        Text("Riwayat Absensi & Izin", color = colors.text0, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-        Text("Pantau histori kehadiran dan pengajuan izin kamu", color = colors.text1, fontSize = 12.sp)
+        Text("Riwayat Absensi", color = colors.text0, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Text("Pantau histori kehadiran kamu", color = colors.text1, fontSize = 12.sp)
         Spacer(modifier = Modifier.height(24.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Box(modifier = Modifier.size(36.dp).background(cardBgColor, RoundedCornerShape(8.dp)).border(1.dp, colors.border, RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
@@ -621,91 +662,19 @@ fun RiwayatContent(
                 LegendItem("Libur", innerCardBgColor, colors.text1)
             }
         }
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // SEKSI HISTORI PENGAJUAN IZIN
-        if (permissionHistory.isNotEmpty()) {
-            // Ambil context lokal yang valid di dalam Jetpack Compose
-            val composeContext = LocalContext.current
-
-            Text("HISTORI IZIN", color = colors.text1, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-            Spacer(modifier = Modifier.height(8.dp))
-            permissionHistory.forEach { izin ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 12.dp)
-                        .background(cardBgColor, RoundedCornerShape(16.dp))
-                        .border(1.dp, colors.border, RoundedCornerShape(16.dp))
-                        .padding(16.dp)
-                ) {
-                    Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                        Text(izin.type, color = colors.amber, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                        Text(izin.date, color = colors.text1, fontSize = 12.sp)
-                    }
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text("Alasan: ${izin.reason}", color = colors.text0, fontSize = 13.sp)
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    // LOGIKA MENAMPILKAN LINK BUKTI FISIK (FOTO/FILE) DARI STORAGE
-                    if (izin.proofUrl.isNotEmpty()) {
-                        Text(
-                            text = "📄 Lihat Lampiran Berkas Bukti",
-                            color = colors.blue,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier
-                                .clickable {
-                                    try {
-                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(izin.proofUrl))
-                                        composeContext.startActivity(intent) // Perbaikan di sini
-                                    } catch (e: Exception) {
-                                        Toast.makeText(composeContext, "Gagal membuka tautan bukti", Toast.LENGTH_SHORT).show()
-                                    }
-                                }
-                                .padding(vertical = 4.dp)
-                        )
-                    }
-
-                    // LOGIKA MENAMPILKAN TAUTAN GOOGLE DRIVE
-                    if (izin.driveLink.isNotEmpty()) {
-                        Text(
-                            text = "🔗 Tautan Google Drive Karyawan",
-                            color = colors.green,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier
-                                .clickable {
-                                    try {
-                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(izin.driveLink))
-                                        composeContext.startActivity(intent) // Perbaikan di sini
-                                    } catch (e: Exception) {
-                                        Toast.makeText(composeContext, "Gagal membuka link Drive", Toast.LENGTH_SHORT).show()
-                                    }
-                                }
-                                .padding(vertical = 4.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text("Status Persetujuan: ${izin.status}", color = colors.blue, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        // SEKSI HISTORI KEHADIRAN (ABSEN)
-        Text("HISTORI KEHADIRAN", color = colors.text1, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         if (history.isEmpty()) {
-            EmptyState(colors = colors, cardBgColor = cardBgColor, message = "Tidak ada riwayat absensi")
+            EmptyState(
+                colors = colors,
+                cardBgColor = cardBgColor,
+                message = "Tidak ada riwayat absensi"
+            )
         } else {
             history.forEach { item ->
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 8.dp)
                         .background(cardBgColor, RoundedCornerShape(16.dp))
                         .border(1.dp, colors.border, RoundedCornerShape(16.dp))
                         .padding(16.dp)
@@ -742,16 +711,15 @@ fun LegendItem(label: String, dotColor: Color, textColor: Color) {
 
 @Composable
 fun HomeContent(
-    colors: P79Colors,
-    isDarkMode: Boolean,
-    activity: AppCompatActivity,
+    colors: P79Colors, 
+    isDarkMode: Boolean, 
+    activity: AppCompatActivity, 
     currentUser: User?,
     todayAttendance: Attendance?,
-    hasActivePermission: Boolean,
-    onLaporClick: () -> Unit,
-    onRiwayatClick: () -> Unit,
-    onIzinClick: () -> Unit,
-    onLemburClick: () -> Unit,
+    onLaporClick: () -> Unit, 
+    onRiwayatClick: () -> Unit, 
+    onIzinClick: () -> Unit, 
+    onLemburClick: () -> Unit, 
     onBellClick: () -> Unit
 ) {
     val cardBgColor = if (isDarkMode) Color(0xFF161D2F) else Color.White
@@ -760,7 +728,7 @@ fun HomeContent(
         Spacer(modifier = Modifier.height(48.dp))
         TopBar(colors = colors, isDarkMode = isDarkMode, currentUser = currentUser, onBellClick = onBellClick)
         Spacer(modifier = Modifier.height(24.dp))
-        AbsenCard(colors = colors, isDarkMode = isDarkMode, todayAttendance = todayAttendance, hasActivePermission = hasActivePermission, activity = activity)
+        AbsenCard(colors = colors, isDarkMode = isDarkMode, todayAttendance = todayAttendance, activity = activity)
         Spacer(modifier = Modifier.height(16.dp))
         MenuRow(colors = colors, cardBgColor = cardBgColor, onIzinClick = onIzinClick, onLaporClick = onLaporClick, onRiwayatClick = onRiwayatClick, onLemburClick = onLemburClick)
         Spacer(modifier = Modifier.height(16.dp))
@@ -785,10 +753,10 @@ fun MenuRow(colors: P79Colors, cardBgColor: Color, onIzinClick: () -> Unit, onLa
 
 @Composable
 fun ProfilContent(
-    colors: P79Colors,
-    isDarkMode: Boolean,
+    colors: P79Colors, 
+    isDarkMode: Boolean, 
     currentUser: User?,
-    onThemeChange: (Boolean) -> Unit,
+    onThemeChange: (Boolean) -> Unit, 
     onLogoutClick: () -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -1012,84 +980,57 @@ fun TopBar(colors: P79Colors, isDarkMode: Boolean, currentUser: User?, onBellCli
     val iconBgColor = if (isDarkMode) Color(0xFF161D2F) else Color.White
     val isHc = currentUser?.role == "HC"
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Column(modifier = Modifier.weight(1f)) {
+        Column(modifier = Modifier.weight(1f)) { 
             Text(text = "Halo, ${if (isHc) "Admin" else currentUser?.name?.split(" ")?.firstOrNull() ?: "Sobat"}", color = colors.text0, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            Text(text = "Padepokan Tujuh Sembilan", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+            Text(text = "Padepokan Tujuh Sembilan", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp) 
         }
         Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(iconBgColor).border(1.dp, colors.border, CircleShape).clickable { onBellClick() }, contentAlignment = Alignment.Center) { Icon(Icons.Default.Notifications, contentDescription = "Notifikasi", tint = colors.text1, modifier = Modifier.size(20.dp)); Box(modifier = Modifier.size(8.dp).background(colors.red, CircleShape).align(Alignment.TopEnd).padding(2.dp)) }
         Spacer(modifier = Modifier.width(12.dp))
-        Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(Brush.linearGradient(listOf(colors.blue, colors.green))), contentAlignment = Alignment.Center) {
-            Text(currentUser?.name?.firstOrNull()?.toString() ?: "U", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(Brush.linearGradient(listOf(colors.blue, colors.green))), contentAlignment = Alignment.Center) { 
+            Text(currentUser?.name?.firstOrNull()?.toString() ?: "U", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp) 
         }
     }
 }
 
 @Composable
-fun AbsenCard(colors: P79Colors, isDarkMode: Boolean, todayAttendance: Attendance?, hasActivePermission: Boolean, activity: AppCompatActivity) {
+fun AbsenCard(colors: P79Colors, isDarkMode: Boolean, todayAttendance: Attendance?, activity: AppCompatActivity) {
     val iconBgColor = if (isDarkMode) Color(0xFF222831) else Color(0xFFF3F4F6)
     val hasCheckedIn = todayAttendance != null
     val hasCheckedOut = todayAttendance?.checkOutTime?.isNotEmpty() == true
-
-    // Proteksi: Tombol Terkunci Mati apabila user sedang izin hari ini
-    val buttonEnabled = !hasCheckedOut && !hasActivePermission
-
+    
     Box(modifier = Modifier.padding(horizontal = 24.dp)) {
         GlassCard(colors = colors, modifier = Modifier.fillMaxWidth()) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(40.dp).background(iconBgColor, RoundedCornerShape(10.dp)), contentAlignment = Alignment.Center) {
-                    Icon(
-                        if (hasActivePermission) Icons.Default.Info
-                        else if (hasCheckedIn) Icons.Default.CheckCircle
-                        else Icons.Default.Warning,
-                        contentDescription = null,
-                        tint = if (hasActivePermission) colors.amber else if (hasCheckedIn) colors.green else colors.amber,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text(
-                        if (hasActivePermission) "Status: Sedang Izin Kerja"
-                        else if (hasCheckedOut) "Sudah Selesai Kerja"
-                        else if (hasCheckedIn) "Sedang Bekerja"
-                        else "Belum Absen Masuk",
-                        color = colors.text0, fontSize = 16.sp, fontWeight = FontWeight.Bold
-                    )
-                    Text("Kantor Pusat · radius 100m", color = colors.text1, fontSize = 12.sp)
-                }
+            Row(verticalAlignment = Alignment.CenterVertically) { 
+                Box(modifier = Modifier.size(40.dp).background(iconBgColor, RoundedCornerShape(10.dp)), contentAlignment = Alignment.Center) { 
+                    Icon(if (hasCheckedIn) Icons.Default.CheckCircle else Icons.Default.Warning, contentDescription = null, tint = if (hasCheckedIn) colors.green else colors.amber, modifier = Modifier.size(20.dp)) 
+                }; 
+                Spacer(modifier = Modifier.width(16.dp)); 
+                Column { 
+                    Text(if (hasCheckedOut) "Sudah Selesai Kerja" else if (hasCheckedIn) "Sedang Bekerja" else "Belum Absen Masuk", color = colors.text0, fontSize = 16.sp, fontWeight = FontWeight.Bold); 
+                    Text("Kantor Pusat · radius 100m", color = colors.text1, fontSize = 12.sp) 
+                } 
             }
             Spacer(modifier = Modifier.height(24.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("MASUK", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(todayAttendance?.checkInTime ?: "--:--", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                }
-                Box(modifier = Modifier.width(1.dp).height(40.dp).background(colors.border))
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("PULANG", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(todayAttendance?.checkOutTime ?: "--:--", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) { 
+                Column(horizontalAlignment = Alignment.CenterHorizontally) { 
+                    Text("MASUK", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp); 
+                    Spacer(modifier = Modifier.height(4.dp)); 
+                    Text(todayAttendance?.checkInTime ?: "--:--", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold) 
+                }; 
+                Box(modifier = Modifier.width(1.dp).height(40.dp).background(colors.border)); 
+                Column(horizontalAlignment = Alignment.CenterHorizontally) { 
+                    Text("PULANG", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp); 
+                    Spacer(modifier = Modifier.height(4.dp)); 
+                    Text(todayAttendance?.checkOutTime ?: "--:--", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold) 
+                } 
             }
             Spacer(modifier = Modifier.height(24.dp))
-
-            val buttonText = if (hasActivePermission) "TIDAK DAPAT ABSEN (SEDANG IZIN)" else if (hasCheckedOut) "SUDAH ABSEN PULANG" else if (hasCheckedIn) "ABSEN PULANG" else "ABSEN MASUK"
-
-            Button(
-                onClick = {
-                    val intent = Intent(activity, CameraAbsenActivity::class.java)
-                    intent.putExtra("type", if (!hasCheckedIn) "CHECK_IN" else "CHECK_OUT")
-                    activity.startActivity(intent)
-                },
-                enabled = buttonEnabled,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, disabledContainerColor = Color.Gray.copy(alpha = 0.2f)),
-                contentPadding = PaddingValues(),
-                modifier = Modifier.fillMaxWidth().height(55.dp)
-            ) {
-                Box(modifier = Modifier.fillMaxSize().background(if (buttonEnabled) Brush.horizontalGradient(listOf(colors.blue, colors.green)) else SolidColor(Color.Transparent), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
-                    Text(buttonText, color = if (buttonEnabled) Color.White else colors.text1, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                }
+            val buttonText = if (hasCheckedOut) "SUDAH ABSEN PULANG" else if (hasCheckedIn) "ABSEN PULANG" else "ABSEN MASUK"
+            val buttonEnabled = !hasCheckedOut
+            Button(onClick = { val intent = Intent(activity, CameraAbsenActivity::class.java); if (!hasCheckedIn) { intent.putExtra("type", "CHECK_IN") } else { intent.putExtra("type", "CHECK_OUT") }; activity.startActivity(intent) }, enabled = buttonEnabled, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, disabledContainerColor = Color.Gray.copy(alpha = 0.2f)), contentPadding = PaddingValues(), modifier = Modifier.fillMaxWidth().height(55.dp)) { 
+                Box(modifier = Modifier.fillMaxSize().background(if (buttonEnabled) Brush.horizontalGradient(listOf(colors.blue, colors.green)) else SolidColor(Color.Transparent), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) { 
+                    Text(buttonText, color = if (buttonEnabled) Color.White else colors.text1, fontSize = 14.sp, fontWeight = FontWeight.Bold) 
+                } 
             }
         }
     }
@@ -1124,7 +1065,7 @@ fun DockNavigationBar(colors: P79Colors, isDarkMode: Boolean, selectedIndex: Int
             val itemWidth = maxWidth / itemsCount
             val indicatorOffset by animateDpAsState(targetValue = if (selectedIndex < itemsCount) itemWidth * selectedIndex else itemWidth * (itemsCount - 1), animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow), label = "")
             Box(modifier = Modifier.offset(x = indicatorOffset).width(itemWidth).fillMaxHeight().padding(6.dp).background(Brush.linearGradient(listOf(colors.blue, colors.green)), RoundedCornerShape(26.dp)))
-            Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
+            Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) { 
                 BottomNavItem(colors = colors, icon = Icons.Default.Home, label = "Home", isSelected = selectedIndex == 0) { onItemSelected(0) }
                 BottomNavItem(colors = colors, icon = Icons.Default.DateRange, label = "Riwayat", isSelected = selectedIndex == 1) { onItemSelected(1) }
                 BottomNavItem(colors = colors, icon = Icons.Default.Edit, label = "Laporan", isSelected = selectedIndex == 2) { onItemSelected(2) }
@@ -1155,3 +1096,4 @@ fun NotificationSheetContent(colors: P79Colors, isDarkMode: Boolean) {
 fun EmptyState(colors: P79Colors, cardBgColor: Color, message: String) {
     Box(modifier = Modifier.fillMaxWidth().background(cardBgColor, RoundedCornerShape(16.dp)).border(1.dp, colors.border, RoundedCornerShape(16.dp)).padding(24.dp), contentAlignment = Alignment.Center) { Text(text = message, color = colors.text1, fontSize = 14.sp, textAlign = TextAlign.Center) }
 }
+
