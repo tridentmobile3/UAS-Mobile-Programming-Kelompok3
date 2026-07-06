@@ -54,6 +54,7 @@ import com.feisal.workingreport.model.WorkingReport
 import com.feisal.workingreport.repository.AttendanceRepository
 import com.feisal.workingreport.repository.AuthRepository
 import com.feisal.workingreport.repository.PermissionRepository
+import com.feisal.workingreport.repository.ProfileRepository
 import com.feisal.workingreport.repository.WorkingReportRepository
 import com.feisal.workingreport.ui.components.GlassCard
 import com.feisal.workingreport.ui.components.NoiseOverlay
@@ -70,6 +71,7 @@ class DashboardActivity : AppCompatActivity() {
     private val authRepository by lazy { AuthRepository() }
     private val permissionRepository by lazy { PermissionRepository() }
     private val workingReportRepository by lazy { WorkingReportRepository() }
+    private val profileRepository by lazy { ProfileRepository() }
 
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -224,7 +226,9 @@ class DashboardActivity : AppCompatActivity() {
                                     startActivity(Intent(this@DashboardActivity, LoginActivity::class.java))
                                     finish()
                                 },
-                                onBackClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } }
+                                onBackClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } },
+                                onRefresh = { refreshData() },
+                                profileRepository = profileRepository
                             )
                         }
                     }
@@ -1141,41 +1145,190 @@ fun ProfilContent(
     currentUser: User?,
     onThemeChange: (Boolean) -> Unit,
     onLogoutClick: () -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onRefresh: () -> Unit,
+    profileRepository: ProfileRepository
 ) {
     val cardBgColor = if (isDarkMode) Color(0xFF161D2F) else Color.White
     val iconBgColor = if (isDarkMode) Color(0xFF222831) else Color(0xFFF3F4F6)
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     var showEditProfileDialog by remember { mutableStateOf(false) }
     var showChangePasswordDialog by remember { mutableStateOf(false) }
     var showOfficeLocationDialog by remember { mutableStateOf(false) }
 
+    // State for Edit Profile
+    var newName by remember { mutableStateOf("") }
+    var isUpdating by remember { mutableStateOf(false) }
+
+    // State for Change Password
+    var oldPassword by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var isChangingPassword by remember { mutableStateOf(false) }
+
+    // Set initial name when dialog opens
+    LaunchedEffect(showEditProfileDialog) {
+        if (showEditProfileDialog) {
+            newName = currentUser?.name ?: ""
+        }
+    }
+
     if (showEditProfileDialog) {
-        Dialog(onDismissRequest = { showEditProfileDialog = false }) {
+        Dialog(onDismissRequest = { if (!isUpdating) showEditProfileDialog = false }) {
             Surface(shape = RoundedCornerShape(24.dp), color = cardBgColor, modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                 Column(modifier = Modifier.padding(24.dp)) {
                     Text("Edit Profil", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedTextField(value = currentUser?.name ?: "", onValueChange = { }, label = { Text("Nama Lengkap", color = colors.text1) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
+                    OutlinedTextField(
+                        value = newName, 
+                        onValueChange = { newName = it }, 
+                        label = { Text("Nama Lengkap", color = colors.text1) }, 
+                        modifier = Modifier.fillMaxWidth(), 
+                        shape = RoundedCornerShape(12.dp),
+                        enabled = !isUpdating,
+                        singleLine = true
+                    )
                     Spacer(modifier = Modifier.height(24.dp))
-                    Button(onClick = { showEditProfileDialog = false; Toast.makeText(context, "Profil berhasil diperbarui", Toast.LENGTH_SHORT).show() }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = colors.blue)) { Text("Simpan Perubahan", color = Color.White) }
+                    Button(
+                        onClick = { 
+                            // Validations
+                            val trimmedName = newName.trim()
+                            if (trimmedName.isEmpty()) {
+                                Toast.makeText(context, "Nama tidak boleh kosong.", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            if (trimmedName.length < 3) {
+                                Toast.makeText(context, "Minimal 3 karakter.", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            if (trimmedName.length > 50) {
+                                Toast.makeText(context, "Maksimal 50 karakter.", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            if (trimmedName == currentUser?.name) {
+                                Toast.makeText(context, "Tidak ada perubahan.", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+
+                            // Perform Update
+                            isUpdating = true
+                            scope.launch {
+                                profileRepository.updateProfileName(trimmedName).onSuccess {
+                                    isUpdating = false
+                                    showEditProfileDialog = false
+                                    Toast.makeText(context, "Profil berhasil diperbarui.", Toast.LENGTH_SHORT).show()
+                                    onRefresh() // Refresh data in activity
+                                }.onFailure { e ->
+                                    isUpdating = false
+                                    val message = if (e.message?.contains("network", true) == true) {
+                                        "Periksa koneksi internet."
+                                    } else {
+                                        "Gagal memperbarui profil."
+                                    }
+                                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }, 
+                        modifier = Modifier.fillMaxWidth(), 
+                        shape = RoundedCornerShape(12.dp), 
+                        colors = ButtonDefaults.buttonColors(containerColor = colors.blue),
+                        enabled = !isUpdating
+                    ) { 
+                        if (isUpdating) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
+                        } else {
+                            Text("Simpan Perubahan", color = Color.White) 
+                        }
+                    }
                 }
             }
         }
     }
 
     if (showChangePasswordDialog) {
-        Dialog(onDismissRequest = { showChangePasswordDialog = false }) {
+        Dialog(onDismissRequest = { if (!isChangingPassword) showChangePasswordDialog = false }) {
             Surface(shape = RoundedCornerShape(24.dp), color = cardBgColor, modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                 Column(modifier = Modifier.padding(24.dp)) {
                     Text("Ubah Kata Sandi", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedTextField(value = "", onValueChange = { }, label = { Text("Kata Sandi Lama", color = colors.text1) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
+                    OutlinedTextField(
+                        value = oldPassword, 
+                        onValueChange = { oldPassword = it }, 
+                        label = { Text("Kata Sandi Lama", color = colors.text1) }, 
+                        modifier = Modifier.fillMaxWidth(), 
+                        shape = RoundedCornerShape(12.dp),
+                        enabled = !isChangingPassword,
+                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                        singleLine = true
+                    )
                     Spacer(modifier = Modifier.height(12.dp))
-                    OutlinedTextField(value = "", onValueChange = { }, label = { Text("Kata Sandi Baru", color = colors.text1) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
+                    OutlinedTextField(
+                        value = newPassword, 
+                        onValueChange = { newPassword = it }, 
+                        label = { Text("Kata Sandi Baru", color = colors.text1) }, 
+                        modifier = Modifier.fillMaxWidth(), 
+                        shape = RoundedCornerShape(12.dp),
+                        enabled = !isChangingPassword,
+                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                        singleLine = true
+                    )
                     Spacer(modifier = Modifier.height(24.dp))
-                    Button(onClick = { showChangePasswordDialog = false; Toast.makeText(context, "Kata sandi berhasil diubah", Toast.LENGTH_SHORT).show() }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = colors.blue)) { Text("Ubah Sandi", color = Color.White) }
+                    Button(
+                        onClick = { 
+                            // Validations
+                            if (oldPassword.isBlank()) {
+                                Toast.makeText(context, "Kata sandi lama wajib diisi.", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            if (newPassword.isBlank()) {
+                                Toast.makeText(context, "Kata sandi baru wajib diisi.", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            if (newPassword.length < 6) {
+                                Toast.makeText(context, "Kata sandi baru minimal 6 karakter.", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            if (newPassword.length > 32) {
+                                Toast.makeText(context, "Kata sandi baru maksimal 32 karakter.", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            if (newPassword == oldPassword) {
+                                Toast.makeText(context, "Kata sandi baru tidak boleh sama dengan kata sandi lama.", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+
+                            isChangingPassword = true
+                            scope.launch {
+                                profileRepository.changePassword(oldPassword, newPassword).onSuccess {
+                                    isChangingPassword = false
+                                    showChangePasswordDialog = false
+                                    oldPassword = ""
+                                    newPassword = ""
+                                    Toast.makeText(context, "Kata sandi berhasil diperbarui.", Toast.LENGTH_SHORT).show()
+                                }.onFailure { e ->
+                                    isChangingPassword = false
+                                    val message = when {
+                                        e.message?.contains("network", true) == true -> "Periksa koneksi internet."
+                                        e.message?.contains("invalid-credential", true) == true || 
+                                        e.message?.contains("wrong-password", true) == true -> "Kata sandi lama salah."
+                                        else -> "Gagal mengubah kata sandi."
+                                    }
+                                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }, 
+                        modifier = Modifier.fillMaxWidth(), 
+                        shape = RoundedCornerShape(12.dp), 
+                        colors = ButtonDefaults.buttonColors(containerColor = colors.blue),
+                        enabled = !isChangingPassword
+                    ) { 
+                        if (isChangingPassword) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
+                        } else {
+                            Text("Ubah Sandi", color = Color.White) 
+                        }
+                    }
                 }
             }
         }
