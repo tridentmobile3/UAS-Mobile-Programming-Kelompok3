@@ -1804,8 +1804,27 @@ fun DockNavigationBar(colors: P79Colors, isDarkMode: Boolean, selectedIndex: Int
         BoxWithConstraints(modifier = Modifier.weight(1f).height(64.dp).clip(RoundedCornerShape(32.dp)).background(dockBgColor).border(1.dp, colors.border, RoundedCornerShape(32.dp))) {
             val itemsCount = if (isHc) 4 else 3
             val itemWidth = maxWidth / itemsCount
-            val indicatorOffset by animateDpAsState(targetValue = if (selectedIndex < itemsCount) itemWidth * selectedIndex else itemWidth * (itemsCount - 1), animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow), label = "")
-            Box(modifier = Modifier.offset(x = indicatorOffset).width(itemWidth).fillMaxHeight().padding(6.dp).background(Brush.linearGradient(listOf(colors.blue, colors.green)), RoundedCornerShape(26.dp)))
+            
+            // Perbaikan: Indikator hanya muncul jika salah satu menu di dalam bar ini yang aktif
+            val showIndicator = (selectedIndex < itemsCount)
+            
+            val indicatorOffset by animateDpAsState(
+                targetValue = if (showIndicator) itemWidth * selectedIndex else 0.dp, 
+                animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow), 
+                label = ""
+            )
+            
+            if (showIndicator) {
+                Box(
+                    modifier = Modifier
+                        .offset(x = indicatorOffset)
+                        .width(itemWidth)
+                        .fillMaxHeight()
+                        .padding(6.dp)
+                        .background(Brush.linearGradient(listOf(colors.blue, colors.green)), RoundedCornerShape(26.dp))
+                )
+            }
+
             Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
                 BottomNavItem(colors = colors, icon = Icons.Default.Home, label = "Home", isSelected = selectedIndex == 0) { onItemSelected(0) }
                 BottomNavItem(colors = colors, icon = Icons.Default.DateRange, label = "Riwayat", isSelected = selectedIndex == 1) { onItemSelected(1) }
