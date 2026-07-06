@@ -110,8 +110,11 @@ class DashboardAdminActivity : AppCompatActivity() {
 
     private fun loadAdminStats() {
         CoroutineScope(Dispatchers.IO).launch {
-            val pendingAttendances = attendanceRepository.getPendingAttendances()
-            val pendingReports = workingReportRepository.getPendingReports()
+            val allAttendances = attendanceRepository.getAllAttendances()
+            val allReports = workingReportRepository.getAllReports()
+            
+            val pendingAttendances = allAttendances.filter { it.status == "PENDING" || it.status == "SUBMITTED" }
+            val pendingReports = allReports.filter { it.status == "SUBMITTED" }
             
             withContext(Dispatchers.Main) {
                 if (pendingAttendances.isNotEmpty()) {
@@ -121,8 +124,11 @@ class DashboardAdminActivity : AppCompatActivity() {
                     binding.tvLeftName1.text = "Tidak ada\npending"
                 }
 
-                // Update summary counts (Mock/Dynamic)
-                // In real app, calculate from allAttendances
+                // Update summary counts (Dynamic)
+                binding.tvSummaryCount1.text = allAttendances.count { it.status == "HADIR" }.toString()
+                binding.tvSummaryCount2.text = allAttendances.count { it.status == "IZIN" || it.status == "SAKIT" }.toString()
+                binding.tvSummaryCount3.text = allAttendances.count { it.status == "TERLAMBAT" }.toString()
+                binding.tvSummaryCount4.text = allAttendances.count { it.status == "ALPHA" }.toString()
             }
         }
     }

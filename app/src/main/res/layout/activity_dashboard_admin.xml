@@ -2,7 +2,6 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#0B101E">
@@ -113,7 +112,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Total Karyawan: 120 Orang"
+                                android:text="Data Kehadiran Global"
                                 android:textColor="@android:color/white"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
@@ -132,7 +131,7 @@
                         android:orientation="horizontal"
                         android:layout_marginTop="24dp"
                         android:layout_marginBottom="24dp"
-                        android:weightSum="3">
+                        android:weightSum="4">
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -148,11 +147,12 @@
                                 android:textSize="11sp"
                                 android:textStyle="bold"/>
                             <TextView
+                                android:id="@+id/tvSummaryCount1"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="102"
+                                android:text="0"
                                 android:textColor="@android:color/white"
-                                android:textSize="24sp"
+                                android:textSize="20sp"
                                 android:textStyle="bold"
                                 android:layout_marginTop="8dp"/>
                         </LinearLayout>
@@ -171,16 +171,17 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="IZIN/SAKIT"
+                                android:text="IZIN"
                                 android:textColor="#F4D03F"
                                 android:textSize="11sp"
                                 android:textStyle="bold"/>
                             <TextView
+                                android:id="@+id/tvSummaryCount2"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="5"
+                                android:text="0"
                                 android:textColor="@android:color/white"
-                                android:textSize="24sp"
+                                android:textSize="20sp"
                                 android:textStyle="bold"
                                 android:layout_marginTop="8dp"/>
                         </LinearLayout>
@@ -199,16 +200,46 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="BELUM ABSEN"
+                                android:text="TELAT"
                                 android:textColor="#E74C3C"
                                 android:textSize="11sp"
                                 android:textStyle="bold"/>
                             <TextView
+                                android:id="@+id/tvSummaryCount3"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="13"
+                                android:text="0"
                                 android:textColor="@android:color/white"
-                                android:textSize="24sp"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:layout_marginTop="8dp"/>
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="1dp"
+                            android:layout_height="match_parent"
+                            android:background="#2D3548" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="ALPHA"
+                                android:textColor="#3498DB"
+                                android:textSize="11sp"
+                                android:textStyle="bold"/>
+                            <TextView
+                                android:id="@+id/tvSummaryCount4"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textColor="@android:color/white"
+                                android:textSize="20sp"
                                 android:textStyle="bold"
                                 android:layout_marginTop="8dp"/>
                         </LinearLayout>
@@ -220,7 +251,7 @@
                         android:layout_height="60dp"
                         android:background="@drawable/bg_btn_gradient_absen"
                         app:backgroundTint="@null"
-                        android:text="EXPORT LAPORAN (EXCEL)"
+                        android:text="EXPORT REKAP (XLSX)"
                         android:textColor="@android:color/white"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -331,209 +362,51 @@
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp">
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    app:cardBackgroundColor="#22283A"
-                    app:cardCornerRadius="8dp"
-                    app:strokeWidth="0dp">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="📅 16 Apr 2022"
-                        android:textColor="#8B95A5"
-                        android:textSize="11sp"
-                        android:paddingHorizontal="10dp"
-                        android:paddingVertical="4dp"/>
-                </com.google.android.material.card.MaterialCardView>
-            </RelativeLayout>
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:weightSum="2">
+                android:orientation="vertical"
+                android:layout_marginTop="16dp">
 
-                <LinearLayout
-                    android:layout_width="0dp"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:layout_marginEnd="6dp">
+                    android:text="PENDING KEHADIRAN (APPROVAL)"
+                    android:textColor="#8B95A5"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="10dp"/>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="PENDING KEHADIRAN (APPROVAL)"
-                        android:textColor="#8B95A5"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="10dp"/>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="match_parent"
-                        android:layout_height="110dp"
-                        app:cardBackgroundColor="#161D2F"
-                        app:cardCornerRadius="16dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="#2D3548"
-                        android:layout_marginBottom="10dp">
-                        <RelativeLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:padding="12dp">
-                            <TextView
-                                android:id="@+id/tvLeftName1"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Diky Raihan S.\n(Izin: Sakit)"
-                                android:textColor="@android:color/white"
-                                android:textSize="13sp"
-                                android:textStyle="bold"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_alignParentBottom="true"
-                                android:text="Lihat Detail Absensi"
-                                android:textColor="#3498DB"
-                                android:textSize="11sp"/>
-                        </RelativeLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="match_parent"
-                        android:layout_height="110dp"
-                        app:cardBackgroundColor="#161D2F"
-                        app:cardCornerRadius="16dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="#2D3548">
-                        <RelativeLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:padding="12dp">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Diky Raihan S.\n(Lembur)"
-                                android:textColor="@android:color/white"
-                                android:textSize="13sp"
-                                android:textStyle="bold"/>
-                            <TextView
-                                android:id="@+id/tvStatusLembur"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:layout_below="@id/tvLeftName1"
-                                android:text="Status: Pengajuan Lembur"
-                                android:textColor="#F4D03F"
-                                android:textSize="11sp"/>
-                            <ImageView
-                                android:layout_width="22dp"
-                                android:layout_height="22dp"
-                                android:layout_alignParentEnd="true"
-                                android:layout_alignParentBottom="true"
-                                android:src="@android:drawable/checkbox_on_background"
-                                app:tint="#2ECC71"/>
-                        </RelativeLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:layout_marginStart="6dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
+                    app:cardBackgroundColor="#161D2F"
+                    app:cardCornerRadius="16dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#2D3548"
+                    android:layout_marginBottom="10dp">
+                    <RelativeLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="IKHTISAR LAPORAN KERJA"
-                        android:textColor="#8B95A5"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="10dp"/>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="match_parent"
-                        android:layout_height="110dp"
-                        app:cardBackgroundColor="#161D2F"
-                        app:cardCornerRadius="16dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="#2D3548"
-                        android:layout_marginBottom="10dp">
-                        <RelativeLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:padding="12dp">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Budi Santoso"
-                                android:textColor="@android:color/white"
-                                android:textSize="13sp"
-                                android:textStyle="bold"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="20dp"
-                                android:text="Laporan Harian (Rutin):\n15 Selesai"
-                                android:textColor="#8B95A5"
-                                android:textSize="11sp"/>
-
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_alignParentEnd="true"
-                                android:layout_alignParentBottom="true"
-                                android:orientation="horizontal">
-                                <ImageView android:layout_width="18dp" android:layout_height="18dp" android:src="@android:drawable/checkbox_on_background" android:layout_marginEnd="6dp" app:tint="#2ECC71"/>
-                                <ImageView android:layout_width="18dp" android:layout_height="18dp" android:src="@android:drawable/ic_delete" app:tint="#E74C3C"/>
-                            </LinearLayout>
-                        </RelativeLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="match_parent"
-                        android:layout_height="110dp"
-                        app:cardBackgroundColor="#161D2F"
-                        app:cardCornerRadius="16dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="#2D3548">
-                        <RelativeLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:padding="12dp">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Siti Aminah"
-                                android:textColor="@android:color/white"
-                                android:textSize="13sp"
-                                android:textStyle="bold"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="20dp"
-                                android:text="Laporan Lembur:\n5 Jam (Total)"
-                                android:textColor="#8B95A5"
-                                android:textSize="11sp"/>
-
-                            <ImageView
-                                android:layout_width="28dp"
-                                android:layout_height="28dp"
-                                android:layout_alignParentEnd="true"
-                                android:layout_alignParentBottom="true"
-                                android:src="@android:drawable/ic_menu_report_image"
-                                app:tint="#3498DB"/>
-                        </RelativeLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
+                        android:padding="16dp">
+                        <TextView
+                            android:id="@+id/tvLeftName1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Memuat data..."
+                            android:textColor="@android:color/white"
+                            android:textSize="13sp"
+                            android:textStyle="bold"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@id/tvLeftName1"
+                            android:layout_marginTop="8dp"
+                            android:text="Lihat Semua →"
+                            android:textColor="#3498DB"
+                            android:textSize="11sp"/>
+                    </RelativeLayout>
+                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
         </LinearLayout>
@@ -565,12 +438,12 @@
 
             <LinearLayout android:id="@+id/navAdminKaryawan" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:orientation="vertical">
                 <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_menu_edit" app:tint="#8B95A5"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Preesensi" android:textColor="#8B95A5" android:textSize="9sp" android:layout_marginTop="4dp"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Presensi" android:textColor="#8B95A5" android:textSize="9sp" android:layout_marginTop="4dp"/>
             </LinearLayout>
 
             <LinearLayout android:id="@+id/navAdminPersetujuan" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:orientation="vertical">
                 <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_dialog_dialer" app:tint="#8B95A5"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Laporan Kerja" android:textColor="#8B95A5" android:textSize="10sp" android:layout_marginTop="4dp"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Laporan" android:textColor="#8B95A5" android:textSize="10sp" android:layout_marginTop="4dp"/>
             </LinearLayout>
 
             <LinearLayout android:id="@+id/navAdminProfil" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:orientation="vertical">

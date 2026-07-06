@@ -1,43 +1,62 @@
 package com.feisal.workingreport
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.widget.ImageView
-import androidx.activity.ComponentActivity
+import android.widget.Toast
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
+import com.feisal.workingreport.model.Attendance
+import com.feisal.workingreport.model.PermissionRequest
+import com.feisal.workingreport.model.User
+import com.feisal.workingreport.repository.AttendanceRepository
+import com.feisal.workingreport.repository.AuthRepository
+import com.feisal.workingreport.repository.PermissionRepository
+import com.feisal.workingreport.ui.components.NoiseOverlay
+import com.feisal.workingreport.ui.theme.LiquidGlassBackground
+import com.feisal.workingreport.ui.theme.p79Colors
+import kotlinx.coroutines.launch
 
-class RiwayatActivity : ComponentActivity() {
+class RiwayatActivity : AppCompatActivity() {
+    private val authRepository = AuthRepository()
+    private val attendanceRepository = AttendanceRepository()
+    private val permissionRepository = PermissionRepository()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
         setContent {
-            Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF0B101E)) {
-                RiwayatContent(onBackClick = { finish() })
+            val colors = p79Colors(isDark = true)
+            var currentUser by remember { mutableStateOf<User?>(null) }
+            var attendanceHistory by remember { mutableStateOf<List<Attendance>>(emptyList()) }
+            var permissionHistory by remember { mutableStateOf<List<PermissionRequest>>(emptyList()) }
+            val scope = rememberCoroutineScope()
+
+            LaunchedEffect(Unit) {
+                currentUser = authRepository.getCurrentUserProfile()
+                currentUser?.let { user ->
+                    attendanceHistory = attendanceRepository.getAttendanceHistory()
+                    permissionHistory = permissionRepository.getMyPermissions(user.id)
+                }
+            }
+
+            Box(modifier = Modifier.fillMaxSize()) {
+                LiquidGlassBackground(colors = colors) { }
+                NoiseOverlay()
+                
+                RiwayatContent(
+                    colors = colors,
+                    isDarkMode = true,
+                    currentUser = currentUser,
+                    history = attendanceHistory,
+                    permissionHistory = permissionHistory,
+                    onBackClick = { finish() }
+                )
             }
         }
     }
-}
-
-@Composable
-fun RiwayatContent(onBackClick: () -> Unit) {
-    AndroidView(
-        factory = { context ->
-            val view = LayoutInflater.from(context).inflate(R.layout.activity_riwayat, null, false)
-            view.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-
-            val btnBackRiwayat = view.findViewById<ImageView>(R.id.btnBackRiwayat)
-            btnBackRiwayat?.setOnClickListener {
-                onBackClick()
-            }
-            view
-        },
-        modifier = Modifier.fillMaxSize().padding(top = 48.dp)
-    )
 }
