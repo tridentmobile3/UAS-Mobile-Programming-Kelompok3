@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,7 +18,6 @@ import com.feisal.workingreport.repository.PermissionRepository
 import com.feisal.workingreport.ui.components.NoiseOverlay
 import com.feisal.workingreport.ui.theme.LiquidGlassBackground
 import com.feisal.workingreport.ui.theme.p79Colors
-import kotlinx.coroutines.launch
 
 class RiwayatActivity : AppCompatActivity() {
     private val authRepository = AuthRepository()
@@ -34,7 +32,6 @@ class RiwayatActivity : AppCompatActivity() {
             var currentUser by remember { mutableStateOf<User?>(null) }
             var attendanceHistory by remember { mutableStateOf<List<Attendance>>(emptyList()) }
             var permissionHistory by remember { mutableStateOf<List<PermissionRequest>>(emptyList()) }
-            val scope = rememberCoroutineScope()
 
             LaunchedEffect(Unit) {
                 currentUser = authRepository.getCurrentUserProfile()

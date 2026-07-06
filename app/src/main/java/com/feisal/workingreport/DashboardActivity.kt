@@ -112,7 +112,7 @@ class DashboardActivity : AppCompatActivity() {
             var attendanceHistory by remember { mutableStateOf<List<Attendance>>(emptyList()) }
             var workingReports by remember { mutableStateOf<List<WorkingReport>>(emptyList()) }
 
-            val refreshData = {
+            fun refreshData() {
                 coroutineScope.launch {
                     try {
                         currentUser = authRepository.getCurrentUserProfile()
@@ -832,6 +832,7 @@ fun RiwayatContent(
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp)) {
         Spacer(modifier = Modifier.height(64.dp)) // Added space for status bar
+        
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(modifier = Modifier.size(32.dp).clip(CircleShape).background(cardBgColor).clickable { onBackClick() }, contentAlignment = Alignment.Center) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = colors.text0, modifier = Modifier.size(20.dp))
@@ -840,9 +841,6 @@ fun RiwayatContent(
             Column(modifier = Modifier.weight(1f)) {
                 Text(currentUser?.name ?: "Karyawan", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Text(currentUser?.nip ?: "-", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-            }
-            Box(modifier = Modifier.size(40.dp).background(Brush.linearGradient(listOf(colors.blue, colors.green)), CircleShape), contentAlignment = Alignment.Center) {
-                Text(currentUser?.name?.firstOrNull()?.toString() ?: "U", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
         }
         Spacer(modifier = Modifier.height(32.dp))
@@ -1113,7 +1111,12 @@ fun HomeContent(
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Spacer(modifier = Modifier.height(48.dp))
-        TopBar(colors = colors, isDarkMode = isDarkMode, currentUser = currentUser, onBellClick = onBellClick)
+        TopBar(
+            colors = colors, 
+            isDarkMode = isDarkMode, 
+            currentUser = currentUser, 
+            onBellClick = onBellClick
+        )
         Spacer(modifier = Modifier.height(24.dp))
         AbsenCard(colors = colors, isDarkMode = isDarkMode, todayAttendance = todayAttendance, hasActivePermission = hasActivePermission, activity = activity)
         Spacer(modifier = Modifier.height(16.dp))
@@ -1153,7 +1156,7 @@ fun ProfilContent(
     val iconBgColor = if (isDarkMode) Color(0xFF222831) else Color(0xFFF3F4F6)
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-
+    
     var showEditProfileDialog by remember { mutableStateOf(false) }
     var showChangePasswordDialog by remember { mutableStateOf(false) }
     var showOfficeLocationDialog by remember { mutableStateOf(false) }
@@ -1357,6 +1360,7 @@ fun ProfilContent(
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp)) {
         Spacer(modifier = Modifier.height(48.dp))
+        
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(modifier = Modifier.size(32.dp).clip(CircleShape).clickable { onBackClick() }, contentAlignment = Alignment.Center) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = colors.text0, modifier = Modifier.size(24.dp))
@@ -1365,9 +1369,6 @@ fun ProfilContent(
             Column(modifier = Modifier.weight(1f)) {
                 Text(currentUser?.name ?: "User", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Text(currentUser?.nip ?: "-", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-            }
-            Box(modifier = Modifier.size(40.dp).background(colors.green, CircleShape), contentAlignment = Alignment.Center) {
-                Text(currentUser?.name?.firstOrNull()?.toString() ?: "U", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
         }
         Spacer(modifier = Modifier.height(32.dp))
@@ -1412,8 +1413,6 @@ fun ProfilContent(
         Text("LAINNYA", color = colors.text1, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
         Spacer(modifier = Modifier.height(8.dp))
         Column(modifier = Modifier.fillMaxWidth().background(cardBgColor, RoundedCornerShape(16.dp)).border(1.dp, colors.border, RoundedCornerShape(16.dp))) {
-            SettingsItem(colors, iconBgColor, Icons.Default.Notifications, colors.red, "Notifikasi", null, trailing = { Switch(checked = true, onCheckedChange = { Toast.makeText(context, "Pengaturan notifikasi diperbarui", Toast.LENGTH_SHORT).show() }, colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = colors.blue)) }, onClick = { Toast.makeText(context, "Membuka notifikasi", Toast.LENGTH_SHORT).show() })
-            Divider(color = colors.border, modifier = Modifier.padding(horizontal = 16.dp))
             SettingsItem(colors, iconBgColor, Icons.Default.Info, colors.text1, "Bantuan & Dukungan", null, onClick = { Toast.makeText(context, "Menghubungi bantuan...", Toast.LENGTH_SHORT).show() })
             Divider(color = colors.border, modifier = Modifier.padding(horizontal = 16.dp))
             SettingsItem(colors, iconBgColor, Icons.Default.Info, colors.text1, "Tentang Aplikasi", "Sapta Work v1.0", showArrow = true, onClick = { Toast.makeText(context, "Sapta Work v1.0 (Final Project)", Toast.LENGTH_LONG).show() })
@@ -1515,12 +1514,6 @@ fun LaporanContent(
                         contentDescription = null,
                         tint = colors.text1,
                         modifier = Modifier.size(20.dp)
-                    )
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .background(colors.red, CircleShape)
-                            .align(Alignment.TopEnd)
                     )
                 }
 
@@ -1716,91 +1709,6 @@ fun LaporanTab(text: String, isSelected: Boolean, colors: P79Colors, cardBgColor
     }
 }
 @Composable
-fun SimpleTopBar(
-    colors: P79Colors,
-    isDarkMode: Boolean,
-    currentUser: User?,
-    onBellClick: () -> Unit
-) {
-    val iconBgColor =
-        if (isDarkMode) Color(0xFF161D2F)
-        else Color.White
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.End,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(iconBgColor)
-                .border(
-                    1.dp,
-                    colors.border,
-                    CircleShape
-                )
-                .clickable {
-                    onBellClick()
-                },
-            contentAlignment = Alignment.Center
-        ) {
-
-            Icon(
-                imageVector = Icons.Default.Notifications,
-                contentDescription = "Notification",
-                tint = colors.text1,
-                modifier = Modifier.size(20.dp)
-            )
-
-            Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .background(
-                        colors.red,
-                        CircleShape
-                    )
-                    .align(Alignment.TopEnd)
-            )
-
-        }
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(
-                    Brush.linearGradient(
-                        listOf(
-                            colors.blue,
-                            colors.green
-                        )
-                    )
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-
-            Text(
-                text = currentUser?.name
-                    ?.firstOrNull()
-                    ?.toString() ?: "U",
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-
-        }
-
-    }
-}
-
-@Composable
 fun TopBar(colors: P79Colors, isDarkMode: Boolean, currentUser: User?, onBellClick: () -> Unit) {
     val iconBgColor = if (isDarkMode) Color(0xFF161D2F) else Color.White
     val isHc = currentUser?.role == "HC"
@@ -1809,7 +1717,7 @@ fun TopBar(colors: P79Colors, isDarkMode: Boolean, currentUser: User?, onBellCli
             Text(text = "Halo, ${if (isHc) "Admin" else currentUser?.name?.split(" ")?.firstOrNull() ?: "Sobat"}", color = colors.text0, fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Text(text = "Padepokan Tujuh Sembilan", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
         }
-        Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(iconBgColor).border(1.dp, colors.border, CircleShape).clickable { onBellClick() }, contentAlignment = Alignment.Center) { Icon(Icons.Default.Notifications, contentDescription = "Notifikasi", tint = colors.text1, modifier = Modifier.size(20.dp)); Box(modifier = Modifier.size(8.dp).background(colors.red, CircleShape).align(Alignment.TopEnd).padding(2.dp)) }
+        Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(iconBgColor).border(1.dp, colors.border, CircleShape).clickable { onBellClick() }, contentAlignment = Alignment.Center) { Icon(Icons.Default.Notifications, contentDescription = "Notifikasi", tint = colors.text1, modifier = Modifier.size(20.dp)) }
         Spacer(modifier = Modifier.width(12.dp))
         Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(Brush.linearGradient(listOf(colors.blue, colors.green))), contentAlignment = Alignment.Center) {
             Text(currentUser?.name?.firstOrNull()?.toString() ?: "U", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
