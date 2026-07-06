@@ -180,6 +180,7 @@ class DashboardActivity : AppCompatActivity() {
                                 activity = this@DashboardActivity,
                                 currentUser = currentUser,
                                 todayAttendance = todayAttendance,
+                                history = attendanceHistory,
                                 hasActivePermission = (todayPermission != null),
                                 onLaporClick = { coroutineScope.launch { pagerState.animateScrollToPage(2) } },
                                 onRiwayatClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
@@ -787,19 +788,56 @@ fun RiwayatContent(
 ) {
     val cardBgColor = if (isDarkMode) Color(0xFF161D2F) else Color.White
     val innerCardBgColor = if (isDarkMode) Color(0xFF222831) else Color(0xFFF3F4F6)
+    var selectedAttendance by remember { mutableStateOf<Attendance?>(null) }
+    var showDetailSheet by remember { mutableStateOf(false) }
+
+    // Statistics Calculations
+    val totalHadir = history.count { it.status.uppercase() == "HADIR" }
+    val totalIzin = history.count { it.status.uppercase() == "IZIN" || it.status.uppercase() == "SAKIT" }
+    val totalTerlambat = history.count { it.status.uppercase() == "TERLAMBAT" }
+    val totalAlpha = history.count { it.status.uppercase() == "ALPHA" }
+
+    // Rata-rata Masuk Calculation
+    val averageCheckIn = remember(history) {
+        if (history.isEmpty()) "--"
+        else {
+            val checkInTimes = history.filter { it.checkInTime.isNotEmpty() }
+            if (checkInTimes.isEmpty()) "--"
+            else {
+                val totalMinutes = checkInTimes.sumOf { item ->
+                    try {
+                        val timeStr = item.checkInTime
+                        val parts = timeStr.split(":")
+                        if (parts.size >= 2) {
+                            parts[0].toInt() * 60 + parts[1].toInt()
+                        } else 0
+                    } catch (e: Exception) {
+                        0
+                    }
+                }
+                val avgMinutes = totalMinutes / checkInTimes.size
+                String.format("%02d:%02d", avgMinutes / 60, avgMinutes % 60)
+            }
+        }
+    }
+
+    // Sort history by createdAt DESC
+    val sortedHistory = remember(history) {
+        history.sortedByDescending { it.createdAt }
+    }
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp)) {
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(64.dp)) // Added space for status bar
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(modifier = Modifier.size(32.dp).clip(CircleShape).clickable { onBackClick() }, contentAlignment = Alignment.Center) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = colors.text0, modifier = Modifier.size(24.dp))
+            Box(modifier = Modifier.size(32.dp).clip(CircleShape).background(cardBgColor).clickable { onBackClick() }, contentAlignment = Alignment.Center) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = colors.text0, modifier = Modifier.size(20.dp))
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(currentUser?.name ?: "User", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(currentUser?.name ?: "Karyawan", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Text(currentUser?.nip ?: "-", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
             }
-            Box(modifier = Modifier.size(40.dp).background(colors.green, CircleShape), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.size(40.dp).background(Brush.linearGradient(listOf(colors.blue, colors.green)), CircleShape), contentAlignment = Alignment.Center) {
                 Text(currentUser?.name?.firstOrNull()?.toString() ?: "U", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
         }
@@ -811,17 +849,18 @@ fun RiwayatContent(
             Box(modifier = Modifier.size(36.dp).background(cardBgColor, RoundedCornerShape(8.dp)).border(1.dp, colors.border, RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
                 Icon(Icons.Default.KeyboardArrowLeft, contentDescription = null, tint = colors.text1)
             }
-            Text("Juli 2026", color = colors.text0, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            val currentMonth = remember { SimpleDateFormat("MMMM yyyy", Locale("id", "ID")).format(Date()) }
+            Text(currentMonth, color = colors.text0, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             Box(modifier = Modifier.size(36.dp).background(cardBgColor, RoundedCornerShape(8.dp)).border(1.dp, colors.border, RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
                 Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = colors.text1)
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = history.size.toString(), subtitle = "KEHADIRAN", iconTint = colors.green, textColor = colors.text0)
-            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = "08:00", subtitle = "RATA² MASUK", iconTint = colors.blue, textColor = colors.text0)
-            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = "0", subtitle = "TERLAMBAT", iconTint = colors.amber, textColor = colors.text0)
-            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = "0", subtitle = "GPS GAGAL", iconTint = colors.red, textColor = colors.text0)
+            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = totalHadir.toString(), subtitle = "HADIR", iconTint = colors.green, textColor = colors.text0)
+            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = averageCheckIn, subtitle = "RATA² MASUK", iconTint = colors.blue, textColor = colors.text0)
+            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = totalTerlambat.toString(), subtitle = "TERLAMBAT", iconTint = colors.red, textColor = colors.text0)
+            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = totalIzin.toString(), subtitle = "IZIN/SAKIT", iconTint = colors.amber, textColor = colors.text0)
         }
         Spacer(modifier = Modifier.height(24.dp))
         Column(modifier = Modifier.fillMaxWidth().background(cardBgColor, RoundedCornerShape(16.dp)).border(1.dp, colors.border, RoundedCornerShape(16.dp)).padding(16.dp)) {
@@ -831,14 +870,41 @@ fun RiwayatContent(
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
-            val calendarData = List(5) { List(7) { innerCardBgColor } }
-            calendarData.forEach { week ->
+            
+            // Calendar Grid coloring logic
+            val attendanceMap = history.associateBy { it.date }
+            val calendar = java.util.Calendar.getInstance()
+            val currentYear = calendar.get(java.util.Calendar.YEAR)
+            val currentMonth = calendar.get(java.util.Calendar.MONTH)
+            
+            val rows = 5
+            val cols = 7
+            for (i in 0 until rows) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    week.forEach { dayColor ->
+                    for (j in 0 until cols) {
+                        val dayIndex = i * 7 + j + 1
+                        var dayColor = innerCardBgColor
+                        
+                        if (dayIndex <= 31) {
+                            val dateStr = String.format("%04d-%02d-%02d", currentYear, currentMonth + 1, dayIndex)
+                            val att = attendanceMap[dateStr]
+                            if (att != null) {
+                                dayColor = when(att.status.uppercase()) {
+                                    "HADIR" -> colors.green
+                                    "TERLAMBAT" -> colors.red
+                                    "IZIN", "SAKIT" -> colors.amber
+                                    "CUTI" -> colors.blue
+                                    "ALPHA" -> Color.Gray
+                                    else -> innerCardBgColor
+                                }
+                            }
+                        }
+                        
                         Box(modifier = Modifier.weight(1f).aspectRatio(1f).padding(4.dp).background(dayColor, RoundedCornerShape(8.dp)))
                     }
                 }
             }
+
             Spacer(modifier = Modifier.height(16.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically) {
                 LegendItem("Hadir", colors.green, colors.text1)
@@ -847,16 +913,16 @@ fun RiwayatContent(
                 Spacer(modifier = Modifier.width(16.dp))
                 LegendItem("Telat", colors.red, colors.text1)
                 Spacer(modifier = Modifier.width(16.dp))
-                LegendItem("Libur", innerCardBgColor, colors.text1)
+                LegendItem("Cuti", colors.blue, colors.text1)
+                Spacer(modifier = Modifier.width(16.dp))
+                LegendItem("Alpha", Color.Gray, colors.text1)
             }
         }
         Spacer(modifier = Modifier.height(24.dp))
 
         // SEKSI HISTORI PENGAJUAN IZIN
         if (permissionHistory.isNotEmpty()) {
-            // Ambil context lokal yang valid di dalam Jetpack Compose
             val composeContext = LocalContext.current
-
             Text("HISTORI IZIN", color = colors.text1, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
             Spacer(modifier = Modifier.height(8.dp))
             permissionHistory.forEach { izin ->
@@ -876,32 +942,26 @@ fun RiwayatContent(
                     Text("Alasan: ${izin.reason}", color = colors.text0, fontSize = 13.sp)
                     if (izin.fileName.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text("📁 Nama Lampiran: ${izin.fileName}", color = colors.text1, fontSize = 12.sp, fontWeight = FontWeight.Normal)
+                        Text("📁 Lampiran: ${izin.fileName}", color = colors.text1, fontSize = 12.sp)
                     }
-                    // LOGIKA MENAMPILKAN LINK BUKTI FISIK (FOTO/FILE) DARI STORAGE
-
-                    // LOGIKA MENAMPILKAN TAUTAN GOOGLE DRIVE
                     if (izin.driveLink.isNotEmpty()) {
                         Text(
-                            text = "🔗 Tautan Google Drive Karyawan",
+                            text = "🔗 Link Drive",
                             color = colors.green,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier
-                                .clickable {
-                                    try {
-                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(izin.driveLink))
-                                        composeContext.startActivity(intent) // Perbaikan di sini
-                                    } catch (e: Exception) {
-                                        Toast.makeText(composeContext, "Gagal membuka link Drive", Toast.LENGTH_SHORT).show()
-                                    }
+                            modifier = Modifier.clickable {
+                                try {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(izin.driveLink))
+                                    composeContext.startActivity(intent)
+                                } catch (e: Exception) {
+                                    Toast.makeText(composeContext, "Gagal membuka link", Toast.LENGTH_SHORT).show()
                                 }
-                                .padding(vertical = 4.dp)
+                            }.padding(vertical = 4.dp)
                         )
                     }
-
                     Spacer(modifier = Modifier.height(6.dp))
-                    Text("Status Persetujuan: ${izin.status}", color = colors.blue, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                    Text("Status: ${izin.status}", color = colors.blue, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -911,26 +971,103 @@ fun RiwayatContent(
         Text("HISTORI KEHADIRAN", color = colors.text1, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (history.isEmpty()) {
+        if (sortedHistory.isEmpty()) {
             EmptyState(colors = colors, cardBgColor = cardBgColor, message = "Tidak ada riwayat absensi")
         } else {
-            history.forEach { item ->
+            sortedHistory.forEach { item ->
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 8.dp)
                         .background(cardBgColor, RoundedCornerShape(16.dp))
                         .border(1.dp, colors.border, RoundedCornerShape(16.dp))
+                        .clickable {
+                            selectedAttendance = item
+                            showDetailSheet = true
+                        }
                         .padding(16.dp)
                 ) {
-                    Text(item.date, color = colors.text0, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                    Text("Masuk: ${item.checkInTime.ifBlank { "--:--" }}", color = colors.text1, fontSize = 12.sp)
-                    Text("Pulang: ${item.checkOutTime.ifBlank { "--:--" }}", color = colors.text1, fontSize = 12.sp)
-                    Text("Status: ${item.status.ifBlank { "Tidak tersedia" }}", color = colors.text1, fontSize = 12.sp)
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(item.date, color = colors.text0, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Box(modifier = Modifier.background(
+                            when(item.status.uppercase()) {
+                                "HADIR" -> colors.green.copy(alpha = 0.1f)
+                                "TERLAMBAT" -> colors.red.copy(alpha = 0.1f)
+                                "IZIN", "SAKIT" -> colors.amber.copy(alpha = 0.1f)
+                                else -> colors.blue.copy(alpha = 0.1f)
+                            }, RoundedCornerShape(8.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
+                            Text(item.status.uppercase(), color = when(item.status.uppercase()) {
+                                "HADIR" -> colors.green
+                                "TERLAMBAT" -> colors.red
+                                "IZIN", "SAKIT" -> colors.amber
+                                else -> colors.blue
+                            }, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Masuk", color = colors.text1, fontSize = 10.sp)
+                            Text(item.checkInTime.ifBlank { "--:--" }, color = colors.text0, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Pulang", color = colors.text1, fontSize = 10.sp)
+                            Text(item.checkOutTime.ifBlank { "Belum Check Out" }, color = if(item.checkOutTime.isEmpty()) colors.red else colors.text0, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
                 }
             }
         }
         Spacer(modifier = Modifier.height(130.dp))
+    }
+
+    if (showDetailSheet && selectedAttendance != null) {
+        ModalBottomSheet(
+            onDismissRequest = { showDetailSheet = false },
+            containerColor = if (isDarkMode) Color(0xFF0F172A) else Color.White,
+            dragHandle = { BottomSheetDefaults.DragHandle(color = colors.border) }
+        ) {
+            AttendanceDetailSheet(attendance = selectedAttendance!!, colors = colors)
+        }
+    }
+}
+
+@Composable
+fun AttendanceDetailSheet(attendance: Attendance, colors: P79Colors) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        Text("Detail Absensi", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(24.dp))
+
+        DetailItem(label = "Tanggal", value = attendance.date, colors = colors)
+        DetailItem(label = "Status", value = attendance.status, colors = colors)
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        Text("CHECK IN", color = colors.blue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        DetailItem(label = "Waktu Masuk", value = attendance.checkInTime.ifBlank { "-" }, colors = colors)
+        DetailItem(label = "Latitude", value = attendance.checkInLatitude.toString(), colors = colors)
+        DetailItem(label = "Longitude", value = attendance.checkInLongitude.toString(), colors = colors)
+        DetailItem(label = "Akurasi", value = "${attendance.checkInAccuracy}m", colors = colors)
+        DetailItem(label = "Jarak ke Kantor", value = "${attendance.checkInDistance}m", colors = colors)
+
+        Spacer(modifier = Modifier.height(8.dp))
+        Text("CHECK OUT", color = colors.red, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        DetailItem(label = "Waktu Pulang", value = attendance.checkOutTime.ifBlank { "-" }, colors = colors)
+        DetailItem(label = "Latitude", value = attendance.checkOutLatitude.toString(), colors = colors)
+        DetailItem(label = "Longitude", value = attendance.checkOutLongitude.toString(), colors = colors)
+        DetailItem(label = "Akurasi", value = "${attendance.checkOutAccuracy}m", colors = colors)
+        DetailItem(label = "Jarak ke Kantor", value = "${attendance.checkOutDistance}m", colors = colors)
+
+        Spacer(modifier = Modifier.height(8.dp))
+        Text("LAINNYA", color = colors.text1, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        DetailItem(label = "Sumber Perangkat", value = attendance.source, colors = colors)
+        DetailItem(label = "Verifikasi Wajah", value = if (attendance.faceVerified) "Berhasil" else "Tidak Dilakukan", colors = colors)
+
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
@@ -960,6 +1097,7 @@ fun HomeContent(
     activity: AppCompatActivity,
     currentUser: User?,
     todayAttendance: Attendance?,
+    history: List<Attendance>,
     hasActivePermission: Boolean,
     onLaporClick: () -> Unit,
     onRiwayatClick: () -> Unit,
@@ -977,11 +1115,11 @@ fun HomeContent(
         Spacer(modifier = Modifier.height(16.dp))
         MenuRow(colors = colors, cardBgColor = cardBgColor, onIzinClick = onIzinClick, onLaporClick = onLaporClick, onRiwayatClick = onRiwayatClick, onLemburClick = onLemburClick)
         Spacer(modifier = Modifier.height(16.dp))
-        SummaryCard(colors = colors, cardBgColor = cardBgColor)
+        SummaryCard(colors = colors, cardBgColor = cardBgColor, history = history)
         Spacer(modifier = Modifier.height(24.dp))
         Text("RIWAYAT TERBARU", color = colors.text1, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, modifier = Modifier.padding(horizontal = 24.dp))
         Spacer(modifier = Modifier.height(12.dp))
-        HistoryList(colors = colors, cardBgColor = cardBgColor)
+        HistoryList(colors = colors, cardBgColor = cardBgColor, history = history)
         Spacer(modifier = Modifier.height(130.dp))
     }
 }
@@ -1604,8 +1742,24 @@ fun MenuCard(colors: P79Colors, cardBgColor: Color, title: String, iconColor: Co
 }
 
 @Composable
-fun SummaryCard(colors: P79Colors, cardBgColor: Color) {
-    Box(modifier = Modifier.padding(horizontal = 24.dp)) { Column(modifier = Modifier.fillMaxWidth().background(cardBgColor, RoundedCornerShape(16.dp)).border(1.dp, colors.border, RoundedCornerShape(16.dp)).padding(20.dp)) { Text("RINGKASAN BULAN INI", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp); Spacer(modifier = Modifier.height(16.dp)); Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { SummaryItem(colors = colors, count = "0", label = "Hadir", color = colors.green); SummaryItem(colors = colors, count = "0", label = "Izin", color = colors.amber); SummaryItem(colors = colors, count = "0", label = "Telat", color = colors.red); SummaryItem(colors = colors, count = "0", label = "Alpha", color = colors.blue) } } }
+fun SummaryCard(colors: P79Colors, cardBgColor: Color, history: List<Attendance>) {
+    val totalHadir = history.count { it.status.uppercase() == "HADIR" }
+    val totalIzin = history.count { it.status.uppercase() == "IZIN" || it.status.uppercase() == "SAKIT" }
+    val totalTerlambat = history.count { it.status.uppercase() == "TERLAMBAT" }
+    val totalAlpha = history.count { it.status.uppercase() == "ALPHA" }
+
+    Box(modifier = Modifier.padding(horizontal = 24.dp)) {
+        Column(modifier = Modifier.fillMaxWidth().background(cardBgColor, RoundedCornerShape(16.dp)).border(1.dp, colors.border, RoundedCornerShape(16.dp)).padding(20.dp)) {
+            Text("RINGKASAN BULAN INI", color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                SummaryItem(colors = colors, count = totalHadir.toString(), label = "Hadir", color = colors.green)
+                SummaryItem(colors = colors, count = totalIzin.toString(), label = "Izin", color = colors.amber)
+                SummaryItem(colors = colors, count = totalTerlambat.toString(), label = "Telat", color = colors.red)
+                SummaryItem(colors = colors, count = totalAlpha.toString(), label = "Alpha", color = colors.blue)
+            }
+        }
+    }
 }
 
 @Composable
@@ -1614,8 +1768,33 @@ fun SummaryItem(colors: P79Colors, count: String, label: String, color: Color) {
 }
 
 @Composable
-fun HistoryList(colors: P79Colors, cardBgColor: Color) {
-    EmptyState(colors = colors, cardBgColor = cardBgColor, message = "Tidak ada riwayat terbaru")
+fun HistoryList(colors: P79Colors, cardBgColor: Color, history: List<Attendance>) {
+    if (history.isEmpty()) {
+        EmptyState(colors = colors, cardBgColor = cardBgColor, message = "Tidak ada riwayat terbaru")
+    } else {
+        Column(modifier = Modifier.padding(horizontal = 24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            history.take(3).forEach { item ->
+                Row(modifier = Modifier.fillMaxWidth().background(cardBgColor, RoundedCornerShape(16.dp)).border(1.dp, colors.border, RoundedCornerShape(16.dp)).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(item.date, color = colors.text0, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Text("${item.checkInTime} - ${item.checkOutTime.ifBlank { "..." }}", color = colors.text1, fontSize = 12.sp)
+                    }
+                    Box(modifier = Modifier.background(
+                        when(item.status.uppercase()) {
+                            "HADIR" -> colors.green.copy(alpha = 0.1f)
+                            "TERLAMBAT" -> colors.red.copy(alpha = 0.1f)
+                            else -> colors.blue.copy(alpha = 0.1f)
+                        }, RoundedCornerShape(8.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
+                        Text(item.status.uppercase(), color = when(item.status.uppercase()) {
+                            "HADIR" -> colors.green
+                            "TERLAMBAT" -> colors.red
+                            else -> colors.blue
+                        }, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable

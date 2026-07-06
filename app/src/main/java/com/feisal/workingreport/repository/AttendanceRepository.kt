@@ -16,10 +16,6 @@ class AttendanceRepository {
     private val firestore by lazy { try { FirebaseFirestore.getInstance() } catch (e: Exception) { null } }
     private val auth by lazy { try { FirebaseAuth.getInstance() } catch (e: Exception) { null } }
 
-    companion object {
-        private val dummyAttendances = mutableMapOf<String, Attendance>()
-    }
-
     private val currentUserId: String?
         get() = AuthRepository().getCurrentUserId()
 
@@ -37,10 +33,7 @@ class AttendanceRepository {
             active = true
         )
 
-        val uid = currentUserId
-        if (uid != null && uid.startsWith("dummy")) {
-            return defaultOffice
-        }
+        val uid = currentUserId ?: return defaultOffice
         val firebaseFirestore = firestore ?: return defaultOffice
         return try {
             val doc = firebaseFirestore.collection(Constants.OFFICE_LOCATIONS_COLLECTION)
@@ -77,26 +70,6 @@ class AttendanceRepository {
 
         val today = DateHelper.getCurrentDate()
         val docId = "${uid}_$today"
-
-        if (uid.startsWith("dummy")) {
-            dummyAttendances[uid] = Attendance(
-                id = docId,
-                userId = uid,
-                employeeName = user.name,
-                employeeNip = user.nip,
-                date = today,
-                status = AttendanceStatus.HADIR.name,
-                checkInTime = DateHelper.getCurrentTime(),
-                checkInLatitude = latitude,
-                checkInLongitude = longitude,
-                checkInAccuracy = accuracy,
-                checkInDistance = distance,
-                checkInPhotoUrl = "",
-                faceVerified = faceVerified,
-                isLocked = true
-            )
-            return@runCatching
-        }
 
         val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
         val existing = firebaseFirestore.collection(Constants.ATTENDANCES_COLLECTION).document(docId).get().await()
@@ -140,18 +113,6 @@ class AttendanceRepository {
         val today = DateHelper.getCurrentDate()
         val docId = "${uid}_$today"
 
-        if (uid.startsWith("dummy")) {
-            val att = dummyAttendances[uid] ?: throw Exception("No check-in record found for today")
-            dummyAttendances[uid] = att.copy(
-                checkOutTime = DateHelper.getCurrentTime(),
-                checkOutLatitude = latitude,
-                checkOutLongitude = longitude,
-                checkOutAccuracy = accuracy,
-                checkOutDistance = 0f
-            )
-            return@runCatching
-        }
-
         val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
         val docRef = firebaseFirestore.collection(Constants.ATTENDANCES_COLLECTION).document(docId)
         val snapshot = docRef.get().await()
@@ -189,9 +150,6 @@ class AttendanceRepository {
 
     suspend fun getTodayAttendance(): Attendance? {
         val uid = currentUserId ?: return null
-        if (uid.startsWith("dummy")) {
-            return dummyAttendances[uid]
-        }
         val firebaseFirestore = firestore ?: return null
         val today = DateHelper.getCurrentDate()
         val docId = "${uid}_$today"
@@ -208,20 +166,15 @@ class AttendanceRepository {
 
     suspend fun getAttendanceHistory() : List<Attendance> {
         val uid = currentUserId ?: return emptyList()
-        if (uid.startsWith("dummy")) {
-            val list = mutableListOf<Attendance>()
-            dummyAttendances[uid]?.let { list.add(it) }
-            return list
-        }
         val firebaseFirestore = firestore ?: return emptyList()
         return try {
             firebaseFirestore.collection(Constants.ATTENDANCES_COLLECTION)
                 .whereEqualTo("userId", uid)
-                .orderBy("date", com.google.firebase.firestore.Query.Direction.DESCENDING)
                 .get()
                 .await()
                 .toObjects(Attendance::class.java)
         } catch (e: Exception) {
+            e.printStackTrace()
             emptyList()
         }
     }
