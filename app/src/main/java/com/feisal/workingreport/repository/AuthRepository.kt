@@ -1,7 +1,5 @@
 package com.feisal.workingreport.repository
 
-import android.content.Context
-import com.feisal.workingreport.WorkingReportApp
 import com.feisal.workingreport.model.User
 import com.feisal.workingreport.model.UserStatus
 import com.feisal.workingreport.utils.Constants
@@ -23,69 +21,16 @@ class AuthRepository {
         }
     }
 
-    companion object {
-        private var dummyUser: User? = null
-    }
     suspend fun loginWithNip(nip: String, password: String): Result<User> {
-
         return try {
-
-            // ===========================
-            // Dummy Account HC
-            // ===========================
-            if (nip == "1234" && password == "1234") {
-                val user = User(
-                    id = "dummy_hc_id",
-                    nip = "1234",
-                    authEmail = "1234@saptawork.app",
-                    name = "Human Capital",
-                    role = "HC",
-                    department = "Human Capital",
-                    position = "HC Staff",
-                    status = "ACTIVE"
-                )
-
-                dummyUser = user
-                return Result.success(user)
-            }
-
-            // ===========================
-            // Dummy Account Karyawan
-            // ===========================
-            if (nip == "12345678" && password == "12345678") {
-                val user = User(
-                    id = "dummy_user_id",
-                    nip = "12345678",
-                    authEmail = "12345678@saptawork.app",
-                    name = "User Dummy",
-                    role = "KARYAWAN",
-                    department = "IT",
-                    position = "Staff",
-                    status = "ACTIVE"
-                )
-
-                dummyUser = user
-                return Result.success(user)
-            }
-
-            val firebaseAuth =
-                auth ?: throw Exception("Server sedang bermasalah.")
-
-            val firebaseFirestore =
-                firestore ?: throw Exception("Server sedang bermasalah.")
+            val firebaseAuth = auth ?: throw Exception("Server sedang bermasalah.")
+            val firebaseFirestore = firestore ?: throw Exception("Server sedang bermasalah.")
 
             val cleanNip = nip.trim()
+            if (cleanNip.isBlank()) throw Exception("NIP wajib diisi.")
+            if (password.isBlank()) throw Exception("Password wajib diisi.")
 
-            if (cleanNip.isBlank())
-                throw Exception("NIP wajib diisi.")
-
-            if (password.isBlank())
-                throw Exception("Password wajib diisi.")
-
-            // ===========================
             // CEK DULU APAKAH NIP ADA
-            // ===========================
-
             val userQuery = firebaseFirestore
                 .collection(Constants.USERS_COLLECTION)
                 .whereEqualTo("nip", cleanNip)
@@ -99,16 +44,12 @@ class AuthRepository {
 
             val authEmail = nipToAuthEmail(cleanNip)
 
-            // ===========================
             // LOGIN FIREBASE
-            // ===========================
-
             val authResult = firebaseAuth
                 .signInWithEmailAndPassword(authEmail, password)
                 .await()
 
-            val uid = authResult.user?.uid
-                ?: throw Exception("Login gagal.")
+            val uid = authResult.user?.uid ?: throw Exception("Login gagal.")
 
             val snapshot = firebaseFirestore
                 .collection(Constants.USERS_COLLECTION)
@@ -127,100 +68,22 @@ class AuthRepository {
             Result.success(user.copy(id = uid))
 
         } catch (e: Exception) {
-
             val message = when {
-
-                e.message == "Akun tidak ditemukan." ->
-                    "Akun tidak ditemukan."
-
-                e.message == "NIP wajib diisi." ->
-                    "NIP wajib diisi."
-
-                e.message == "Password wajib diisi." ->
-                    "Password wajib diisi."
-
-                e.message == "Akun tidak aktif." ->
-                    "Akun tidak aktif."
-
-                e.message?.contains("INVALID_LOGIN_CREDENTIALS", true) == true ->
-                    "NIP atau Password salah."
-
-                e.message?.contains("password", true) == true ->
-                    "NIP atau Password salah."
-
-                e.message?.contains("credential", true) == true ->
-                    "NIP atau Password salah."
-
-                e.message?.contains("network", true) == true ->
-                    "Periksa koneksi internet."
-
-                else ->
-                    "Login gagal. Silakan coba lagi."
+                e.message == "Akun tidak ditemukan." -> "Akun tidak ditemukan."
+                e.message == "NIP wajib diisi." -> "NIP wajib diisi."
+                e.message == "Password wajib diisi." -> "Password wajib diisi."
+                e.message == "Akun tidak aktif." -> "Akun tidak aktif."
+                e.message?.contains("INVALID_LOGIN_CREDENTIALS", true) == true -> "NIP atau Password salah."
+                e.message?.contains("password", true) == true -> "NIP atau Password salah."
+                e.message?.contains("credential", true) == true -> "NIP atau Password salah."
+                e.message?.contains("network", true) == true -> "Periksa koneksi internet."
+                else -> "Login gagal. Silakan coba lagi."
             }
-
             Result.failure(Exception(message))
         }
     }
-    /*suspend fun loginWithNip(nip: String, password: String): Result<User> = runCatching {
-        if (nip == "1234" && password == "1234") {
-            val user = User(
-                id = "dummy_hc_id",
-                nip = "1234",
-                authEmail = "1234@saptawork.app",
-                name = "Human Capital",
-                role = "HC",
-                department = "Human Capital",
-                position = "HC Staff",
-                status = "ACTIVE"
-            )
-            dummyUser = user
-            return@runCatching user
-        } else if (nip == "12345678" && password == "12345678") {
-            val user = User(
-                id = "dummy_user_id",
-                nip = "12345678",
-                authEmail = "12345678@saptawork.app",
-                name = "User Dummy",
-                role = "KARYAWAN",
-                department = "IT",
-                position = "Staff",
-                status = "ACTIVE"
-            )
-            dummyUser = user
-            return@runCatching user
-        }
-
-        val firebaseAuth = auth ?: throw Exception("Firebase Auth not initialized")
-        val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
-
-        val cleanNip = nip.trim()
-        if (cleanNip.isBlank()) throw IllegalArgumentException("NIP wajib diisi")
-        if (password.isBlank()) throw IllegalArgumentException("Password wajib diisi")
-
-        val authEmail = nipToAuthEmail(cleanNip)
-        val authResult = firebaseAuth.signInWithEmailAndPassword(authEmail, password).await()
-        val uid = authResult.user?.uid ?: throw IllegalStateException("Login gagal: UID tidak ditemukan")
-
-        val snapshot = firebaseFirestore.collection(Constants.USERS_COLLECTION).document(uid).get().await()
-        val user = snapshot.toObject(User::class.java) ?: throw IllegalStateException("Data user tidak ditemukan di Firestore")
-
-        if (user.nip != cleanNip) {
-            firebaseAuth.signOut()
-            throw IllegalStateException("NIP tidak cocok dengan akun")
-        }
-
-        if (user.status != UserStatus.ACTIVE.name) {
-            firebaseAuth.signOut()
-            throw IllegalStateException("Akun tidak aktif")
-        }
-
-        user.copy(id = uid)
-    }*/
 
     suspend fun getCurrentUserProfile(): User? {
-        restoreDummyUserIfPossible()
-        if (dummyUser != null) return dummyUser
-        
         return try {
             val firebaseAuth = auth ?: return null
             val firebaseFirestore = firestore ?: return null
@@ -238,53 +101,10 @@ class AuthRepository {
     }
 
     fun getCurrentUserId(): String? {
-        restoreDummyUserIfPossible()
-        if (dummyUser != null) return dummyUser?.id
         return try { auth?.currentUser?.uid } catch (e: Exception) { null }
     }
 
-    private fun restoreDummyUserIfPossible() {
-        if (dummyUser != null) return
-        try {
-            val context = WorkingReportApp.getContext()
-            val pref = context.getSharedPreferences("AppPref", Context.MODE_PRIVATE)
-            val isLoggedIn = pref.getBoolean("isLoggedIn", false)
-            if (isLoggedIn) {
-                val userId = pref.getString("userId", null)
-                val role = pref.getString("userRole", null)
-                if (userId != null && userId.startsWith("dummy")) {
-                    dummyUser = if (role == "HC") {
-                        User(
-                            id = "dummy_hc_id",
-                            nip = "1234",
-                            authEmail = "1234@saptawork.app",
-                            name = "Human Capital",
-                            role = "HC",
-                            department = "Human Capital",
-                            position = "HC Staff",
-                            status = "ACTIVE"
-                        )
-                    } else {
-                        User(
-                            id = "dummy_user_id",
-                            nip = "12345678",
-                            authEmail = "12345678@saptawork.app",
-                            name = "User Dummy",
-                            role = "KARYAWAN",
-                            department = "IT",
-                            position = "Staff",
-                            status = "ACTIVE"
-                        )
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            // Ignore
-        }
-    }
-
     fun logout() {
-        dummyUser = null
         try { auth?.signOut() } catch (e: Exception) {}
     }
 }

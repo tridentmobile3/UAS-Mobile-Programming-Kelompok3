@@ -5,7 +5,6 @@ import com.feisal.workingreport.model.Attendance
 import com.feisal.workingreport.model.AttendanceStatus
 import com.feisal.workingreport.model.OfficeLocation
 import com.feisal.workingreport.model.User
-import com.feisal.workingreport.service.StorageService
 import com.feisal.workingreport.utils.Constants
 import com.feisal.workingreport.utils.DateHelper
 import com.feisal.workingreport.utils.LocationHelper
@@ -16,7 +15,6 @@ import kotlinx.coroutines.tasks.await
 class AttendanceRepository {
     private val firestore by lazy { try { FirebaseFirestore.getInstance() } catch (e: Exception) { null } }
     private val auth by lazy { try { FirebaseAuth.getInstance() } catch (e: Exception) { null } }
-    private val storageService = StorageService()
 
     companion object {
         private val dummyAttendances = mutableMapOf<String, Attendance>()
@@ -107,15 +105,7 @@ class AttendanceRepository {
             throw Exception("Already checked in today")
         }
 
-        val photoUrl = try {
-            storageService.uploadFile(
-                path = "${Constants.ATTENDANCE_PHOTOS_PATH}/$uid/$today/check_in.jpg",
-                uri = photoUri,
-                contentType = "image/jpeg"
-            )
-        } catch (e: Exception) {
-            ""
-        }
+        val photoUrl = photoUri.toString()
 
         val attendance = Attendance(
             id = docId,
@@ -182,15 +172,7 @@ class AttendanceRepository {
             )
         } ?: 0f
 
-        val photoUrl = try {
-            storageService.uploadFile(
-                path = "${Constants.ATTENDANCE_PHOTOS_PATH}/$uid/$today/check_out.jpg",
-                uri = photoUri,
-                contentType = "image/jpeg"
-            )
-        } catch (e: Exception) {
-            ""
-        }
+        val photoUrl = photoUri.toString()
 
         docRef.update(
             mapOf(

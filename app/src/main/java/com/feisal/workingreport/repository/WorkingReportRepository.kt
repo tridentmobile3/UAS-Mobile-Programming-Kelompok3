@@ -4,7 +4,6 @@ import android.net.Uri
 import com.feisal.workingreport.model.User
 import com.feisal.workingreport.model.WorkingReport
 import com.feisal.workingreport.model.WorkingReportStatus
-import com.feisal.workingreport.service.StorageService
 import com.feisal.workingreport.utils.Constants
 import com.feisal.workingreport.utils.DateHelper
 import com.google.firebase.auth.FirebaseAuth
@@ -14,7 +13,6 @@ import kotlinx.coroutines.tasks.await
 class WorkingReportRepository {
     private val firestore by lazy { try { FirebaseFirestore.getInstance() } catch (e: Exception) { null } }
     private val auth by lazy { try { FirebaseAuth.getInstance() } catch (e: Exception) { null } }
-    private val storageService = StorageService()
 
     private val currentUserId: String?
         get() = AuthRepository().getCurrentUserId()
@@ -54,9 +52,7 @@ class WorkingReportRepository {
 
         var attachmentUrl = ""
         if (attachmentUri != null) {
-            val extension = fileName?.substringAfterLast(".", "file") ?: "file"
-            val path = "${Constants.WORKING_REPORT_FILES_PATH}/$uid/$today/attachment.$extension"
-            attachmentUrl = storageService.uploadFile(path, attachmentUri, mimeType)
+            attachmentUrl = attachmentUri.toString()
         }
 
         val report = WorkingReport(
@@ -92,11 +88,11 @@ class WorkingReportRepository {
         return try {
             firebaseFirestore.collection(Constants.WORKING_REPORTS_COLLECTION)
                 .whereEqualTo("userId", uid)
-                .orderBy("date", com.google.firebase.firestore.Query.Direction.DESCENDING)
                 .get()
                 .await()
                 .toObjects(WorkingReport::class.java)
         } catch (e: Exception) {
+            e.printStackTrace()
             emptyList()
         }
     }

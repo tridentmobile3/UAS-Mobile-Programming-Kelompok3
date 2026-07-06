@@ -141,6 +141,14 @@ class DashboardActivity : AppCompatActivity() {
                 }
             }
 
+            // Sync data when user profile is loaded
+            LaunchedEffect(currentUser) {
+                if (currentUser != null) {
+                    workingReports = workingReportRepository.getMyReports()
+                    attendanceHistory = attendanceRepository.getAttendanceHistory()
+                }
+            }
+
             // Sync attendance when returning from camera
             DisposableEffect(Unit) {
                 val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
@@ -1149,42 +1157,200 @@ fun SettingsItem(colors: P79Colors, iconBgColor: Color, icon: ImageVector, iconT
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LaporanContent(colors: P79Colors, isDarkMode: Boolean, currentUser: User?, reports: List<WorkingReport>, onBellClick: () -> Unit, onAddClick: () -> Unit) {
+fun LaporanContent(
+    colors: P79Colors,
+    isDarkMode: Boolean,
+    currentUser: User?,
+    reports: List<WorkingReport>,
+    onBellClick: () -> Unit,
+    onAddClick: () -> Unit
+) {
     val cardBgColor = if (isDarkMode) Color(0xFF161D2F) else Color.White
     var selectedTab by remember { mutableStateOf("Semua") }
+    var selectedReport by remember { mutableStateOf<WorkingReport?>(null) }
+    var showDetailSheet by remember { mutableStateOf(false) }
+
+    // Sort reports by createdAt DESC
+    val sortedReports = remember(reports) {
+        reports.sortedByDescending { it.createdAt }
+    }
+
     val filteredReports = when (selectedTab) {
-        "Disetujui" -> reports.filter { it.status.equals("APPROVED", true) || it.status.equals("REVIEWED", true) }
-        "Menunggu" -> reports.filter { it.status.equals("PENDING", true) || it.status.equals("SUBMITTED", true) }
-        "Revisi" -> reports.filter { it.status.equals("REVISI", true) || it.status.equals("REVISION", true) }
-        else -> reports
+        "Disetujui" -> sortedReports.filter { it.status.equals("APPROVED", true) || it.status.equals("REVIEWED", true) }
+        "Menunggu" -> sortedReports.filter { it.status.equals("PENDING", true) || it.status.equals("SUBMITTED", true) }
+        "Revisi" -> sortedReports.filter { it.status.equals("REVISI", true) || it.status.equals("REVISION", true) || it.status.equals("REJECTED", true) }
+        else -> sortedReports
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-            Spacer(modifier = Modifier.height(48.dp))
-            TopBar(colors = colors, isDarkMode = isDarkMode, currentUser = currentUser, onBellClick = onBellClick)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .verticalScroll(rememberScrollState())
+        ) {
             Spacer(modifier = Modifier.height(24.dp))
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) { Text("Laporan Kerja", color = colors.text0, fontSize = 24.sp, fontWeight = FontWeight.Bold); Text("Riwayat & pengajuan laporan harian", color = colors.text1, fontSize = 12.sp) }
-            Spacer(modifier = Modifier.height(20.dp))
-            Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 24.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+
+            // Header Row: Title on Left, Icons on Right
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Title
+                Text(
+                    text = "Laporan Kerja",
+                    color = colors.text0,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
+                )
+
+                // Notification Icon
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(CircleShape)
+                        .background(if (isDarkMode) Color(0xFF161D2F) else Color.White)
+                        .border(1.dp, colors.border, CircleShape)
+                        .clickable { onBellClick() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Notifications,
+                        contentDescription = null,
+                        tint = colors.text1,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .background(colors.red, CircleShape)
+                            .align(Alignment.TopEnd)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                // Avatar
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(CircleShape)
+                        .background(Brush.linearGradient(listOf(colors.blue, colors.green))),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = currentUser?.name?.firstOrNull()?.toString() ?: "A",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            // Subtitle
+            Text(
+                text = "Riwayat & pengajuan laporan kerja",
+                color = colors.text1,
+                fontSize = 13.sp,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Divider
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 24.dp),
+                color = colors.border,
+                thickness = 1.dp
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Tabs
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 listOf("Semua", "Disetujui", "Menunggu", "Revisi").forEach { tab ->
                     LaporanTab(text = tab, isSelected = selectedTab == tab, colors = colors, cardBgColor = cardBgColor, onClick = { selectedTab = tab })
                 }
             }
+
             Spacer(modifier = Modifier.height(24.dp))
-            Column(modifier = Modifier.padding(horizontal = 24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                if (filteredReports.isEmpty()) { EmptyState(colors = colors, cardBgColor = cardBgColor, message = "Tidak ada laporan tersedia") } else { filteredReports.forEach { report -> WorkingReportItem(colors = colors, cardBgColor = cardBgColor, report = report) } }
+
+            // Reports List
+            Column(
+                modifier = Modifier.padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                if (filteredReports.isEmpty()) {
+                    EmptyState(colors = colors, cardBgColor = cardBgColor, message = "Tidak ada laporan tersedia")
+                } else {
+                    filteredReports.forEach { report ->
+                        WorkingReportItem(
+                            colors = colors,
+                            cardBgColor = cardBgColor,
+                            report = report,
+                            onClick = {
+                                selectedReport = report
+                                showDetailSheet = true
+                            }
+                        )
+                    }
+                }
             }
+
             Spacer(modifier = Modifier.height(130.dp))
         }
-        Box(modifier = Modifier.align(Alignment.BottomEnd).padding(end = 24.dp, bottom = 100.dp).size(60.dp).clip(RoundedCornerShape(20.dp)).background(Brush.linearGradient(listOf(colors.blue, colors.green))).clickable { onAddClick() }, contentAlignment = Alignment.Center) { Text("+", color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Light, modifier = Modifier.padding(bottom = 6.dp)) }
+
+        // Floating Action Button
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 24.dp, bottom = 100.dp)
+                .size(60.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(Brush.linearGradient(listOf(colors.blue, colors.green)))
+                .clickable { onAddClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text("+", color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Light, modifier = Modifier.padding(bottom = 6.dp))
+        }
+    }
+
+    if (showDetailSheet && selectedReport != null) {
+        ModalBottomSheet(
+            onDismissRequest = { showDetailSheet = false },
+            containerColor = if (isDarkMode) Color(0xFF0F172A) else Color.White,
+            dragHandle = { BottomSheetDefaults.DragHandle(color = colors.border) }
+        ) {
+            WorkingReportDetailSheet(
+                report = selectedReport!!,
+                colors = colors,
+                isDarkMode = isDarkMode
+            )
+        }
     }
 }
 
 @Composable
-fun WorkingReportItem(colors: P79Colors, cardBgColor: Color, report: WorkingReport) {
-    Column(modifier = Modifier.fillMaxWidth().background(cardBgColor, RoundedCornerShape(16.dp)).border(1.dp, colors.border, RoundedCornerShape(16.dp)).padding(16.dp)) {
+fun WorkingReportItem(colors: P79Colors, cardBgColor: Color, report: WorkingReport, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(cardBgColor, RoundedCornerShape(16.dp))
+            .border(1.dp, colors.border, RoundedCornerShape(16.dp))
+            .clickable { onClick() }
+            .padding(16.dp)
+    ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(report.title, color = colors.text0, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(report.date, color = colors.text1, fontSize = 12.sp)
@@ -1198,10 +1364,61 @@ fun WorkingReportItem(colors: P79Colors, cardBgColor: Color, report: WorkingRepo
                 Spacer(modifier = Modifier.width(4.dp))
                 Text("${report.startTime} - ${report.endTime}", color = colors.text1, fontSize = 12.sp)
             }
-            Box(modifier = Modifier.background(colors.blue.copy(alpha = 0.1f), RoundedCornerShape(8.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
-                Text(report.status, color = colors.blue, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("${report.progress}%", color = colors.green, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.width(8.dp))
+                Box(modifier = Modifier.background(colors.blue.copy(alpha = 0.1f), RoundedCornerShape(8.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
+                    val statusText = when(report.status.uppercase()) {
+                        "SUBMITTED" -> "Menunggu"
+                        "PENDING" -> "Menunggu"
+                        "APPROVED" -> "Disetujui"
+                        "REVIEWED" -> "Disetujui"
+                        "REVISI" -> "Revisi"
+                        "REVISION" -> "Revisi"
+                        "REJECTED" -> "Revisi"
+                        else -> report.status
+                    }
+                    Text(statusText, color = colors.blue, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                }
             }
         }
+    }
+}
+
+@Composable
+fun WorkingReportDetailSheet(report: WorkingReport, colors: P79Colors, isDarkMode: Boolean) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        Text("Detail Laporan Kerja", color = colors.text0, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(24.dp))
+
+        DetailItem(label = "Judul", value = report.title, colors = colors)
+        DetailItem(label = "Tanggal", value = report.date, colors = colors)
+        DetailItem(label = "Jam Kerja", value = "${report.startTime} - ${report.endTime}", colors = colors)
+        DetailItem(label = "Lokasi Kerja", value = report.workLocation, colors = colors)
+        DetailItem(label = "Deskripsi", value = report.description, colors = colors)
+        DetailItem(label = "Progress", value = "${report.progress}%", colors = colors)
+        DetailItem(label = "Hambatan", value = report.obstacle.ifEmpty { "-" }, colors = colors)
+        DetailItem(label = "Rencana Selanjutnya", value = report.nextPlan.ifEmpty { "-" }, colors = colors)
+        DetailItem(label = "Status", value = report.status, colors = colors)
+        DetailItem(label = "Lampiran", value = report.fileName.ifEmpty { "-" }, colors = colors)
+
+        Spacer(modifier = Modifier.height(32.dp))
+    }
+}
+
+@Composable
+fun DetailItem(label: String, value: String, colors: P79Colors) {
+    Column(modifier = Modifier.padding(bottom = 16.dp)) {
+        Text(label.uppercase(), color = colors.text1, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(value, color = colors.text0, fontSize = 15.sp)
+        Spacer(modifier = Modifier.height(8.dp))
+        HorizontalDivider(color = colors.border.copy(alpha = 0.5f), thickness = 0.5.dp)
     }
 }
 
@@ -1209,6 +1426,90 @@ fun WorkingReportItem(colors: P79Colors, cardBgColor: Color, report: WorkingRepo
 fun LaporanTab(text: String, isSelected: Boolean, colors: P79Colors, cardBgColor: Color, onClick: () -> Unit) {
     Box(modifier = Modifier.clip(RoundedCornerShape(20.dp)).background(if (isSelected) colors.blue.copy(alpha = 0.2f) else cardBgColor).border(1.dp, if (isSelected) colors.blue else colors.border, RoundedCornerShape(20.dp)).clickable { onClick() }.padding(horizontal = 20.dp, vertical = 10.dp), contentAlignment = Alignment.Center) {
         Text(text, color = if (isSelected) colors.blue else colors.text1, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+    }
+}
+@Composable
+fun SimpleTopBar(
+    colors: P79Colors,
+    isDarkMode: Boolean,
+    currentUser: User?,
+    onBellClick: () -> Unit
+) {
+    val iconBgColor =
+        if (isDarkMode) Color(0xFF161D2F)
+        else Color.White
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.End,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(iconBgColor)
+                .border(
+                    1.dp,
+                    colors.border,
+                    CircleShape
+                )
+                .clickable {
+                    onBellClick()
+                },
+            contentAlignment = Alignment.Center
+        ) {
+
+            Icon(
+                imageVector = Icons.Default.Notifications,
+                contentDescription = "Notification",
+                tint = colors.text1,
+                modifier = Modifier.size(20.dp)
+            )
+
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .background(
+                        colors.red,
+                        CircleShape
+                    )
+                    .align(Alignment.TopEnd)
+            )
+
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(
+                    Brush.linearGradient(
+                        listOf(
+                            colors.blue,
+                            colors.green
+                        )
+                    )
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+
+            Text(
+                text = currentUser?.name
+                    ?.firstOrNull()
+                    ?.toString() ?: "U",
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+
+        }
+
     }
 }
 
@@ -1228,6 +1529,7 @@ fun TopBar(colors: P79Colors, isDarkMode: Boolean, currentUser: User?, onBellCli
         }
     }
 }
+
 
 @Composable
 fun AbsenCard(colors: P79Colors, isDarkMode: Boolean, todayAttendance: Attendance?, hasActivePermission: Boolean, activity: AppCompatActivity) {
