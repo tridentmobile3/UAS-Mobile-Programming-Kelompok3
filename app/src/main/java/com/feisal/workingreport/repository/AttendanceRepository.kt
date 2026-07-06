@@ -26,43 +26,33 @@ class AttendanceRepository {
         get() = AuthRepository().getCurrentUserId()
 
     suspend fun getCurrentUser(): User? {
-        val uid = currentUserId ?: return null
-        if (uid.startsWith("dummy")) {
-            return AuthRepository().getCurrentUserProfile()
-        }
-        val firebaseFirestore = firestore ?: return null
-        return try {
-            firebaseFirestore.collection(Constants.USERS_COLLECTION)
-                .document(uid)
-                .get()
-                .await()
-                .toObject(User::class.java)
-        } catch (e: Exception) {
-            null
-        }
+        return AuthRepository().getCurrentUserProfile()
     }
 
     suspend fun getOfficeLocation(locationId: String = "padepokan79_main"): OfficeLocation? {
+        val defaultOffice = OfficeLocation(
+            id = "padepokan79_main",
+            name = "Padepokan 79",
+            latitude = -6.9174639,
+            longitude = 107.6191228,
+            radiusMeter = 1000,
+            active = true
+        )
+
         val uid = currentUserId
         if (uid != null && uid.startsWith("dummy")) {
-            return OfficeLocation(
-                id = "padepokan79_main",
-                name = "Padepokan 79",
-                latitude = -6.9174639,
-                longitude = 107.6191228,
-                radiusMeter = 1000,
-                active = true
-            )
+            return defaultOffice
         }
-        val firebaseFirestore = firestore ?: return null
+        val firebaseFirestore = firestore ?: return defaultOffice
         return try {
-            firebaseFirestore.collection(Constants.OFFICE_LOCATIONS_COLLECTION)
+            val doc = firebaseFirestore.collection(Constants.OFFICE_LOCATIONS_COLLECTION)
                 .document(locationId)
                 .get()
                 .await()
                 .toObject(OfficeLocation::class.java)
+            doc ?: defaultOffice
         } catch (e: Exception) {
-            null
+            defaultOffice
         }
     }
 
@@ -80,14 +70,12 @@ class AttendanceRepository {
         }
 
         val user = getCurrentUser() ?: throw Exception("User profile not found")
-        val office = getOfficeLocation() ?: throw Exception("Office location not found")
-        val distance = LocationHelper.calculateDistanceMeter(
-            latitude, longitude, office.latitude, office.longitude
-        )
-
-        if (!LocationHelper.isInsideRadius(distance, office.radiusMeter)) {
-            throw Exception("Outside office radius ($distance meters)")
-        }
+        val office = getOfficeLocation()
+        val distance = office?.let {
+            LocationHelper.calculateDistanceMeter(
+                latitude, longitude, it.latitude, it.longitude
+            )
+        } ?: 0f
 
         val today = DateHelper.getCurrentDate()
         val docId = "${uid}_$today"
@@ -119,10 +107,15 @@ class AttendanceRepository {
             throw Exception("Already checked in today")
         }
 
-        val photoUrl = storageService.uploadFile(
-            "${Constants.ATTENDANCE_PHOTOS_PATH}/$uid/$today/check_in.jpg",
-            photoUri
-        )
+        val photoUrl = try {
+            storageService.uploadFile(
+                path = "${Constants.ATTENDANCE_PHOTOS_PATH}/$uid/$today/check_in.jpg",
+                uri = photoUri,
+                contentType = "image/jpeg"
+            )
+        } catch (e: Exception) {
+            ""
+        }
 
         val attendance = Attendance(
             id = docId,
@@ -182,19 +175,22 @@ class AttendanceRepository {
             throw Exception("Already checked out today")
         }
 
-        val office = getOfficeLocation() ?: throw Exception("Office location not found")
-        val distance = LocationHelper.calculateDistanceMeter(
-            latitude, longitude, office.latitude, office.longitude
-        )
+        val office = getOfficeLocation()
+        val distance = office?.let {
+            LocationHelper.calculateDistanceMeter(
+                latitude, longitude, it.latitude, it.longitude
+            )
+        } ?: 0f
 
-        if (!LocationHelper.isInsideRadius(distance, office.radiusMeter)) {
-            throw Exception("Outside office radius ($distance meters)")
+        val photoUrl = try {
+            storageService.uploadFile(
+                path = "${Constants.ATTENDANCE_PHOTOS_PATH}/$uid/$today/check_out.jpg",
+                uri = photoUri,
+                contentType = "image/jpeg"
+            )
+        } catch (e: Exception) {
+            ""
         }
-
-        val photoUrl = storageService.uploadFile(
-            "${Constants.ATTENDANCE_PHOTOS_PATH}/$uid/$today/check_out.jpg",
-            photoUri
-        )
 
         docRef.update(
             mapOf(

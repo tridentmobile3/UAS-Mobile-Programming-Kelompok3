@@ -1,5 +1,7 @@
 package com.feisal.workingreport.repository
 
+import android.content.Context
+import com.feisal.workingreport.WorkingReportApp
 import com.feisal.workingreport.model.User
 import com.feisal.workingreport.model.UserStatus
 import com.feisal.workingreport.utils.Constants
@@ -82,6 +84,7 @@ class AuthRepository {
     }
 
     suspend fun getCurrentUserProfile(): User? {
+        restoreDummyUserIfPossible()
         if (dummyUser != null) return dummyUser
         
         return try {
@@ -101,8 +104,49 @@ class AuthRepository {
     }
 
     fun getCurrentUserId(): String? {
+        restoreDummyUserIfPossible()
         if (dummyUser != null) return dummyUser?.id
         return try { auth?.currentUser?.uid } catch (e: Exception) { null }
+    }
+
+    private fun restoreDummyUserIfPossible() {
+        if (dummyUser != null) return
+        try {
+            val context = WorkingReportApp.getContext()
+            val pref = context.getSharedPreferences("AppPref", Context.MODE_PRIVATE)
+            val isLoggedIn = pref.getBoolean("isLoggedIn", false)
+            if (isLoggedIn) {
+                val userId = pref.getString("userId", null)
+                val role = pref.getString("userRole", null)
+                if (userId != null && userId.startsWith("dummy")) {
+                    dummyUser = if (role == "HC") {
+                        User(
+                            id = "dummy_hc_id",
+                            nip = "1234",
+                            authEmail = "1234@saptawork.app",
+                            name = "Human Capital",
+                            role = "HC",
+                            department = "Human Capital",
+                            position = "HC Staff",
+                            status = "ACTIVE"
+                        )
+                    } else {
+                        User(
+                            id = "dummy_user_id",
+                            nip = "12345678",
+                            authEmail = "12345678@saptawork.app",
+                            name = "User Dummy",
+                            role = "KARYAWAN",
+                            department = "IT",
+                            position = "Staff",
+                            status = "ACTIVE"
+                        )
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            // Ignore
+        }
     }
 
     fun logout() {

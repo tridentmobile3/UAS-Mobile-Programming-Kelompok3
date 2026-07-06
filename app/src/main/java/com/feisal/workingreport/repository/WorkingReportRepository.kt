@@ -17,20 +17,10 @@ class WorkingReportRepository {
     private val storageService = StorageService()
 
     private val currentUserId: String?
-        get() = try { auth?.currentUser?.uid } catch (e: Exception) { null }
+        get() = AuthRepository().getCurrentUserId()
 
     suspend fun getCurrentUser(): User? {
-        val uid = currentUserId ?: return null
-        val firebaseFirestore = firestore ?: return null
-        return try {
-            firebaseFirestore.collection(Constants.USERS_COLLECTION)
-                .document(uid)
-                .get()
-                .await()
-                .toObject(User::class.java)
-        } catch (e: Exception) {
-            null
-        }
+        return AuthRepository().getCurrentUserProfile()
     }
 
     suspend fun submitReport(
@@ -66,7 +56,7 @@ class WorkingReportRepository {
         if (attachmentUri != null) {
             val extension = fileName?.substringAfterLast(".", "file") ?: "file"
             val path = "${Constants.WORKING_REPORT_FILES_PATH}/$uid/$today/attachment.$extension"
-            attachmentUrl = storageService.uploadFile(path, attachmentUri)
+            attachmentUrl = storageService.uploadFile(path, attachmentUri, mimeType)
         }
 
         val report = WorkingReport(
