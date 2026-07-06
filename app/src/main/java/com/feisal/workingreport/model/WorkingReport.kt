@@ -18,6 +18,7 @@ data class WorkingReport(
     val fileName: String = "",
     val mimeType: String = "",
     val status: String = WorkingReportStatus.SUBMITTED.name,
+    val revisionNote: String = "",
     val isLocked: Boolean = true,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
@@ -26,5 +27,6 @@ data class WorkingReport(
 enum class WorkingReportStatus {
     DRAFT,
     SUBMITTED,
-    REVIEWED
+    APPROVED,
+    REVISION
 }

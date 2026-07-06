@@ -1399,11 +1399,7 @@ fun WorkingReportDetailSheet(report: WorkingReport, colors: P79Colors, isDarkMod
         DetailItem(label = "Judul", value = report.title, colors = colors)
         DetailItem(label = "Tanggal", value = report.date, colors = colors)
         DetailItem(label = "Jam Kerja", value = "${report.startTime} - ${report.endTime}", colors = colors)
-        DetailItem(label = "Lokasi Kerja", value = report.workLocation, colors = colors)
         DetailItem(label = "Deskripsi", value = report.description, colors = colors)
-        DetailItem(label = "Progress", value = "${report.progress}%", colors = colors)
-        DetailItem(label = "Hambatan", value = report.obstacle.ifEmpty { "-" }, colors = colors)
-        DetailItem(label = "Rencana Selanjutnya", value = report.nextPlan.ifEmpty { "-" }, colors = colors)
         DetailItem(label = "Status", value = report.status, colors = colors)
         DetailItem(label = "Lampiran", value = report.fileName.ifEmpty { "-" }, colors = colors)
 

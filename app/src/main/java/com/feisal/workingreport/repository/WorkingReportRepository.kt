@@ -112,4 +112,31 @@ class WorkingReportRepository {
     suspend fun getPendingReports(): List<WorkingReport> {
         return getAllReports().filter { it.status == "PENDING" || it.status == "SUBMITTED" }
     }
+
+    suspend fun approveReport(reportId: String): Result<Unit> = runCatching {
+        val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
+        firebaseFirestore.collection(Constants.WORKING_REPORTS_COLLECTION)
+            .document(reportId)
+            .update(
+                mapOf(
+                    "status" to WorkingReportStatus.APPROVED.name,
+                    "updatedAt" to System.currentTimeMillis()
+                )
+            )
+            .await()
+    }
+
+    suspend fun revisionReport(reportId: String, note: String): Result<Unit> = runCatching {
+        val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
+        firebaseFirestore.collection(Constants.WORKING_REPORTS_COLLECTION)
+            .document(reportId)
+            .update(
+                mapOf(
+                    "status" to WorkingReportStatus.REVISION.name,
+                    "revisionNote" to note,
+                    "updatedAt" to System.currentTimeMillis()
+                )
+            )
+            .await()
+    }
 }
