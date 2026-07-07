@@ -138,11 +138,14 @@ class DashboardHCActivity : AppCompatActivity() {
                 LiquidGlassBackground(colors = colors) { }
                 NoiseOverlay()
 
+                // SUSUN SECARA VERTIKAL MENGGUNAKAN COLUMN
                 Column(modifier = Modifier.fillMaxSize()) {
+
+                    // Sekarang Box ini berada di dalam Column, sehingga .weight(1f) VALID dan aman digunakan
                     Box(modifier = Modifier.weight(1f)) {
                         when (selectedIndex) {
                             0 -> HubDashboardContent(
-                                colors = colors, 
+                                colors = colors,
                                 currentUser = currentUser,
                                 onNavigateToPage = { selectedIndex = it }
                             )
@@ -155,9 +158,11 @@ class DashboardHCActivity : AppCompatActivity() {
                                 history = attendanceHistory,
                                 hasActivePermission = permissionHistory.any { it.date == SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()) },
                                 onLaporClick = { selectedIndex = 2 },
-                                onRiwayatClick = { selectedIndex = 1 },
+                                onRiwayatClick = { selectedIndex = 4 },
                                 onIzinClick = { showIzinSheet = true },
-                                onLemburClick = { /* start LemburActivity */ },
+                                onLemburClick = {
+                                    startActivity(Intent(this@DashboardHCActivity, LemburActivity::class.java))
+                                },
                                 onBellClick = { showNotificationSheet = true }
                             )
                             2 -> LaporanContent(
@@ -172,7 +177,7 @@ class DashboardHCActivity : AppCompatActivity() {
                                 colors = colors,
                                 isDarkMode = isDarkMode,
                                 currentUser = currentUser,
-                                onThemeChange = { isDark: Boolean ->
+                                onThemeChange = { isDark ->
                                     isDarkMode = isDark
                                     sharedPref.edit().putBoolean("isDarkMode", isDark).apply()
                                 },
@@ -185,9 +190,18 @@ class DashboardHCActivity : AppCompatActivity() {
                                 onRefresh = { refreshData() },
                                 profileRepository = profileRepository
                             )
+                            4 -> RiwayatContent(
+                                colors = colors,
+                                isDarkMode = isDarkMode,
+                                currentUser = currentUser,
+                                history = attendanceHistory,
+                                permissionHistory = permissionHistory,
+                                onBackClick = { selectedIndex = 0 }
+                            )
                         }
                     }
 
+                    // Navigasi bawah otomatis terdorong ke area paling bawah layar
                     DockNavigationBarHC(
                         colors = colors,
                         selectedIndex = selectedIndex,
@@ -261,7 +275,7 @@ fun HubDashboardContent(
         }
         Spacer(modifier = Modifier.height(12.dp))
         HubMenuCard(modifier = Modifier.fillMaxWidth(), title = "Riwayat Saya", icon = Icons.Default.DateRange, color = colors.amber) {
-            onNavigateToPage(1)
+            onNavigateToPage(4)
         }
 
         Spacer(modifier = Modifier.height(32.dp))

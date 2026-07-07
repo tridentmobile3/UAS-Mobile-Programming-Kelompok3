@@ -66,7 +66,7 @@ class DashboardEmployeeActivity : AppCompatActivity() {
             val sharedPref = remember { context.getSharedPreferences("AppPref", Context.MODE_PRIVATE) }
             var isDarkMode by remember { mutableStateOf(sharedPref.getBoolean("isDarkMode", true)) }
             val colors = p79Colors(isDark = isDarkMode)
-            
+
             val pagerState = rememberPagerState(pageCount = { 4 })
             val coroutineScope = rememberCoroutineScope()
 
@@ -79,7 +79,7 @@ class DashboardEmployeeActivity : AppCompatActivity() {
             var showNotificationSheet by remember { mutableStateOf(false) }
             var showLaporanSheet by remember { mutableStateOf(false) }
             var showIzinSheet by remember { mutableStateOf(false) }
-            
+
             val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
             fun refreshData() {
@@ -91,7 +91,7 @@ class DashboardEmployeeActivity : AppCompatActivity() {
                             // Ambil data terbaru langsung dari Firestore (Source.SERVER if possible, but getTodayAttendance is fine)
                             val att = attendanceRepository.getTodayAttendance()
                             todayAttendance = att
-                            
+
                             attendanceHistory = attendanceRepository.getAttendanceHistory()
                             workingReports = workingReportRepository.getMyReports()
                             permissionHistory = permissionRepository.getMyPermissions(u.id)
@@ -107,7 +107,7 @@ class DashboardEmployeeActivity : AppCompatActivity() {
                     val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
                     val today = com.feisal.workingreport.utils.DateHelper.getCurrentDate()
                     val docId = "${currentUser!!.id}_$today"
-                    
+
                     db.collection(com.feisal.workingreport.utils.Constants.ATTENDANCES_COLLECTION)
                         .document(docId)
                         .addSnapshotListener { snapshot, e ->
@@ -157,7 +157,8 @@ class DashboardEmployeeActivity : AppCompatActivity() {
                             onLaporClick = { coroutineScope.launch { pagerState.animateScrollToPage(2) } },
                             onRiwayatClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
                             onIzinClick = { showIzinSheet = true },
-                            onLemburClick = { },
+                            onLemburClick = {val intent = Intent(this@DashboardEmployeeActivity, LemburActivity::class.java)
+                                startActivity(intent)},
                             onBellClick = { showNotificationSheet = true }
                         )
                         1 -> RiwayatContent(
@@ -252,11 +253,11 @@ class DashboardEmployeeActivity : AppCompatActivity() {
 
 @Composable
 fun DockNavigationBar(
-    colors: P79Colors, 
-    isDarkMode: Boolean, 
-    selectedIndex: Int, 
-    isHc: Boolean, 
-    onItemSelected: (Int) -> Unit, 
+    colors: P79Colors,
+    isDarkMode: Boolean,
+    selectedIndex: Int,
+    isHc: Boolean,
+    onItemSelected: (Int) -> Unit,
     onAdminClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -267,11 +268,11 @@ fun DockNavigationBar(
             val itemWidth = maxWidth / itemsCount
             val showIndicator = selectedIndex < itemsCount
             val indicatorOffset by animateDpAsState(
-                targetValue = if (showIndicator) itemWidth * selectedIndex else 0.dp, 
-                animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow), 
+                targetValue = if (showIndicator) itemWidth * selectedIndex else 0.dp,
+                animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow),
                 label = ""
             )
-            
+
             if (showIndicator) {
                 Box(modifier = Modifier.offset(x = indicatorOffset).width(itemWidth).fillMaxHeight().padding(6.dp).background(Brush.linearGradient(listOf(colors.blue, colors.green)), RoundedCornerShape(26.dp)))
             }
@@ -283,15 +284,15 @@ fun DockNavigationBar(
                 if (isHc) { BottomNavItem(icon = Icons.Default.Settings, label = "Admin", isSelected = selectedIndex == 4) { onAdminClick() } }
             }
         }
-        Box(modifier = Modifier.size(64.dp).clip(CircleShape).background(if (selectedIndex == 3) Brush.linearGradient(listOf(colors.blue, colors.green)) else SolidColor(dockBgColor)).border(1.dp, if (selectedIndex == 3) Color.Transparent else colors.border, CircleShape).clickable { onItemSelected(3) }, contentAlignment = Alignment.Center) { 
-            Icon(imageVector = Icons.Default.Person, contentDescription = "Profil", tint = if (selectedIndex == 3) Color.White else Color.Gray, modifier = Modifier.size(26.dp)) 
+        Box(modifier = Modifier.size(64.dp).clip(CircleShape).background(if (selectedIndex == 3) Brush.linearGradient(listOf(colors.blue, colors.green)) else SolidColor(dockBgColor)).border(1.dp, if (selectedIndex == 3) Color.Transparent else colors.border, CircleShape).clickable { onItemSelected(3) }, contentAlignment = Alignment.Center) {
+            Icon(imageVector = Icons.Default.Person, contentDescription = "Profil", tint = if (selectedIndex == 3) Color.White else Color.Gray, modifier = Modifier.size(26.dp))
         }
     }
 }
 
 @Composable
 fun BottomNavItem(icon: ImageVector, label: String, isSelected: Boolean, onClick: () -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onClick)) { 
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onClick)) {
         Icon(icon, contentDescription = label, tint = if (isSelected) Color.White else Color.Gray, modifier = Modifier.size(24.dp))
         Spacer(modifier = Modifier.height(2.dp))
         Text(label, color = if (isSelected) Color.White else Color.Gray, fontSize = 9.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
