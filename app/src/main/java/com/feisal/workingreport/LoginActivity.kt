@@ -273,7 +273,7 @@ class LoginActivity : ComponentActivity() {
                                                 "Login HC mode offline",
                                                 Toast.LENGTH_SHORT
                                             ).show()
-                                            startActivity(Intent(this@LoginActivity, DashboardAdminActivity::class.java))
+                                            startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
                                             finish()
                                         } else if (inputNip == "12345678" && inputPassword == "12345678") {
                                             Toast.makeText(
@@ -308,10 +308,14 @@ class LoginActivity : ComponentActivity() {
 
 
                                         if (user.role == "HC") {
-                                            startActivity(Intent(this@LoginActivity, DashboardAdminActivity::class.java))
-                                        } else {
-                                            startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
+                                            Toast.makeText(
+                                                this@LoginActivity,
+                                                "Login HC berhasil. Menu Admin tersedia di dashboard.",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
                                         }
+
+                                        startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
                                         finish()
                                     }.onFailure { error ->
                                         if (inputNip == "1234" && inputPassword == "1234") {
@@ -320,7 +324,7 @@ class LoginActivity : ComponentActivity() {
                                                 "Login HC mode offline",
                                                 Toast.LENGTH_SHORT
                                             ).show()
-                                            startActivity(Intent(this@LoginActivity, DashboardAdminActivity::class.java))
+                                            startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
                                             finish()
                                         } else if (inputNip == "12345678" && inputPassword == "12345678") {
                                             Toast.makeText(
