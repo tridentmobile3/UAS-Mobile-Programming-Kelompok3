@@ -24,7 +24,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WorkingReport">
 
-
+        <activity
+            android:name=".ApprovalLemburActivity"
+            android:exported="false" />
         <activity
             android:name=".ApprovalIzinActivity"
             android:exported="false" />

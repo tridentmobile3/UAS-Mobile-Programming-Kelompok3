@@ -251,7 +251,7 @@ class DashboardHCActivity : AppCompatActivity() {
 
 @Composable
 fun HubDashboardContent(
-    colors: P79Colors, 
+    colors: P79Colors,
     currentUser: User?,
     onNavigateToPage: (Int) -> Unit
 ) {
@@ -260,9 +260,9 @@ fun HubDashboardContent(
         Spacer(modifier = Modifier.height(24.dp))
         Text("Dashboard HC", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
         Text("Monitoring & Aktivitas Saya", color = Color.Gray, fontSize = 14.sp)
-        
+
         Spacer(modifier = Modifier.height(32.dp))
-        
+
         Text("AKTIVITAS SAYA", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
         Spacer(modifier = Modifier.height(16.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -279,19 +279,30 @@ fun HubDashboardContent(
         }
 
         Spacer(modifier = Modifier.height(32.dp))
-        
+
+        // --- SECTION MONITORING (DIUBAH MENJADI GRID 2x2) ---
         Text("MONITORING", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
         Spacer(modifier = Modifier.height(16.dp))
-        HubMenuCard(modifier = Modifier.fillMaxWidth(), title = "Monitoring Presensi", icon = Icons.Default.DateRange, color = colors.blue) {
-            context.startActivity(Intent(context, HcAttendanceActivity::class.java))
-        }
-        Spacer(modifier = Modifier.height(12.dp))
+
+        // Baris 1: Monitoring Presensi & Approval Izin
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            HubMenuCard(modifier = Modifier.weight(1f), title = "Presensi", icon = Icons.Default.DateRange, color = colors.blue) {
+                context.startActivity(Intent(context, HcAttendanceActivity::class.java))
+            }
             HubMenuCard(modifier = Modifier.weight(1f), title = "Approval Izin", icon = Icons.Default.Info, color = colors.amber) {
                 context.startActivity(Intent(context, ApprovalIzinActivity::class.java))
             }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Baris 2: Approval Laporan & Approval Lembur
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             HubMenuCard(modifier = Modifier.weight(1f), title = "Approval Laporan", icon = Icons.Default.Edit, color = colors.green) {
                 context.startActivity(Intent(context, ApprovalLaporanActivity::class.java))
+            }
+            HubMenuCard(modifier = Modifier.weight(1f), title = "Approval Lembur", icon = Icons.Default.Refresh, color = colors.amber) {
+                // Pastikan ApprovalLemburActivity sudah terdaftar di AndroidManifest.xml
+                context.startActivity(Intent(context, ApprovalLemburActivity::class.java))
             }
         }
 
@@ -301,7 +312,7 @@ fun HubDashboardContent(
         HubMenuCard(modifier = Modifier.fillMaxWidth(), title = "Statistik Sistem", icon = Icons.Default.ShoppingCart, color = colors.blue) {
             context.startActivity(Intent(context, StatisticsActivity::class.java))
         }
-        
+
         Spacer(modifier = Modifier.height(130.dp))
     }
 }
