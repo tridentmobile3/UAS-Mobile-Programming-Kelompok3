@@ -273,7 +273,7 @@ class LoginActivity : ComponentActivity() {
                                                 "Login HC mode offline",
                                                 Toast.LENGTH_SHORT
                                             ).show()
-                                            startActivity(Intent(this@LoginActivity, DashboardAdminActivity::class.java))
+                                            startActivity(Intent(this@LoginActivity, DashboardHCActivity::class.java))
                                             finish()
                                         } else if (inputNip == "12345678" && inputPassword == "12345678") {
                                             Toast.makeText(
@@ -281,7 +281,7 @@ class LoginActivity : ComponentActivity() {
                                                 "Login Karyawan mode offline",
                                                 Toast.LENGTH_SHORT
                                             ).show()
-                                            startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
+                                            startActivity(Intent(this@LoginActivity, DashboardEmployeeActivity::class.java))
                                             finish()
                                         } else {
                                             Toast.makeText(
@@ -308,9 +308,9 @@ class LoginActivity : ComponentActivity() {
 
 
                                         if (user.role == "HC") {
-                                            startActivity(Intent(this@LoginActivity, DashboardAdminActivity::class.java))
+                                            startActivity(Intent(this@LoginActivity, DashboardHCActivity::class.java))
                                         } else {
-                                            startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
+                                            startActivity(Intent(this@LoginActivity, DashboardEmployeeActivity::class.java))
                                         }
                                         finish()
                                     }.onFailure { error ->
@@ -320,7 +320,7 @@ class LoginActivity : ComponentActivity() {
                                                 "Login HC mode offline",
                                                 Toast.LENGTH_SHORT
                                             ).show()
-                                            startActivity(Intent(this@LoginActivity, DashboardAdminActivity::class.java))
+                                            startActivity(Intent(this@LoginActivity, DashboardHCActivity::class.java))
                                             finish()
                                         } else if (inputNip == "12345678" && inputPassword == "12345678") {
                                             Toast.makeText(
@@ -328,7 +328,7 @@ class LoginActivity : ComponentActivity() {
                                                 "Login Karyawan mode offline",
                                                 Toast.LENGTH_SHORT
                                             ).show()
-                                            startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
+                                            startActivity(Intent(this@LoginActivity, DashboardEmployeeActivity::class.java))
                                             finish()
                                         } else {
                                             Toast.makeText(

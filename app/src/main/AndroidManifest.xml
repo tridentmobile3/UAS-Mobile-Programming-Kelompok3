@@ -25,6 +25,27 @@
         android:theme="@style/Theme.WorkingReport">
 
         <activity
+            android:name=".ApprovalIzinActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ApprovalLaporanActivity"
+            android:exported="false" />
+        <activity
+            android:name=".OfficeLocationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".EmployeeListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".StatisticsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".HcAttendanceActivity"
+            android:exported="false" />
+        <activity
+            android:name=".EmployeeAttendanceDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".ForgotPasswordActivity"
             android:exported="false"/>
         <activity
@@ -46,10 +67,10 @@
             android:name=".CameraAbsenActivity"
             android:exported="false" />
         <activity
-            android:name=".DashboardActivity"
+            android:name=".DashboardEmployeeActivity"
             android:exported="false" />
         <activity
-            android:name=".DashboardAdminActivity"
+            android:name=".DashboardHCActivity"
             android:exported="false" />
         <activity
             android:name=".SplashActivity"

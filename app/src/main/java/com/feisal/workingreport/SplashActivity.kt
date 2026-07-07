@@ -73,23 +73,9 @@ class SplashActivity : ComponentActivity() {
                         if (isLoggedIn) {
 
                             if (role == "HC") {
-
-                                startActivity(
-                                    Intent(
-                                        this@SplashActivity,
-                                        DashboardAdminActivity::class.java
-                                    )
-                                )
-
+                                startActivity(Intent(this@SplashActivity, DashboardHCActivity::class.java))
                             } else {
-
-                                startActivity(
-                                    Intent(
-                                        this@SplashActivity,
-                                        DashboardActivity::class.java
-                                    )
-                                )
-
+                                startActivity(Intent(this@SplashActivity, DashboardEmployeeActivity::class.java))
                             }
 
                         } else {

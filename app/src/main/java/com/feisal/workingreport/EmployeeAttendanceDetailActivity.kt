@@ -1,43 +1,44 @@
 package com.feisal.workingreport
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.feisal.workingreport.model.Attendance
 import com.feisal.workingreport.model.PermissionRequest
 import com.feisal.workingreport.model.User
-import com.feisal.workingreport.repository.AttendanceRepository
-import com.feisal.workingreport.repository.AuthRepository
+import com.feisal.workingreport.repository.HcAttendanceRepository
 import com.feisal.workingreport.repository.PermissionRepository
 import com.feisal.workingreport.ui.components.NoiseOverlay
+import com.feisal.workingreport.ui.components.RiwayatContent
 import com.feisal.workingreport.ui.theme.LiquidGlassBackground
 import com.feisal.workingreport.ui.theme.p79Colors
 
-class RiwayatActivity : AppCompatActivity() {
-    private val authRepository = AuthRepository()
-    private val attendanceRepository = AttendanceRepository()
+class EmployeeAttendanceDetailActivity : AppCompatActivity() {
+    private val hcAttendanceRepository = HcAttendanceRepository()
     private val permissionRepository = PermissionRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
+        val userId = intent.getStringExtra("USER_ID") ?: ""
+        val userName = intent.getStringExtra("USER_NAME") ?: "Karyawan"
+        val userNip = intent.getStringExtra("USER_NIP") ?: "-"
+
         setContent {
             val colors = p79Colors(isDark = true)
-            var currentUser by remember { mutableStateOf<User?>(null) }
             var attendanceHistory by remember { mutableStateOf<List<Attendance>>(emptyList()) }
             var permissionHistory by remember { mutableStateOf<List<PermissionRequest>>(emptyList()) }
 
-            LaunchedEffect(Unit) {
-                currentUser = authRepository.getCurrentUserProfile()
-                currentUser?.let { user ->
-                    attendanceHistory = attendanceRepository.getAttendanceHistory()
-                    permissionHistory = permissionRepository.getMyPermissions(user.id)
+            LaunchedEffect(userId) {
+                if (userId.isNotEmpty()) {
+                    // Force refresh using real Firestore query
+                    attendanceHistory = hcAttendanceRepository.getEmployeeAttendanceHistory(userId)
+                    permissionHistory = permissionRepository.getMyPermissions(userId)
                 }
             }
 
@@ -48,7 +49,7 @@ class RiwayatActivity : AppCompatActivity() {
                 RiwayatContent(
                     colors = colors,
                     isDarkMode = true,
-                    currentUser = currentUser,
+                    currentUser = User(id = userId, name = userName, nip = userNip),
                     history = attendanceHistory,
                     permissionHistory = permissionHistory,
                     onBackClick = { finish() }
