@@ -4,7 +4,6 @@ import com.feisal.workingreport.model.PermissionRequest
 import com.feisal.workingreport.model.PermissionStatus
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
-import java.util.UUID
 
 class PermissionRepository {
     private val firestore = FirebaseFirestore.getInstance()
@@ -30,11 +29,14 @@ class PermissionRepository {
         type: String,
         reason: String,
         date: String,
-        fileNameText: String, // Diubah: Sekarang hanya menerima String nama file
-        driveLink: String
+        fileNameText: String,
+        driveLink: String,
+        uniqueId: String? = null // 1. Tambahkan parameter opsional unik ID agar sinkron dengan Activity
     ): Result<Boolean> {
         return try {
-            val requestId = UUID.randomUUID().toString()
+            // 2. Jika uniqueId dikirim dari Activity, pakai itu. Jika tidak, buat otomatis berdasarkan tanggal
+
+            val requestId = uniqueId ?: "${userId}_${date.replace("/", "-")}"
 
             val request = PermissionRequest(
                 id = requestId,
@@ -53,7 +55,7 @@ class PermissionRepository {
                 updatedAt = System.currentTimeMillis()
             )
 
-            // Simpan langsung ke Firestore sebagai data teks
+            // 3. Simpan ke Firestore menggunakan custom document ID untuk menghindari duplikasi data
             firestore.collection("permissions").document(requestId).set(request).await()
             Result.success(true)
         } catch (e: Exception) {

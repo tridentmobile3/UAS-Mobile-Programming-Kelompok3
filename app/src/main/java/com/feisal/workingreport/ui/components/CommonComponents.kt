@@ -344,21 +344,93 @@ fun ProfilContentHC(
 }
 
 @Composable
-fun HomeContent(colors: P79Colors, isDarkMode: Boolean, activity: AppCompatActivity, currentUser: User?, todayAttendance: Attendance?, history: List<Attendance>, hasActivePermission: Boolean, onLaporClick: () -> Unit, onRiwayatClick: () -> Unit, onIzinClick: () -> Unit, onLemburClick: () -> Unit, onBellClick: () -> Unit) {
+fun HomeContent(
+    colors: P79Colors,
+    isDarkMode: Boolean,
+    activity: AppCompatActivity,
+    currentUser: User?,
+    todayAttendance: Attendance?,
+    attendanceHistory: List<Attendance>,
+    permissionHistory: List<PermissionRequest>,
+    hasActivePermission: Boolean,
+    canClickIzin: Boolean,               // Tambahkan ini agar tidak error
+    canClickAbsen: Boolean,              // Tambahkan ini agar tidak error
+    onLaporClick: () -> Unit,
+    onRiwayatClick: () -> Unit,
+    onIzinClick: () -> Unit,
+    onLemburClick: () -> Unit,
+    onBellClick: () -> Unit
+) {
     val cardBgColor = if (isDarkMode) Color(0xFF161D2F) else Color.White
+    val calendar = java.util.Calendar.getInstance()
+    val currentMonth = calendar.get(java.util.Calendar.MONTH)
+    val currentYear = calendar.get(java.util.Calendar.YEAR)
+    val todayStr = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+// Cari apakah ada izin hari ini yang tidak ditolak (Pending / Approved)
+    val hasActivePermissionToday = permissionHistory.any { it.date == todayStr && it.status.uppercase() != "REJECTED" }
+
+// Tombol izin aktif HANYA JIKA belum absen DAN belum mengajukan izin hari ini
+    val canClickIzin = todayAttendance == null && !hasActivePermissionToday
+    val localCanClickAbsen = !hasActivePermissionToday
+
+    val attendanceThisMonth = attendanceHistory.filter { att ->
+        try {
+            val dateStr = att.date
+            val attCal = java.util.Calendar.getInstance()
+
+            val parsedDate = when {
+                // Jika menggunakan format garis miring (08/07/2026)
+                dateStr.contains("/") -> {
+                    SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(dateStr)
+                }
+                // Jika menggunakan format strip terbalik (2026-07-07)
+                dateStr.contains("-") -> {
+                    SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(dateStr)
+                }
+                else -> null
+            }
+
+            if (parsedDate != null) {
+                attCal.time = parsedDate
+                // Validasi apakah bulan dan tahun cocok dengan bulan ini
+                attCal.get(java.util.Calendar.MONTH) == currentMonth && attCal.get(java.util.Calendar.YEAR) == currentYear
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    val countHadir = attendanceThisMonth.count { it.status.uppercase() == "HADIR" || it.status.uppercase() == "TERLAMBAT" }
+    val countIzin = attendanceThisMonth.count { it.status.uppercase() == "IZIN" }
+    val countSakit = attendanceThisMonth.count { it.status.uppercase() == "SAKIT" }
+    val countCuti = attendanceThisMonth.count { it.status.uppercase() == "CUTI" }
+
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Spacer(modifier = Modifier.height(48.dp))
         TopBar(colors = colors, isDarkMode = isDarkMode, currentUser = currentUser, onBellClick = onBellClick)
         Spacer(modifier = Modifier.height(24.dp))
         AbsenCard(colors = colors, isDarkMode = isDarkMode, todayAttendance = todayAttendance, hasActivePermission = hasActivePermission, activity = activity)
         Spacer(modifier = Modifier.height(16.dp))
+
+        // PENTING: Jika MenuRow Anda menerima parameter enabled, oper `canClickIzin` ke dalamnya
         MenuRow(colors = colors, cardBgColor = cardBgColor, onIzinClick = onIzinClick, onLaporClick = onLaporClick, onRiwayatClick = onRiwayatClick, onLemburClick = onLemburClick)
         Spacer(modifier = Modifier.height(16.dp))
-        SummaryCard(colors = colors, cardBgColor = cardBgColor, history = history)
+
+        // Alirkan data `attendanceHistory` langsung ke komponen visual ringkasan & list
+        SummaryCard(
+            colors = colors,
+            cardBgColor = cardBgColor,
+            countHadir = countHadir,
+            countIzin = countIzin,
+            countSakit = countSakit,
+            countCuti = countCuti
+        )
         Spacer(modifier = Modifier.height(24.dp))
         Text("RIWAYAT TERBARU", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, modifier = Modifier.padding(horizontal = 24.dp))
         Spacer(modifier = Modifier.height(12.dp))
-        HistoryList(colors = colors, cardBgColor = cardBgColor, history = history)
+        HistoryList(colors = colors, cardBgColor = cardBgColor, history = attendanceHistory)
         Spacer(modifier = Modifier.height(130.dp))
     }
 }
@@ -437,28 +509,61 @@ fun MenuCard(colors: P79Colors, cardBgColor: Color, title: String, iconColor: Co
 }
 
 @Composable
-fun SummaryCard(colors: P79Colors, cardBgColor: Color, history: List<Attendance>) {
-    val totalHadir = history.count { it.status.uppercase() == "HADIR" }
-    val totalIzin = history.count { it.status.uppercase() == "IZIN" || it.status.uppercase() == "SAKIT" }
-    val totalTerlambat = history.count { it.status.uppercase() == "TERLAMBAT" }
-    val totalAlpha = history.count { it.status.uppercase() == "ALPHA" }
-    Box(modifier = Modifier.padding(horizontal = 24.dp)) {
-        Column(modifier = Modifier.fillMaxWidth().background(cardBgColor, RoundedCornerShape(16.dp)).border(1.dp, colors.border, RoundedCornerShape(16.dp)).padding(20.dp)) {
-            Text("RINGKASAN BULAN INI", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                SummaryItem(totalHadir.toString(), "Hadir", colors.green)
-                SummaryItem(totalIzin.toString(), "Izin", colors.amber)
-                SummaryItem(totalTerlambat.toString(), "Telat", colors.red)
-                SummaryItem(totalAlpha.toString(), "Alpha", colors.blue)
-            }
+fun SummaryCard(
+    colors: P79Colors,
+    cardBgColor: Color,
+    countHadir: Int,  // Terima data kalkulasi baru dari HomeContent
+    countIzin: Int,
+    countSakit: Int,
+    countCuti: Int
+) {
+    // ... Bagian pembungkus modifier background, border, dll tetap sama ...
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(
+            text = "RINGKASAN BULAN INI",
+            color = Color.Gray,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // 1. HADIR
+            SummaryItem(label = "Hadir", count = countHadir, color = colors.green)
+
+            // 2. IZIN
+            SummaryItem(label = "Izin", count = countIzin, color = colors.amber)
+
+            // 3. SAKIT (Menggantikan Telat)
+            SummaryItem(label = "Sakit", count = countSakit, color = colors.red)
+
+            // 4. CUTI (Menggantikan Alpha)
+            SummaryItem(label = "Cuti", count = countCuti, color = colors.blue)
         }
     }
 }
 
 @Composable
-fun SummaryItem(count: String, label: String, color: Color) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) { Text(count, color = color, fontSize = 24.sp, fontWeight = FontWeight.Bold); Spacer(modifier = Modifier.height(4.dp)); Text(label, color = Color.Gray, fontSize = 12.sp) }
+fun SummaryItem(label: String, count: Int, color: Color) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = count.toString(),
+            color = color,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = label,
+            color = Color.Gray,
+            fontSize = 12.sp
+        )
+    }
 }
 
 @Composable
@@ -533,9 +638,11 @@ fun RiwayatContent(
     var selectedAttendance by remember { mutableStateOf<Attendance?>(null) }
     var showDetailSheet by remember { mutableStateOf(false) }
 
-    val totalHadir = history.count { it.status.uppercase() == "HADIR" }
+    // Hitung ulang statistik berdasarkan kategori baru
+    val totalHadir = history.count { it.status.uppercase() == "HADIR" || it.status.uppercase() == "TERLAMBAT" }
     val totalIzin = history.count { it.status.uppercase() == "IZIN" || it.status.uppercase() == "SAKIT" }
-    val totalTerlambat = history.count { it.status.uppercase() == "TERLAMBAT" }
+    val totalCuti = history.count { it.status.uppercase() == "CUTI" } // Menggantikan totalTerlambat
+
     val averageCheckIn = remember(history) {
         if (history.isEmpty()) "--"
         else {
@@ -573,14 +680,16 @@ fun RiwayatContent(
         Text("Riwayat Absensi & Izin", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
         Text("Pantau histori kehadiran dan pengajuan izin kamu", color = Color.Gray, fontSize = 12.sp)
         Spacer(modifier = Modifier.height(24.dp))
+
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = totalHadir.toString(), subtitle = "HADIR", iconTint = colors.green, textColor = Color.White)
             StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = averageCheckIn, subtitle = "RATA² MASUK", iconTint = colors.blue, textColor = Color.White)
-            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = totalTerlambat.toString(), subtitle = "TERLAMBAT", iconTint = colors.red, textColor = Color.White)
+            // 1. MENGUBAH TERLAMBAT MENJADI CUTI
+            StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = totalCuti.toString(), subtitle = "CUTI", iconTint = colors.red, textColor = Color.White)
             StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = totalIzin.toString(), subtitle = "IZIN/SAKIT", iconTint = colors.amber, textColor = Color.White)
         }
         Spacer(modifier = Modifier.height(24.dp))
-        
+
         Column(modifier = Modifier.fillMaxWidth().background(cardBgColor, RoundedCornerShape(16.dp)).border(1.dp, colors.border, RoundedCornerShape(16.dp)).padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 listOf("S", "S", "R", "K", "J", "S", "M").forEach { day ->
@@ -597,15 +706,21 @@ fun RiwayatContent(
                     for (j in 0 until 7) {
                         val dayIndex = i * 7 + j + 1
                         var dayColor = innerCardBgColor
+
                         if (dayIndex <= 31) {
-                            val dateStr = String.format("%04d-%02d-%02d", currentYear, currentMonth + 1, dayIndex)
-                            val att = attendanceMap[dateStr]
+                            // 1. Buat dua kemungkinan format tanggal yang ada di database Anda
+                            val dateWithSlash = String.format("%02d/%02d/%04d", dayIndex, currentMonth + 1, currentYear) // "07/07/2026"
+                            val dateWithDash = String.format("%04d-%02d-%02d", currentYear, currentMonth + 1, dayIndex)  // "2026-07-07"
+
+                            // 2. Cari di map, periksa format slash dulu, jika null coba format dash
+                            val att = attendanceMap[dateWithSlash] ?: attendanceMap[dateWithDash]
+
                             if (att != null) {
                                 dayColor = when(att.status.uppercase()) {
-                                    "HADIR" -> colors.green
-                                    "TERLAMBAT" -> colors.red
-                                    "IZIN", "SAKIT" -> colors.amber
-                                    else -> innerCardBgColor
+                                    "HADIR", "TERLAMBAT" -> colors.green
+                                    "IZIN", "SAKIT"      -> colors.amber
+                                    "CUTI"               -> colors.red
+                                    else                 -> innerCardBgColor
                                 }
                             }
                         }
@@ -614,7 +729,7 @@ fun RiwayatContent(
                 }
             }
         }
-        
+
         Spacer(modifier = Modifier.height(24.dp))
         Text("HISTORI KEHADIRAN", color = Color.Gray, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
         Spacer(modifier = Modifier.height(12.dp))
@@ -622,23 +737,34 @@ fun RiwayatContent(
             EmptyState(colors = colors, cardBgColor = cardBgColor, message = "Tidak ada riwayat absensi")
         } else {
             sortedHistory.forEach { item ->
+                val statusUpper = item.status.uppercase()
+
+                // 2. PENENTUAN WARNA BADGE KATEGORI SECARA DINAMIS
+                val currentStatusColor = when (statusUpper) {
+                    "HADIR", "TERLAMBAT" -> colors.green  // Hadir / Terlambat -> Hijau
+                    "IZIN", "SAKIT"      -> colors.amber  // Izin / Sakit -> Kuning (Amber)
+                    "CUTI"               -> colors.red    // Cuti -> Merah
+                    else                 -> colors.blue
+                }
+
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp).background(cardBgColor, RoundedCornerShape(16.dp)).border(1.dp, colors.border, RoundedCornerShape(16.dp))
                         .clickable { selectedAttendance = item; showDetailSheet = true }.padding(16.dp)
                 ) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(item.date, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+
+                        // Render badge warna dinamis baru di sini
                         Box(modifier = Modifier.background(
-                            when(item.status.uppercase()) {
-                                "HADIR" -> colors.green.copy(alpha = 0.1f)
-                                "TERLAMBAT" -> colors.red.copy(alpha = 0.1f)
-                                else -> colors.blue.copy(alpha = 0.1f)
-                            }, RoundedCornerShape(8.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
-                            Text(item.status.uppercase(), color = when(item.status.uppercase()) {
-                                "HADIR" -> colors.green
-                                "TERLAMBAT" -> colors.red
-                                else -> colors.blue
-                            }, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            currentStatusColor.copy(alpha = 0.15f),
+                            RoundedCornerShape(8.dp)
+                        ).padding(horizontal = 8.dp, vertical = 4.dp)) {
+                            Text(
+                                text = statusUpper,
+                                color = currentStatusColor,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))

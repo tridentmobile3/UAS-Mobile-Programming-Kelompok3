@@ -200,12 +200,52 @@ fun PermissionApprovalItem(
                         }) { Text("Tolak", color = colors.red) }
                         TextButton(onClick = {
                             scope.launch {
-                                val db = FirebaseFirestore.getInstance()
-                                db.collection(Constants.PERMISSIONS_COLLECTION).document(izin.id)
-                                    .update("status", "APPROVED").await()
-                                Toast.makeText(context, "Izin Disetujui", Toast.LENGTH_SHORT).show()
-                                showDetail = false
-                                onActionDone()
+                                try {
+                                    val db = FirebaseFirestore.getInstance()
+
+                                    // 1. UPDATE STATUS DI KOLEKSI PERMISSIONS MENJADI APPROVED
+                                    db.collection(Constants.PERMISSIONS_COLLECTION).document(izin.id)
+                                        .update("status", "APPROVED").await()
+
+                                    // 2. SINKRONISASI KE ATTENDANCES DENGAN ID YANG SESUAI KARYAWAN
+                                    // Normalisasi pemisah tanggal jika dashboard Anda menggunakan "-" sedangkan izin menggunakan "/"
+                                    val docIdDate = izin.date.replace("/", "-")
+                                    val attendanceDocId = "${izin.userId}_$docIdDate"
+
+                                    // Tentukan status berdasarkan tipe izin yang diajukan
+                                    val finalStatus = when(izin.type.uppercase()) {
+                                        "SAKIT" -> "SAKIT"
+                                        "CUTI" -> "CUTI"
+                                        else -> "IZIN"
+                                    }
+
+                                    val autoAttendance = mapOf(
+                                        "id" to attendanceDocId,
+                                        "userId" to izin.userId,
+                                        "employeeName" to izin.employeeName,
+                                        "employeeNip" to izin.employeeNip,
+                                        "date" to izin.date,
+                                        "status" to finalStatus, // Status terisi (IZIN/SAKIT/CUTI)
+                                        "isLocked" to true,
+                                        "faceVerified" to false,
+                                        "source" to "HC_APPROVAL_SYSTEM",
+                                        "createdAt" to System.currentTimeMillis(),
+                                        "updatedAt" to System.currentTimeMillis()
+                                    )
+
+                                    // Simpan dokumen absensi baru
+                                    db.collection(Constants.ATTENDANCES_COLLECTION)
+                                        .document(attendanceDocId)
+                                        .set(autoAttendance)
+                                        .await()
+
+                                    Toast.makeText(context, "Izin disetujui & Ringkasan diperbarui!", Toast.LENGTH_SHORT).show()
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                                } finally {
+                                    showDetail = false
+                                    onActionDone() // Memanggil ulang loadPermissions() agar data di layar admin segar kembali
+                                }
                             }
                         }) { Text("Setuju", color = colors.green) }
                     }

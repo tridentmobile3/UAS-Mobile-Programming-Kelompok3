@@ -149,22 +149,42 @@ class DashboardHCActivity : AppCompatActivity() {
                                 currentUser = currentUser,
                                 onNavigateToPage = { selectedIndex = it }
                             )
-                            1 -> HomeContent(
-                                colors = colors,
-                                isDarkMode = isDarkMode,
-                                activity = this@DashboardHCActivity,
-                                currentUser = currentUser,
-                                todayAttendance = todayAttendance,
-                                history = attendanceHistory,
-                                hasActivePermission = permissionHistory.any { it.date == SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()) },
-                                onLaporClick = { selectedIndex = 2 },
-                                onRiwayatClick = { selectedIndex = 4 },
-                                onIzinClick = { showIzinSheet = true },
-                                onLemburClick = {
-                                    startActivity(Intent(this@DashboardHCActivity, LemburActivity::class.java))
-                                },
-                                onBellClick = { showNotificationSheet = true }
-                            )
+                            1 -> {
+                                val todayStr = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+
+                                // Kunci mutlak jika hari ini sudah ada izin APPROVED atau PENDING
+                                val hasApprovedOrPendingPermission = permissionHistory.any {
+                                    it.date == todayStr && (it.status.uppercase() == "APPROVED" || it.status.uppercase() == "PENDING")
+                                }
+
+                                HomeContent(
+                                    colors = colors,
+                                    isDarkMode = isDarkMode,
+                                    activity = this@DashboardHCActivity,
+                                    currentUser = currentUser,
+                                    todayAttendance = todayAttendance,
+                                    attendanceHistory = attendanceHistory,
+                                    permissionHistory = permissionHistory,
+                                    hasActivePermission = hasApprovedOrPendingPermission,
+                                    canClickIzin = todayAttendance == null && !hasApprovedOrPendingPermission,
+                                    canClickAbsen = !hasApprovedOrPendingPermission,
+                                    onLaporClick = { selectedIndex = 2 },
+                                    onRiwayatClick = { selectedIndex = 4 },
+
+                                    // PENCEGAHAN SEBELUM SHEET TERBUKA
+                                    onIzinClick = {
+                                        if (hasApprovedOrPendingPermission) {
+                                            Toast.makeText(this@DashboardHCActivity, "Anda sudah mengajukan izin/cuti hari ini dan tidak bisa mengajukan lagi!", Toast.LENGTH_LONG).show()
+                                        } else {
+                                            showIzinSheet = true
+                                        }
+                                    },
+                                    onLemburClick = {
+                                        startActivity(Intent(this@DashboardHCActivity, LemburActivity::class.java))
+                                    },
+                                    onBellClick = { showNotificationSheet = true }
+                                )
+                            }
                             2 -> LaporanContent(
                                 colors = colors,
                                 isDarkMode = isDarkMode,
@@ -229,21 +249,38 @@ class DashboardHCActivity : AppCompatActivity() {
             }
 
             if (showIzinSheet) {
-                LaunchedEffect(Unit) {
-                    val fragment = IzinBottomSheetFragment().apply {
-                        onSubmitCallback = { type, reason, date, fileName, drive ->
-                            scope.launch {
-                                currentUser?.let { user ->
-                                    permissionRepository.submitPermission(user.id, user.name, user.nip, type, reason, date, fileName, drive).onSuccess {
-                                        Toast.makeText(this@DashboardHCActivity, "Izin dikirim", Toast.LENGTH_SHORT).show(); refreshData()
-                                    }.onFailure { Toast.makeText(this@DashboardHCActivity, "Gagal", Toast.LENGTH_SHORT).show() }
+                // HAPUS LaunchedEffect(Unit) agar dialog fragment tidak langsung menutup sendiri secara paksa
+                val fragment = IzinBottomSheetFragment().apply {
+                    onSubmitCallback = { type, reason, date, fileName, drive ->
+                        scope.launch {
+                            currentUser?.let { user ->
+                                // Membuat ID unik berdasarkan tanggal untuk mencegah duplikasi di database
+                                val docIdDate = date.replace("/", "-")
+                                val uniquePermissionId = "${user.id}_$docIdDate"
+
+                                permissionRepository.submitPermission(
+                                    userId = user.id,
+                                    employeeName = user.name,
+                                    employeeNip = user.nip,
+                                    type = type,
+                                    reason = reason,
+                                    date = date,
+                                    fileNameText = fileName,
+                                    driveLink = drive,
+                                    uniqueId = uniquePermissionId // Kirimkan ID Unik ke repositori
+                                ).onSuccess {
+                                    Toast.makeText(this@DashboardHCActivity, "Izin berhasil dikirim!", Toast.LENGTH_SHORT).show()
+                                    showIzinSheet = false
+                                    refreshData()
+                                }.onFailure {
+                                    Toast.makeText(this@DashboardHCActivity, "Gagal mengirim izin", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         }
                     }
-                    fragment.show(supportFragmentManager, "IzinFragment")
-                    showIzinSheet = false
                 }
+                fragment.show(supportFragmentManager, "IzinFragment")
+                // Pindahkan showIzinSheet = false ke dalam callback onSuccess / onDismiss, JANGAN taruh di luar sini.
             }
         }
     }

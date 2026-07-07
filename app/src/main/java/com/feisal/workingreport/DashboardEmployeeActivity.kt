@@ -81,6 +81,8 @@ class DashboardEmployeeActivity : AppCompatActivity() {
             var showIzinSheet by remember { mutableStateOf(false) }
 
             val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            var hasPendingOrApprovedPermissionToday by remember { mutableStateOf(false) }
+            var selectedPermissionTypeToday by remember { mutableStateOf("") }
 
             fun refreshData() {
                 coroutineScope.launch {
@@ -88,13 +90,22 @@ class DashboardEmployeeActivity : AppCompatActivity() {
                         val user = authRepository.getCurrentUserProfile()
                         currentUser = user
                         user?.let { u ->
-                            // Ambil data terbaru langsung dari Firestore (Source.SERVER if possible, but getTodayAttendance is fine)
                             val att = attendanceRepository.getTodayAttendance()
                             todayAttendance = att
 
                             attendanceHistory = attendanceRepository.getAttendanceHistory()
                             workingReports = workingReportRepository.getMyReports()
-                            permissionHistory = permissionRepository.getMyPermissions(u.id)
+
+                            val permissions = permissionRepository.getMyPermissions(u.id)
+                            permissionHistory = permissions
+
+                            // VALIDASI 1: Cek apakah ada izin pending/approved untuk TANGGAL HARI INI
+                            val todayStr = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+                            val todayPerm = permissions.find { it.date == todayStr }
+
+                            // Jika status REJECTED, dianggap false agar tombol absen terbuka kembali
+                            hasPendingOrApprovedPermissionToday = todayPerm != null && todayPerm.status.uppercase() != "REJECTED"
+                            selectedPermissionTypeToday = todayPerm?.type?.uppercase() ?: ""
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -152,13 +163,48 @@ class DashboardEmployeeActivity : AppCompatActivity() {
                             activity = this@DashboardEmployeeActivity,
                             currentUser = currentUser,
                             todayAttendance = todayAttendance,
-                            history = attendanceHistory,
-                            hasActivePermission = permissionHistory.any { it.date == SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()) },
+                            attendanceHistory = attendanceHistory,
+                            permissionHistory = permissionHistory,
+                            hasActivePermission = hasPendingOrApprovedPermissionToday,
+
+                            // VALIDASI 2: Kirim status proteksi tombol ke HomeContent Anda
+                            // Tombol Izin dikunci jika: Sudah pernah absen masuk hari ini ATAU sudah punya izin aktif
+                            canClickIzin = todayAttendance == null && !hasPendingOrApprovedPermissionToday,
+
+                            // Tombol Absen dikunci jika: Sudah mengajukan izin (Pending/Approved) hari ini
+                            canClickAbsen = !hasPendingOrApprovedPermissionToday,
                             onLaporClick = { coroutineScope.launch { pagerState.animateScrollToPage(2) } },
                             onRiwayatClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
-                            onIzinClick = { showIzinSheet = true },
-                            onLemburClick = {val intent = Intent(this@DashboardEmployeeActivity, LemburActivity::class.java)
-                                startActivity(intent)},
+                            onIzinClick = {
+                                val todayStr = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+                                // Cari apakah ada data izin hari ini, APAPUN statusnya (PENDING, APPROVED, ataupun REJECTED)
+                                // Jika ingin REJECTED memperbolehkan kirim ulang, hapus pengecekan "REJECTED"
+                                val existingPerm = permissionHistory.find { it.date == todayStr }
+
+                                when {
+                                    todayAttendance != null -> {
+                                        Toast.makeText(context, "❌ Anda sudah melakukan absensi masuk hari ini!", Toast.LENGTH_LONG).show()
+                                    }
+                                    existingPerm != null -> {
+                                        val status = existingPerm.status.uppercase()
+                                        if (status == "PENDING") {
+                                            Toast.makeText(context, "⚠️ Anda sudah mengajukan izin hari ini. Status: MENUNGGU PERSETUJUAN", Toast.LENGTH_LONG).show()
+                                        } else if (status == "APPROVED") {
+                                            Toast.makeText(context, "❌ Izin Anda hari ini sudah DISETUJUI. Tidak bisa mengajukan kembali.", Toast.LENGTH_LONG).show()
+                                        } else {
+                                            // Jika REJECTED, izinkan karyawan untuk mengajukan ulang
+                                            showIzinSheet = true
+                                        }
+                                    }
+                                    else -> {
+                                        showIzinSheet = true
+                                    }
+                                }
+                            },
+                            onLemburClick = {
+                                val intent = Intent(this@DashboardEmployeeActivity, LemburActivity::class.java)
+                                startActivity(intent)
+                            },
                             onBellClick = { showNotificationSheet = true }
                         )
                         1 -> RiwayatContent(
@@ -236,7 +282,9 @@ class DashboardEmployeeActivity : AppCompatActivity() {
                         onSubmitCallback = { type, reason, date, fileName, drive ->
                             coroutineScope.launch {
                                 currentUser?.let { user ->
-                                    permissionRepository.submitPermission(user.id, user.name, user.nip, type, reason, date, fileName, drive).onSuccess {
+                                    val docIdDate = date.replace("/", "-")
+                                    val uniquePermissionId = "${user.id}_$docIdDate"
+                                    permissionRepository.submitPermission(user.id, user.name, user.nip, type, reason, date, fileName, drive, uniquePermissionId).onSuccess {
                                         Toast.makeText(this@DashboardEmployeeActivity, "Izin dikirim", Toast.LENGTH_SHORT).show(); refreshData()
                                     }.onFailure { Toast.makeText(this@DashboardEmployeeActivity, "Gagal", Toast.LENGTH_SHORT).show() }
                                 }
