@@ -400,9 +400,17 @@ fun AbsenCard(colors: P79Colors, isDarkMode: Boolean, todayAttendance: Attendanc
             }
             Spacer(modifier = Modifier.height(24.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) { Text("MASUK", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold); Spacer(modifier = Modifier.height(4.dp)); Text(todayAttendance?.checkInTime ?: "--:--", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold) }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("MASUK", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold);
+                    Spacer(modifier = Modifier.height(4.dp));
+                    Text(if (todayAttendance?.checkInTime.isNullOrEmpty()) "--:--" else todayAttendance!!.checkInTime, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
                 Box(modifier = Modifier.width(1.dp).height(40.dp).background(colors.border))
-                Column(horizontalAlignment = Alignment.CenterHorizontally) { Text("PULANG", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold); Spacer(modifier = Modifier.height(4.dp)); Text(todayAttendance?.checkOutTime ?: "--:--", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold) }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("PULANG", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold);
+                    Spacer(modifier = Modifier.height(4.dp));
+                    Text(if (todayAttendance?.checkOutTime.isNullOrEmpty()) "--:--" else todayAttendance!!.checkOutTime, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
             }
             Spacer(modifier = Modifier.height(24.dp))
             val buttonText = if (hasActivePermission) "TIDAK DAPAT ABSEN" else if (hasCheckedOut) "SUDAH ABSEN PULANG" else if (hasCheckedIn) "ABSEN PULANG" else "ABSEN MASUK"

@@ -84,17 +84,57 @@ class DashboardEmployeeActivity : AppCompatActivity() {
 
             fun refreshData() {
                 coroutineScope.launch {
-                    currentUser = authRepository.getCurrentUserProfile()
-                    currentUser?.let { user ->
-                        todayAttendance = attendanceRepository.getTodayAttendance()
-                        attendanceHistory = attendanceRepository.getAttendanceHistory()
-                        workingReports = workingReportRepository.getMyReports()
-                        permissionHistory = permissionRepository.getMyPermissions(user.id)
+                    try {
+                        val user = authRepository.getCurrentUserProfile()
+                        currentUser = user
+                        user?.let { u ->
+                            // Ambil data terbaru langsung dari Firestore (Source.SERVER if possible, but getTodayAttendance is fine)
+                            val att = attendanceRepository.getTodayAttendance()
+                            todayAttendance = att
+                            
+                            attendanceHistory = attendanceRepository.getAttendanceHistory()
+                            workingReports = workingReportRepository.getMyReports()
+                            permissionHistory = permissionRepository.getMyPermissions(u.id)
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
                     }
                 }
             }
 
+            LaunchedEffect(currentUser) {
+                if (currentUser != null) {
+                    val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                    val today = com.feisal.workingreport.utils.DateHelper.getCurrentDate()
+                    val docId = "${currentUser!!.id}_$today"
+                    
+                    db.collection(com.feisal.workingreport.utils.Constants.ATTENDANCES_COLLECTION)
+                        .document(docId)
+                        .addSnapshotListener { snapshot, e ->
+                            if (e != null) return@addSnapshotListener
+                            if (snapshot != null && snapshot.exists()) {
+                                todayAttendance = snapshot.toObject(Attendance::class.java)
+                            } else {
+                                todayAttendance = null
+                            }
+                        }
+                }
+            }
+
             LaunchedEffect(Unit) { refreshData() }
+
+            // Sync data when returning from camera or other activities
+            DisposableEffect(Unit) {
+                val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+                    if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                        refreshData()
+                    }
+                }
+                lifecycle.addObserver(observer)
+                onDispose {
+                    lifecycle.removeObserver(observer)
+                }
+            }
 
             Box(modifier = Modifier.fillMaxSize()) {
                 LiquidGlassBackground(colors = colors) { }

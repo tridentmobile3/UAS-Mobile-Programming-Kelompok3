@@ -15,8 +15,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,7 +38,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 class ApprovalIzinActivity : AppCompatActivity() {
-    private val permissionRepository = PermissionRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,9 +52,20 @@ class ApprovalIzinActivity : AppCompatActivity() {
                     try {
                         val db = FirebaseFirestore.getInstance()
                         val snapshot = db.collection(Constants.PERMISSIONS_COLLECTION).get().await()
-                        permissions = snapshot.toObjects(PermissionRequest::class.java)
-                            .sortedByDescending { it.createdAt }
+                        
+                        // Map manually to handle potential type mismatches or debug if needed
+                        val permissionList = snapshot.documents.mapNotNull { doc ->
+                            try {
+                                doc.toObject(PermissionRequest::class.java)?.copy(id = doc.id)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                null
+                            }
+                        }
+                        
+                        permissions = permissionList.sortedByDescending { it.createdAt }
                     } catch (e: Exception) {
+                        Toast.makeText(this@ApprovalIzinActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                         e.printStackTrace()
                     } finally {
                         isLoading = false

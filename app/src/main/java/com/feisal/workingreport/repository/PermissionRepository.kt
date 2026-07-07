@@ -48,7 +48,9 @@ class PermissionRepository {
                 driveLink = driveLink,
                 fileName = fileNameText, // Menyimpan teks nama file di sini
                 mimeType = "text/plain",
-                status = PermissionStatus.PENDING.name
+                status = PermissionStatus.PENDING.name,
+                createdAt = System.currentTimeMillis(),
+                updatedAt = System.currentTimeMillis()
             )
 
             // Simpan langsung ke Firestore sebagai data teks
