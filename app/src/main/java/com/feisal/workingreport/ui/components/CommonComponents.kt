@@ -966,29 +966,321 @@ fun ProfilContent(colors: P79Colors, isDarkMode: Boolean, currentUser: User?, on
     val scope = rememberCoroutineScope()
     var showEditProfileDialog by remember { mutableStateOf(false) }
     var showChangePasswordDialog by remember { mutableStateOf(false) }
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp)) {
+    var nameInput by remember { mutableStateOf("") }
+
+    // State Input Ubah Kata Sandi
+    var oldPasswordInput by remember { mutableStateOf("") }
+    var newPasswordInput by remember { mutableStateOf("") }
+    var confirmPasswordInput by remember { mutableStateOf("") }
+
+    // Efek untuk menyinkronkan nameInput ketika data currentUser termuat
+    LaunchedEffect(currentUser) {
+        currentUser?.let {
+            nameInput = it.name
+        }
+    }
+    Column(
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp)
+    ) {
         Spacer(modifier = Modifier.height(64.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(modifier = Modifier.size(32.dp).clip(CircleShape).background(cardBgColor).clickable { onBackClick() }, contentAlignment = Alignment.Center) { Icon(Icons.Default.ArrowBack, null, tint = Color.White, modifier = Modifier.size(20.dp)) }
+            Box(
+                modifier = Modifier.size(32.dp).clip(CircleShape).background(cardBgColor)
+                    .clickable { onBackClick() }, contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.ArrowBack,
+                    null,
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
             Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) { Text(currentUser?.name ?: "User", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold); Text(currentUser?.nip ?: "-", color = Color.Gray, fontSize = 10.sp, letterSpacing = 1.sp) }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    currentUser?.name ?: "User",
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                ); Text(
+                currentUser?.nip ?: "-",
+                color = Color.Gray,
+                fontSize = 10.sp,
+                letterSpacing = 1.sp
+            )
+            }
         }
         Spacer(modifier = Modifier.height(32.dp))
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-            Box(modifier = Modifier.size(90.dp).background(Brush.linearGradient(listOf(colors.blue, colors.green)), RoundedCornerShape(24.dp)), contentAlignment = Alignment.Center) { Text(currentUser?.name?.firstOrNull()?.toString() ?: "U", color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.Bold) }
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Box(
+                modifier = Modifier.size(90.dp).background(
+                    Brush.linearGradient(listOf(colors.blue, colors.green)),
+                    RoundedCornerShape(24.dp)
+                ), contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    currentUser?.name?.firstOrNull()?.toString() ?: "U",
+                    color = Color.White,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp))
-            Text(currentUser?.name ?: "User Name", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold); Text(currentUser?.authEmail ?: "email@example.com", color = Color.Gray, fontSize = 14.sp)
+            Text(
+                currentUser?.name ?: "User Name",
+                color = Color.White,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            ); Text(
+            currentUser?.authEmail ?: "email@example.com",
+            color = Color.Gray,
+            fontSize = 14.sp
+        )
         }
         Spacer(modifier = Modifier.height(32.dp))
         Text("AKUN", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
-        Column(modifier = Modifier.fillMaxWidth().background(cardBgColor, RoundedCornerShape(16.dp)).border(1.dp, colors.border, RoundedCornerShape(16.dp))) {
-            SettingsItem(colors, iconBgColor, Icons.Default.Edit, colors.green, "Edit Profil", null, onClick = { showEditProfileDialog = true })
-            HorizontalDivider(color = colors.border, modifier = Modifier.padding(horizontal = 16.dp))
-            SettingsItem(colors, iconBgColor, Icons.Default.Lock, colors.amber, "Ubah Kata Sandi", null, onClick = { showChangePasswordDialog = true })
+        Column(
+            modifier = Modifier.fillMaxWidth().background(cardBgColor, RoundedCornerShape(16.dp))
+                .border(1.dp, colors.border, RoundedCornerShape(16.dp))
+        ) {
+            SettingsItem(
+                colors,
+                iconBgColor,
+                Icons.Default.Edit,
+                colors.green,
+                "Edit Profil",
+                null,
+                onClick = { showEditProfileDialog = true })
+            HorizontalDivider(
+                color = colors.border,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+            SettingsItem(
+                colors,
+                iconBgColor,
+                Icons.Default.Lock,
+                colors.amber,
+                "Ubah Kata Sandi",
+                null,
+                onClick = { showChangePasswordDialog = true })
         }
         Spacer(modifier = Modifier.height(24.dp))
-        Button(onClick = onLogoutClick, modifier = Modifier.fillMaxWidth().height(55.dp), colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.1f)), border = BorderStroke(1.dp, Color.Red.copy(alpha = 0.5f)), shape = RoundedCornerShape(16.dp)) { Text("KELUAR", color = Color.Red, fontWeight = FontWeight.Bold) }
+        Button(
+            onClick = onLogoutClick,
+            modifier = Modifier.fillMaxWidth().height(55.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.1f)),
+            border = BorderStroke(1.dp, Color.Red.copy(alpha = 0.5f)),
+            shape = RoundedCornerShape(16.dp)
+        ) { Text("KELUAR", color = Color.Red, fontWeight = FontWeight.Bold) }
         Spacer(modifier = Modifier.height(130.dp))
+    }
+    if (showEditProfileDialog) {
+        AlertDialog(
+            onDismissRequest = { showEditProfileDialog = false },
+            title = { Text("Edit Profil", color = Color.White, fontWeight = FontWeight.Bold) },
+            containerColor = cardBgColor,
+            text = {
+                Column(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                    OutlinedTextField(
+                        value = nameInput,
+                        onValueChange = { nameInput = it },
+                        label = { Text("Nama Lengkap", color = Color.Gray) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = colors.blue,
+                            unfocusedBorderColor = colors.border
+                        )
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (nameInput.trim().isEmpty()) {
+                            Toast.makeText(context, "Nama tidak boleh kosong!", Toast.LENGTH_SHORT)
+                                .show()
+                            return@Button
+                        }
+
+                        scope.launch {
+                            try {
+                                profileRepository.updateProfileName(nameInput.trim())
+                                    .onSuccess {
+                                        Toast.makeText(
+                                            context,
+                                            "Profil berhasil diperbarui",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        showEditProfileDialog = false
+                                        onRefresh()
+                                    }
+                                    .onFailure { exception ->
+                                        Toast.makeText(
+                                            context,
+                                            "Gagal: ${exception.message}",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = colors.blue),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Simpan", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditProfileDialog = false }) {
+                    Text("Batal", color = Color.Gray)
+                }
+            }
+        )
+    }
+
+    // ==========================================
+    // DIALOG UBAH KATA SANDI (SELARAS DENGAN TEMA)
+    // ==========================================
+    if (showChangePasswordDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showChangePasswordDialog = false
+                oldPasswordInput = ""; newPasswordInput = ""; confirmPasswordInput = ""
+            },
+            title = { Text("Ubah Kata Sandi", color = Color.White, fontWeight = FontWeight.Bold) },
+            containerColor = cardBgColor,
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedTextField(
+                        value = oldPasswordInput,
+                        onValueChange = { oldPasswordInput = it },
+                        label = { Text("Kata Sandi Lama", color = Color.Gray) },
+                        singleLine = true,
+                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = colors.blue,
+                            unfocusedBorderColor = colors.border
+                        )
+                    )
+                    OutlinedTextField(
+                        value = newPasswordInput,
+                        onValueChange = { newPasswordInput = it },
+                        label = { Text("Kata Sandi Baru", color = Color.Gray) },
+                        singleLine = true,
+                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = colors.blue,
+                            unfocusedBorderColor = colors.border
+                        )
+                    )
+                    OutlinedTextField(
+                        value = confirmPasswordInput,
+                        onValueChange = { confirmPasswordInput = it },
+                        label = { Text("Konfirmasi Kata Sandi Baru", color = Color.Gray) },
+                        singleLine = true,
+                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = colors.blue,
+                            unfocusedBorderColor = colors.border
+                        )
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (oldPasswordInput.isEmpty() || newPasswordInput.isEmpty() || confirmPasswordInput.isEmpty()) {
+                            Toast.makeText(
+                                context,
+                                "Semua kolom password wajib diisi!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@Button
+                        }
+                        if (newPasswordInput.length < 6) {
+                            Toast.makeText(
+                                context,
+                                "Password baru minimal harus 6 karakter!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@Button
+                        }
+                        if (newPasswordInput != confirmPasswordInput) {
+                            Toast.makeText(
+                                context,
+                                "Konfirmasi password baru tidak cocok!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@Button
+                        }
+
+                        scope.launch {
+                            try {
+                                profileRepository.changePassword(oldPasswordInput, newPasswordInput)
+                                    .onSuccess {
+                                        Toast.makeText(
+                                            context,
+                                            "Kata sandi berhasil diubah",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        showChangePasswordDialog = false
+                                        oldPasswordInput = ""; newPasswordInput =
+                                        ""; confirmPasswordInput = ""
+                                    }
+                                    .onFailure { exception ->
+                                        Toast.makeText(
+                                            context,
+                                            "Gagal mengubah kata sandi: ${exception.message}",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = colors.blue),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Ubah Sandi", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showChangePasswordDialog = false
+                    oldPasswordInput = ""; newPasswordInput = ""; confirmPasswordInput = ""
+                }) {
+                    Text("Batal", color = Color.Gray)
+                }
+            }
+        )
     }
 }
