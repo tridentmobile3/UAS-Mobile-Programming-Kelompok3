@@ -336,10 +336,10 @@ Isi video minimal mencakup:
 
 | Nama | NIM / NPM | Peran |
 |---|---|---|
-| Muhamad Arga Reksapati | 24552011324 | Backend / Firebase Integration |
-| Feisal Ramdhani Riyadi | 24552011317 | UI / Frontend |
-| Diky Raihan Subagja | 24552011194 | Admin Page / UI Support |
-| Dafa Irsyad Nasrullah | 24552011306 | Testing / Documentation |
+| Muhamad Arga Reksapati | 24552011324 | Backend / Testing |
+| Feisal Ramdhani Riyadi | 24552011317 | UI UX / Frontend |
+| Diky Raihan Subagja | 24552011194 | Frontend / UI Support |
+| Dafa Irsyad Nasrullah | 24552011306 | Bacend / Firebase Integration |
 
 ---
 
