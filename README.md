@@ -211,6 +211,7 @@ finalproject/
 |   `-- sapta-work-release.apk
 |-- docs/
 |   |-- ooad/
+|   |   |-- LaporanOOAD_Kel3_TIFRP24DCNS_Final1_compressed (1).pdf
 |   |   `-- README.md
 |   |-- reference/
 |   |   `-- soal-uas-mobile-programming-1.pdf
@@ -312,7 +313,7 @@ Berikut struktur artefak yang sudah disiapkan sesuai ketentuan soal:
 * **APK debug** tersedia di [apk/sapta-work-debug.apk](apk/sapta-work-debug.apk)
 * **Screenshot aplikasi** tersedia di `docs/screenshots/`
 * **PDF acuan soal UAS** tersedia di [docs/reference/soal-uas-mobile-programming-1.pdf](docs/reference/soal-uas-mobile-programming-1.pdf)
-* **Folder laporan OOAD** telah disiapkan di `docs/ooad/`
+* **Laporan OOAD final** tersedia di [docs/ooad/LaporanOOAD_Kel3_TIFRP24DCNS_Final1_compressed (1).pdf](<docs/ooad/LaporanOOAD_Kel3_TIFRP24DCNS_Final1_compressed (1).pdf>)
 
 ---
 
@@ -323,6 +324,12 @@ Ketentuan UAS mewajibkan link video penjelasan project dicantumkan di README. Ga
 ```text
 https://youtu.be/REPLACE_WITH_FINAL_DEMO
 ```
+
+Isi video minimal mencakup:
+
+* Perkenalan semua anggota kelompok
+* Demo seluruh fitur aplikasi
+* Penjelasan singkat alur kode atau implementasi fitur utama
 
 ---
 
@@ -336,3 +343,9 @@ https://youtu.be/REPLACE_WITH_FINAL_DEMO
 | Dafa Irsyad Nasrullah | 24552011306 | Bacend / Firebase Integration |
 
 ---
+
+## Catatan Penting
+
+* README ini disusun menyesuaikan ketentuan UAS Pemrograman Mobile 1 tanggal **09 Juli 2026**.
+* File laporan OOAD final saat ini disimpan di folder `docs/ooad/` agar struktur repository tetap konsisten dan mudah diperiksa.
+* Nama aplikasi yang ditampilkan ke pengguna adalah **SaptaWork**, sementara package utama source code tetap `com.feisal.workingreport` untuk menjaga kestabilan konfigurasi project.

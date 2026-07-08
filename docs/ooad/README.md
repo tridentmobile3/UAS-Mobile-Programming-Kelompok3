@@ -1,11 +1,11 @@
 # Folder Laporan OOAD
 
-Letakkan file laporan OOAD final kelompok di folder ini sebelum repository dikumpulkan.
+Folder ini berisi laporan OOAD final kelompok untuk kebutuhan pengumpulan UAS.
 
-Nama file yang disarankan:
+File yang saat ini tersedia:
 
 ```text
-Laporan_OOAD_SaptaWork.pdf
+LaporanOOAD_Kel3_TIFRP24DCNS_Final1_compressed (1).pdf
 ```
 
-Folder ini dipisahkan agar struktur repository sesuai ketentuan UAS dan memudahkan dosen saat memeriksa artefak dokumentasi.
+Folder ini dipisahkan agar struktur repository tetap rapi dan memudahkan dosen saat memeriksa artefak dokumentasi.
