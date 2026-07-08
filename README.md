@@ -1,7 +1,7 @@
 # SaptaWork
 
 <p align="center">
-  <img src="app/src/main/ic_launcher-playstore.png" alt="SaptaWork Logo" width="220">
+  <img src="docs/assets/saptawork-logo.jpg" alt="SaptaWork Logo" width="520">
 </p>
 
 <p align="center">
@@ -208,6 +208,8 @@ UAS-Mobile-Programming-Kelompok3/
 |   `-- sapta-work-debug.apk
 |-- app-release.apk
 |-- docs/
+|   |-- assets/
+|   |   `-- saptawork-logo.jpg
 |   |-- ooad/
 |   |   |-- LaporanOOAD_Kel3_TIFRP24DCNS_Final1_compressed (1).pdf
 |   |   `-- README.md
