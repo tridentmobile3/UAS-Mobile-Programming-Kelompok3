@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.*
@@ -69,6 +70,13 @@ class DashboardEmployeeActivity : AppCompatActivity() {
 
             val pagerState = rememberPagerState(pageCount = { 4 })
             val coroutineScope = rememberCoroutineScope()
+
+            // Handle Back Button: Jika tidak sedang di tab Home (index 0), balik ke Home.
+            BackHandler(enabled = pagerState.currentPage != 0) {
+                coroutineScope.launch {
+                    pagerState.animateScrollToPage(0)
+                }
+            }
 
             var currentUser by remember { mutableStateOf<User?>(null) }
             var todayAttendance by remember { mutableStateOf<Attendance?>(null) }

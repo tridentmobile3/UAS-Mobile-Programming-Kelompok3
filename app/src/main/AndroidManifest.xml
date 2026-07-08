@@ -25,6 +25,9 @@
         android:theme="@style/Theme.WorkingReport">
 
         <activity
+            android:name=".RiwayatSayaActivity"
+            android:exported="false" />
+        <activity
             android:name=".ApprovalLemburActivity"
             android:exported="false" />
         <activity

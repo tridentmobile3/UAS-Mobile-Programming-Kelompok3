@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.*
@@ -67,6 +68,11 @@ class DashboardHCActivity : AppCompatActivity() {
             val colors = p79Colors(isDark = isDarkMode)
             
             var selectedIndex by remember { mutableIntStateOf(0) }
+
+            // Handle Back Button: Jika sedang tidak di Dashboard Hub (index 0), tekan back akan balik ke Hub.
+            BackHandler(enabled = selectedIndex != 0) {
+                selectedIndex = 0
+            }
 
             var showNotificationSheet by remember { mutableStateOf(false) }
             var showLaporanSheet by remember { mutableStateOf(false) }
@@ -210,14 +216,6 @@ class DashboardHCActivity : AppCompatActivity() {
                                 onRefresh = { refreshData() },
                                 profileRepository = profileRepository
                             )
-                            4 -> RiwayatContent(
-                                colors = colors,
-                                isDarkMode = isDarkMode,
-                                currentUser = currentUser,
-                                history = attendanceHistory,
-                                permissionHistory = permissionHistory,
-                                onBackClick = { selectedIndex = 0 }
-                            )
                         }
                     }
 
@@ -312,7 +310,7 @@ fun HubDashboardContent(
         }
         Spacer(modifier = Modifier.height(12.dp))
         HubMenuCard(modifier = Modifier.fillMaxWidth(), title = "Riwayat Saya", icon = Icons.Default.DateRange, color = colors.amber) {
-            onNavigateToPage(4)
+            context.startActivity(Intent(context, RiwayatSayaActivity::class.java))
         }
 
         Spacer(modifier = Modifier.height(32.dp))
