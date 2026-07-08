@@ -205,8 +205,8 @@ Bagian profil menyediakan pengaturan akun dan akses cepat ke halaman statistik s
 UAS-Mobile-Programming-Kelompok3/
 |-- app/
 |-- apk/
+|   |-- app-release.apk
 |   `-- sapta-work-debug.apk
-|-- app-release.apk
 |-- docs/
 |   |-- assets/
 |   |   `-- saptawork-logo.jpg
@@ -307,7 +307,7 @@ Untuk demo lokal atau ketika koneksi Firebase tidak tersedia, aplikasi menyediak
 Berikut struktur artefak yang sudah disiapkan sesuai ketentuan soal:
 
 * **Source code Android Studio** tersedia di folder `app/`
-* **APK release** yang digunakan untuk pengumpulan tersedia di [app-release.apk](app-release.apk)
+* **APK release** yang digunakan untuk pengumpulan tersedia di [apk/app-release.apk](apk/app-release.apk)
 * **APK debug** tersedia di [apk/sapta-work-debug.apk](apk/sapta-work-debug.apk)
 * **Screenshot aplikasi** tersedia di `docs/screenshots/`
 * **PDF acuan soal UAS** tersedia di [docs/reference/soal-uas-mobile-programming-1.pdf](docs/reference/soal-uas-mobile-programming-1.pdf)
@@ -336,6 +336,6 @@ https://youtu.be/REPLACE_WITH_FINAL_DEMO
 
 ## Catatan Penting
 
-* APK release utama yang digunakan untuk pengumpulan adalah `app-release.apk`.
+* APK release utama yang digunakan untuk pengumpulan adalah `apk/app-release.apk`.
 * File laporan OOAD final disimpan di folder `docs/ooad/`.
 * Nama aplikasi yang ditampilkan ke pengguna adalah **SaptaWork**, sementara package utama source code tetap `com.feisal.workingreport`.
