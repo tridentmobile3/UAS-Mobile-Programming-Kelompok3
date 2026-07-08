@@ -259,8 +259,6 @@ app/src/main/java/com/feisal/workingreport/
 `-- StatisticsActivity.kt
 ```
 
-Struktur ini dipertahankan agar source code tetap stabil untuk build, sementara dokumentasi repository dibuat lebih rapi untuk kebutuhan penilaian UAS. Package utama aplikasi tetap menggunakan `com.feisal.workingreport`.
-
 ---
 
 ## Cara Menjalankan Project
