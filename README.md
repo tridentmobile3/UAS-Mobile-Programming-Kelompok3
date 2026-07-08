@@ -271,8 +271,8 @@ Struktur ini dipertahankan agar source code tetap stabil untuk build, sementara 
 ### 1. Clone Repository
 
 ```bash
-git clone <URL-repository-kelompok>
-cd finalproject
+git clone <UAS-Mobile-Programming-Kelompok3>
+cd UAS-Mobile-Programming-Kelompok3
 ```
 
 ### 2. Prasyarat
