@@ -298,8 +298,8 @@ Untuk demo lokal atau ketika koneksi Firebase tidak tersedia, aplikasi menyediak
 
 | Role | NIP | Password |
 |---|---|---|
-| HC | `1234` | `1234` |
-| Karyawan | `12345678` | `12345678` |
+| HC | `1001` | `123123123` |
+| Karyawan | `1993` | `rahman21` |
 
 ---
 
