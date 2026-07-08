@@ -324,12 +324,6 @@ Ketentuan UAS mewajibkan link video penjelasan project dicantumkan di README. Ga
 https://youtu.be/REPLACE_WITH_FINAL_DEMO
 ```
 
-Isi video minimal mencakup:
-
-* Perkenalan semua anggota kelompok
-* Demo seluruh fitur aplikasi
-* Penjelasan singkat alur kode atau implementasi fitur utama
-
 ---
 
 ## Anggota Kelompok
@@ -342,9 +336,3 @@ Isi video minimal mencakup:
 | Dafa Irsyad Nasrullah | 24552011306 | Bacend / Firebase Integration |
 
 ---
-
-## Catatan Penting
-
-* README ini disusun menyesuaikan ketentuan UAS Pemrograman Mobile 1 tanggal **09 Juli 2026**.
-* Jika laporan OOAD final belum dimasukkan, letakkan file PDF final di folder `docs/ooad/` agar struktur repository tetap konsisten.
-* Nama aplikasi yang ditampilkan ke pengguna adalah **SaptaWork**, sementara package utama source code tetap `com.feisal.workingreport` untuk menjaga kestabilan konfigurasi project.
