@@ -17,9 +17,6 @@
 </p>
 
 SaptaWork adalah aplikasi mobile internal yang dirancang untuk membantu proses operasional karyawan di lingkungan Padepokan Tujuh Sembilan. Aplikasi ini menggabungkan fitur absensi berbasis kamera, validasi lokasi kantor, working report harian, pengajuan izin, pengajuan lembur, notifikasi aktivitas, serta dashboard monitoring untuk Human Capital (HC).
-
-Repository ini disusun untuk memenuhi ketentuan UAS Pemrograman Mobile 1 dengan format pengumpulan yang rapi, profesional, dan mudah diperiksa langsung dari GitHub.
-
 ---
 
 ## Daftar Isi
