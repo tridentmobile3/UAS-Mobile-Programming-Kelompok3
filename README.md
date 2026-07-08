@@ -17,6 +17,7 @@
 </p>
 
 SaptaWork adalah aplikasi mobile internal yang dirancang untuk membantu proses operasional karyawan di lingkungan Padepokan Tujuh Sembilan. Aplikasi ini menggabungkan fitur absensi berbasis kamera, validasi lokasi kantor, working report harian, pengajuan izin, pengajuan lembur, notifikasi aktivitas, serta dashboard monitoring untuk Human Capital (HC).
+
 ---
 
 ## Daftar Isi
@@ -201,11 +202,11 @@ Bagian profil menyediakan pengaturan akun dan akses cepat ke halaman statistik s
 ## Struktur Repository
 
 ```text
-finalproject/
+UAS-Mobile-Programming-Kelompok3/
 |-- app/
 |-- apk/
-|   |-- sapta-work-debug.apk
-|   `-- sapta-work-release.apk
+|   `-- sapta-work-debug.apk
+|-- app-release.apk
 |-- docs/
 |   |-- ooad/
 |   |   |-- LaporanOOAD_Kel3_TIFRP24DCNS_Final1_compressed (1).pdf
@@ -266,7 +267,7 @@ app/src/main/java/com/feisal/workingreport/
 ### 1. Clone Repository
 
 ```bash
-git clone <UAS-Mobile-Programming-Kelompok3>
+git clone https://github.com/tridentmobile3/UAS-Mobile-Programming-Kelompok3.git
 cd UAS-Mobile-Programming-Kelompok3
 ```
 
@@ -288,7 +289,7 @@ cd UAS-Mobile-Programming-Kelompok3
 
 ---
 
-## Akun Demo Cepat
+## Akun
 
 Untuk demo lokal atau ketika koneksi Firebase tidak tersedia, aplikasi menyediakan fallback login berikut:
 
@@ -304,7 +305,7 @@ Untuk demo lokal atau ketika koneksi Firebase tidak tersedia, aplikasi menyediak
 Berikut struktur artefak yang sudah disiapkan sesuai ketentuan soal:
 
 * **Source code Android Studio** tersedia di folder `app/`
-* **APK release** tersedia di [apk/sapta-work-release.apk](apk/sapta-work-release.apk)
+* **APK release** yang digunakan untuk pengumpulan tersedia di [app-release.apk](app-release.apk)
 * **APK debug** tersedia di [apk/sapta-work-debug.apk](apk/sapta-work-debug.apk)
 * **Screenshot aplikasi** tersedia di `docs/screenshots/`
 * **PDF acuan soal UAS** tersedia di [docs/reference/soal-uas-mobile-programming-1.pdf](docs/reference/soal-uas-mobile-programming-1.pdf)
@@ -313,6 +314,7 @@ Berikut struktur artefak yang sudah disiapkan sesuai ketentuan soal:
 ---
 
 ## Link Video Penjelasan
+
 ```text
 https://youtu.be/REPLACE_WITH_FINAL_DEMO
 ```
@@ -326,6 +328,12 @@ https://youtu.be/REPLACE_WITH_FINAL_DEMO
 | Muhamad Arga Reksapati | 24552011324 | Backend / Testing |
 | Feisal Ramdhani Riyadi | 24552011317 | UI UX / Frontend |
 | Diky Raihan Subagja | 24552011194 | Frontend / UI Support |
-| Dafa Irsyad Nasrullah | 24552011306 | Bacend / Firebase Integration |
+| Dafa Irsyad Nasrullah | 24552011306 | Backend / Firebase Integration |
 
 ---
+
+## Catatan Penting
+
+* APK release utama yang digunakan untuk pengumpulan adalah `app-release.apk`.
+* File laporan OOAD final disimpan di folder `docs/ooad/`.
+* Nama aplikasi yang ditampilkan ke pengguna adalah **SaptaWork**, sementara package utama source code tetap `com.feisal.workingreport`.
