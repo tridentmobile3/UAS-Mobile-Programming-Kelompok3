@@ -30,7 +30,7 @@ SaptaWork adalah aplikasi mobile internal yang dirancang untuk membantu proses o
 * [Struktur Repository](#struktur-repository)
 * [Struktur Kode](#struktur-kode)
 * [Cara Menjalankan Project](#cara-menjalankan-project)
-* [Akun Demo Cepat](#akun-demo-cepat)
+* [Akun](#akun)
 * [Artefak Pengumpulan UAS](#artefak-pengumpulan-uas)
 * [Link Video Penjelasan](#link-video-penjelasan)
 * [Anggota Kelompok](#anggota-kelompok)
