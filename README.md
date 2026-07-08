@@ -1,50 +1,147 @@
 # Sapta Work
 
-Sapta Work adalah aplikasi Android Native Kotlin untuk absensi karyawan dan working report pada PT Padepokan Tujuh Sembilan. Proyek ini dibuat untuk memenuhi Tugas Besar mata kuliah **Mobile Programming** di Universitas Teknologi Bandung.
+Sapta Work adalah aplikasi Android Native Kotlin untuk absensi karyawan dan working report. Repository ini dirapikan untuk kebutuhan pengumpulan UAS Mobile Programming Kelompok 3 tanpa mengubah package utama aplikasi, sehingga tetap aman untuk build dan demo.
 
-## Fitur Utama
+## Kesimpulan Ketentuan UAS
 
-- **Login NIP & Password**: Masuk menggunakan Nomor Induk Pegawai dan kata sandi yang aman.
-- **Role-Based Access**: Sistem khusus untuk role HC (Human Capital) dan Karyawan.
-- **Absensi Selfie & Wajah**: Check-in aman menggunakan verifikasi wajah/selfie.
-- **Geofencing (GPS Lock)**: Absensi hanya dapat dilakukan dalam radius kantor yang ditentukan.
-- **Lock Absensi Harian**: Mencegah manipulasi dengan membatasi satu kali absensi per hari.
-- **Working Report Harian**: Pelaporan progres kerja, kendala, dan rencana kerja harian.
-- **Manajemen Izin/Sakit**: Pengajuan izin dengan bukti dokumen/foto/PDF.
-- **Dashboard HC**: Pemantauan real-time absensi, izin, dan laporan kerja seluruh karyawan.
+Fokus penilaian dosen untuk project ini adalah:
+- Aplikasi Android Native Kotlin, bukan Flutter atau React Native
+- Aplikasi tidak force close atau crash saat dijalankan
+- Fitur inti tetap berjalan sesuai tujuan awal project
+- Repository GitHub berisi source code Android Studio, APK, link video demo di README, dan laporan OOAD di folder `docs/`
 
-## Teknologi & Arsitektur
+Karena itu, package utama tetap menggunakan `com.feisal.workingreport` dan perapihan dilakukan secukupnya tanpa refactor besar yang berisiko merusak aplikasi.
 
-- **Bahasa**: Android Native Kotlin
-- **Backend**: Firebase Authentication (NIP mapping to Email)
-- **Database**: Cloud Firestore
-- **Storage**: Firebase Storage (Foto absensi & Bukti izin)
-- **Komponen UI**: Activity, Fragment, RecyclerView, Intent, ViewBinding (Admin), Compose (Karyawan)
-- **Arsitektur**: Repository Pattern dengan Kotlin Coroutines
+## Struktur Repository Final
 
-## Struktur Proyek
+```text
+UAS-Mobile-Programming-Kelompok3/
+|-- app/
+|-- apk/
+|   |-- sapta-work-debug.apk
+|   `-- sapta-work-release.apk
+|-- docs/
+|   |-- Laporan_OOAD_Sapta_Work.pdf
+|   `-- screenshots/
+|       |-- login.jpg
+|       |-- dashboard-karyawan.jpg
+|       `-- dashboard-admin.jpg
+|-- README.md
+|-- build.gradle.kts
+|-- settings.gradle.kts
+`-- gradle/
+```
 
-- `app/`: Kode sumber utama Android (setelah integrasi).
-- `Backend/absensi/`: (Legacy) Logika repository awal dan model data.
-- `docs/`: Dokumentasi teknis dan walkthrough integrasi.
-- `apk/`: Lokasi penyimpanan file APK hasil build.
+## Checklist Submission UAS
+
+- [x] Folder `app` tersedia
+- [x] Folder `apk` tersedia
+- [x] APK debug dan release tersedia di folder `apk`
+- [x] Folder `docs` tersedia
+- [x] PDF laporan OOAD tersedia di `docs/`
+- [x] README sudah dilengkapi
+- [ ] Link video demo final masih perlu diganti
+- [x] Screenshot minimal 2 sudah dimasukkan ke README
+
+## Anggota Kelompok
+
+| Nama | NIM | Peran |
+|---|---|---|
+| Muhamad Arga Reksapati | 24552011324 | Backend / Firebase Integration |
+| Feisal Ramdhani Riyadi | 24552011317 | UI / Frontend |
+| Diky Raihan Subagja | 24552011194 | Admin Page / UI Support |
+| Dafa Irsyad Nasrullah | 24552011306 | Testing / Documentation |
+
+## Fitur
+
+- Login NIP dan password
+- Role HC dan Karyawan
+- Absensi masuk dan pulang menggunakan kamera
+- Validasi lokasi kantor
+- Riwayat absensi
+- Pengajuan izin
+- Working report dengan lampiran data kerja
+- Pengajuan dan riwayat lembur
+- Dashboard admin HC
+- Notifikasi aktivitas login
+
+## Teknologi
+
+- Android Native Kotlin
+- Firebase Authentication
+- Cloud Firestore
+- Firebase Storage
+- CameraX
+- Activity, Intent, Fragment, Jetpack Compose, ViewBinding
+
+## Struktur Kode Aman untuk UAS
+
+Package utama tetap:
+
+```text
+com.feisal.workingreport
+```
+
+Perapihan dilakukan dari dalam module `app/`, terutama pada folder `model/`, `repository/`, `service/`, `ui/`, dan `utils/`, tanpa memindahkan seluruh Activity atau mengubah arsitektur besar-besaran.
+
+## Screenshot Tampilan
+
+### Login
+
+![Login](docs/screenshots/login.jpg)
+
+### Dashboard Karyawan
+
+![Dashboard Karyawan](docs/screenshots/dashboard-karyawan.jpg)
+
+### Dashboard Admin / HC
+
+![Dashboard Admin](docs/screenshots/dashboard-admin.jpg)
+
+## APK
+
+- Debug: [apk/sapta-work-debug.apk](apk/sapta-work-debug.apk)
+- Release: [apk/sapta-work-release.apk](apk/sapta-work-release.apk)
+
+## Laporan OOAD
+
+File laporan: [docs/Laporan_OOAD_Sapta_Work.pdf](docs/Laporan_OOAD_Sapta_Work.pdf)
+
+Catatan: file PDF yang ada saat ini masih placeholder struktur. Ganti file tersebut dengan laporan OOAD final sebelum branch final dikumpulkan.
+
+## Video Demo
+
+Link video demo: `https://youtu.be/REPLACE_WITH_FINAL_DEMO`
+
+Video final wajib memuat:
+- Perkenalan anggota kelompok
+- Demo fitur inti aplikasi
+- Penjelasan singkat alur kode atau komponen utama seperti CRUD, repository, atau tampilan data
 
 ## Cara Menjalankan
 
-1. Clone repositori ini.
-2. Pindah ke branch `arga`: `git checkout arga`.
-3. Buka folder root menggunakan **Android Studio**.
-4. **PENTING**: Masukkan file `google-services.json` asli ke folder `app/`.
-5. Pastikan data seed (User & Office Location) sudah tersedia di Firebase Console.
-6. Build dan jalankan di perangkat Android atau Emulator.
+```bash
+git clone https://github.com/tridentmobile3/UAS-Mobile-Programming-Kelompok3.git
+cd UAS-Mobile-Programming-Kelompok3
+```
 
----
+Buka project dengan Android Studio, lakukan sync Gradle, lalu jalankan aplikasi di perangkat Android atau emulator. Pastikan izin kamera dan lokasi diberikan saat pengujian fitur absensi.
 
-## Tim Pengembang (TIF RP 24 CNS)
+## Build APK
 
-| Nama | NIM | Role |
-| :--- | :--- | :--- |
-| **Dafa Irsyad Nasrullah** | 24552011306 | Frontend Developer |
-| **Diky Raihan Subagja** | 24552011194 | UI/UX Designer |
-| **Feisal Ramdhani Riyadi** | 24552011317 | Frontend Developer |
-| **Muhamad Arga Reksapati** | 24552011324 | Backend Developer |
+```bash
+gradlew.bat clean :app:assembleDebug
+copy app\build\outputs\apk\debug\app-debug.apk apk\sapta-work-debug.apk
+
+gradlew.bat :app:assembleRelease
+```
+
+## Catatan Penting
+
+Yang sengaja tidak dilakukan pada tahap ini:
+- Rename package utama
+- Memindahkan semua Activity ke struktur baru
+- Mengubah total arsitektur ke MVVM penuh
+- Menghapus fitur yang sudah berjalan
+
+Target repo final adalah aman untuk build, aman untuk demo, dan lengkap untuk pengumpulan UAS.

@@ -10,6 +10,9 @@
 *.log
 hs_err_pid*.log
 replay_pid*.log
+Backend/
+tampilan/
+app/release/
 
 # Android Studio / IntelliJ
 .idea/
