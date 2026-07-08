@@ -1,59 +1,332 @@
-# UAS MOBILE PROGRAMMING KELOMPOK3 📱
+# SaptaWork
 
-[![Platform](https://img.shields.io/badge/platform-Android%20%7C%20iOS-blue)](https://developer.android.com)
-[![Framework](https://img.shields.io/badge/Framework-Flutter%20%2F%20React%20Native%20%2F%20Kotlin-green)](#)
+<p align="center">
+  <img src="docs/assets/saptawork-logo.jpg" alt="SaptaWork Logo" width="520">
+</p>
 
-## 📝 Penjelasan Aplikasi
+<p align="center">
+  <strong>Aplikasi Android Native Kotlin untuk absensi, working report, izin, lembur, dan monitoring operasional karyawan.</strong>
+</p>
 
-**SaptaWork** adalah aplikasi sistem informasi manajemen SDM (Human Capital) berbasis **Android Native** yang dirancang khusus untuk mengoptimalkan efisiensi pencatatan kehadiran, pelaporan kinerja, dan transparansi birokrasi internal perusahaan atau organisasi. 
+<p align="center">
+  <img alt="Platform" src="https://img.shields.io/badge/platform-Android%20Native-3DDC84">
+  <img alt="Language" src="https://img.shields.io/badge/language-Kotlin-7F52FF">
+  <img alt="Backend" src="https://img.shields.io/badge/backend-Firebase-FFCA28">
+  <img alt="UI" src="https://img.shields.io/badge/ui-Compose%20%2B%20ViewBinding-1E88E5">
+  <img alt="Min SDK" src="https://img.shields.io/badge/minSdk-26-blue">
+</p>
 
-Aplikasi ini mengadopsi arsitektur modern Android untuk menyediakan dua hak akses (*multi-role*) yang terintegrasi secara *real-time*:
-
-1. **Sisi Karyawan (Mobile Mobility):** Berfungsi sebagai alat utilitas mandiri (*self-service*) bagi karyawan untuk melakukan presensi, melaporkan aktivitas kerja harian, hingga mengajukan lembur dan izin secara digital tanpa perlu form fisik.
-2. **Sisi Human Capital (HC/Admin Dashboard):** Berfungsi sebagai pusat kendali (*command center*) bagi manajemen untuk memantau produktivitas tim, menganalisis statistik kehadiran, serta melakukan validasi (*approval*) keputusan secara cepat dan akurat.
-
-Aplikasi ini dikembangkan untuk memenuhi Tugas Besar mata kuliah **Mobile Programming** di **Universitas Teknologi Bandung**, dengan fokus implementasi performa optimal, manajemen memori yang efisien, dan antarmuka ramah pengguna (*User-Friendly*) sesuai standar panduan Material Design dari Google.
-### Fitur Utama:
-
-#### 🏢 Human Capital (HC / Admin)
-* 📊 **Monitoring Presensi & Statistik**: Memantau grafik kehadiran, status pengajuan, dan ringkasan data statistik sistem secara *real-time*.
-* ⚖️ **Approval Sistem**: Melakukan validasi, persetujuan, atau penolakan terhadap pengajuan izin, laporan kerja harian, dan lembur yang diajukan oleh karyawan.
-* 👥 **Manajemen Karyawan**: Memiliki hak akses penuh untuk melihat dan mengelola seluruh fitur penunjang operasional yang dimiliki oleh akun karyawan.
-
-#### 👤 Karyawan
-* 📍 **Absen (Presensi)**: Melakukan absensi masuk dan pulang menggunakan fitur berbasis GPS/Geofencing atau swafoto.
-* 📝 **Ajukan Izin**: Mengisi formulir digital untuk permohonan izin atau sakit lengkap dengan unggah dokumen pendukung (surat dokter/keterangan).
-* 📋 **Laporan Kerja**: Melaporkan log aktivitas dan hasil pekerjaan harian sebagai bukti akuntabilitas kinerja.
-* ⏳ **Riwayat Presensi**: Mengakses log historis kehadiran mandiri untuk memantau akumulasi jam kerja dan kehadiran bulanan.
-* 🌙 **Lembur**: Mengajukan jam kerja lembur beserta deskripsi tugas yang dikerjakan di luar jam kerja reguler.
-* 👤 **Profile**: Mengelola data diri, foto profil, informasi akun, dan melihat ringkasan jabatan atau divisi karyawan.
----
-
-## 🛠️ Teknologi & Arsitektur
-* **Frontend**: **Kotlin** **Jetpack Compose** **Material Design 3**
-* **State Management**: **Kotlin Coroutines**
-* **Backend/Database**: **Firebase**
-* **Tools**: **Android Studio** **Gradle** **Git** & **GitHub**
+SaptaWork adalah aplikasi mobile internal yang dirancang untuk membantu proses operasional karyawan di lingkungan Padepokan Tujuh Sembilan. Aplikasi ini menggabungkan fitur absensi berbasis kamera, validasi lokasi kantor, working report harian, pengajuan izin, pengajuan lembur, notifikasi aktivitas, serta dashboard monitoring untuk Human Capital (HC).
 
 ---
 
-## 👥 Anggota Kelompok & Pembagian Tugas
-Berikut adalah anggota **Kelompok [Nomor Kelompok]** dari kelas **TIF RP 24 CNS**:
+## Daftar Isi
 
-| Foto  | Nama & NIM | Role / Jobdesk Utama | GitHub |
-| :---: | :--- | :--- | :---: |
-| <img src="https://github.com/identicons/dafa1922.png" width="50"> | **Dafa Irsyad Nasrullah** <br> NIM: 24552011306 | • <br>• <br>• | [@dafa1922](https://github.com/dafa1922) |
-| <img src="https://github.com/identicons/raihanzdiky.png" width="50"> | **Diky Raihan Subagja** <br> NIM: 24552011194 | •  <br>• <br>•  | [@raihanzdiky](https://github.com/raihanzdiky) |
-| <img src="https://github.com/identicons/feifeis17.png" width="50"> | **Feisal Ramdhani Riyadi** <br> NIM: 24552011317 | • <br>• <br>•  | [@feifeis17](https://github.com/feifeis17) |
-| <img src="https://github.com/identicons/areksaxyz.png" width="50"> | **Muhamad Arga Reksapati** <br> NIM: 24552011324 | • <br>• <br>•  | [@argareksapati](https://github.com/areksaxyz) |
+* [Ringkasan Project](#ringkasan-project)
+* [Fitur Utama](#fitur-utama)
+* [Peran Pengguna](#peran-pengguna)
+* [Alur Aplikasi](#alur-aplikasi)
+* [Screenshot Aplikasi](#screenshot-aplikasi)
+* [Teknologi yang Digunakan](#teknologi-yang-digunakan)
+* [Struktur Repository](#struktur-repository)
+* [Struktur Kode](#struktur-kode)
+* [Cara Menjalankan Project](#cara-menjalankan-project)
+* [Akun](#akun)
+* [Artefak Pengumpulan UAS](#artefak-pengumpulan-uas)
+* [Link Video Penjelasan](#link-video-penjelasan)
+* [Anggota Kelompok](#anggota-kelompok)
+* [Catatan Penting](#catatan-penting)
 
 ---
 
-## 🚀 Cara Menjalankan Proyek (Setup)
+## Ringkasan Project
 
-Prasyarat: Pastikan sudah menginstal [Flutter SDK / React Native CLI / Android SDK] di laptop masing-masing.
+SaptaWork dibangun menggunakan **Android Native Kotlin** dan tetap memakai komponen Android asli seperti **Activity**, **Fragment**, **Intent**, **ViewBinding**, serta **Jetpack Compose** untuk antarmuka modern. Dari sisi pengguna, aplikasi dibagi menjadi dua alur utama:
 
-1. **Clone Repositori**
+* **Karyawan**: login, absen masuk/pulang, mengirim working report, mengajukan izin, melihat riwayat, melihat notifikasi, dan mengajukan lembur.
+* **Human Capital (HC)**: memantau presensi seluruh karyawan, menyetujui izin, meninjau laporan kerja, memverifikasi lembur, serta melihat statistik sistem.
+
+Backend utama menggunakan **Firebase Authentication**, **Cloud Firestore**, dan **Firebase Storage** untuk menyimpan akun, data operasional, bukti absensi, dan dokumen pendukung.
+
+---
+
+## Fitur Utama
+
+* **Autentikasi Login** menggunakan NIP atau email dan password.
+* **Role-Based Dashboard** terpisah untuk Karyawan dan HC.
+* **Absensi Masuk dan Pulang** dengan kamera serta bukti foto.
+* **Validasi Radius Kantor** untuk memastikan absensi dilakukan dari lokasi yang diizinkan.
+* **Working Report Harian** untuk mencatat aktivitas kerja dan progres.
+* **Pengajuan Izin / Sakit / Cuti** dengan alur persetujuan oleh HC.
+* **Pengajuan dan Approval Lembur** lengkap dengan riwayat status.
+* **Riwayat Absensi dan Izin** dalam tampilan ringkasan dan histori detail.
+* **Notifikasi Aktivitas** seperti login berhasil dan update status pengajuan.
+* **Monitoring Presensi HC** untuk memeriksa status kehadiran seluruh karyawan.
+* **Statistik Sistem** untuk menampilkan data operasional secara ringkas.
+* **Pengaturan Profil dan Tema** termasuk mode gelap/terang.
+
+---
+
+## Peran Pengguna
+
+| Role | Akses Utama |
+|---|---|
+| Karyawan | Login, absensi, working report, izin, riwayat, notifikasi, profil, lembur |
+| HC / Admin | Dashboard monitoring, approval izin, approval laporan, approval lembur, statistik, monitoring presensi |
+
+---
+
+## Alur Aplikasi
+
+```mermaid
+graph TD
+    A[Mulai] --> B[Login]
+    B --> C{Role Pengguna}
+    C -- Karyawan --> D[Dashboard Karyawan]
+    C -- HC --> E[Dashboard HC]
+
+    D --> F[Absensi Masuk / Pulang]
+    D --> G[Pengajuan Izin]
+    D --> H[Working Report]
+    D --> I[Riwayat Absensi & Izin]
+    D --> J[Pengajuan Lembur]
+    D --> K[Notifikasi]
+
+    E --> L[Monitoring Presensi]
+    E --> M[Persetujuan Izin]
+    E --> N[Persetujuan Laporan]
+    E --> O[Persetujuan Lembur]
+    E --> P[Statistik Sistem]
+```
+
+---
+
+## Screenshot Aplikasi
+
+### 1. Halaman Login
+
+Antarmuka autentikasi awal untuk masuk menggunakan NIP/email dan password.
+
+<p align="center">
+  <img src="docs/screenshots/employee/login.jpg" alt="Login SaptaWork" width="260">
+</p>
+
+### 2. Dashboard Karyawan
+
+Halaman utama karyawan yang menampilkan status absensi hari ini, shortcut fitur utama, dan riwayat terbaru.
+
+<p align="center">
+  <img src="docs/screenshots/employee/dashboard-home.jpg" alt="Dashboard Karyawan" width="260">
+</p>
+
+### 3. Riwayat Absensi dan Izin
+
+Menampilkan statistik singkat kehadiran, kalender histori, dan daftar status absensi per tanggal.
+
+<p align="center">
+  <img src="docs/screenshots/employee/history-attendance.jpg" alt="Riwayat Absensi dan Izin" width="260">
+</p>
+
+### 4. Working Report Karyawan
+
+Daftar laporan kerja yang telah dikirim lengkap dengan status seperti `APPROVED` dan `REVISION`.
+
+<p align="center">
+  <img src="docs/screenshots/employee/report-list.jpg" alt="Working Report Karyawan" width="260">
+</p>
+
+### 5. Pengajuan dan Riwayat Lembur
+
+Karyawan dapat membuat pengajuan lembur dan memantau status seluruh riwayat pengajuan.
+
+<p align="center">
+  <img src="docs/screenshots/employee/overtime.jpg" alt="Pengajuan Lembur" width="260">
+</p>
+
+### 6. Notifikasi Aktivitas
+
+Halaman notifikasi untuk menampilkan aktivitas penting seperti status login atau perubahan data.
+
+<p align="center">
+  <img src="docs/screenshots/employee/notifications.jpg" alt="Notifikasi Aktivitas" width="260">
+</p>
+
+### 7. Monitoring Presensi HC
+
+HC dapat memantau seluruh data presensi karyawan, lengkap dengan pencarian dan filter status.
+
+<p align="center">
+  <img src="docs/screenshots/admin/attendance-monitoring.jpg" alt="Monitoring Presensi HC" width="260">
+</p>
+
+### 8. Persetujuan Izin
+
+Halaman persetujuan izin untuk memeriksa dan menyetujui pengajuan karyawan.
+
+<p align="center">
+  <img src="docs/screenshots/admin/permission-approval.jpg" alt="Persetujuan Izin" width="260">
+</p>
+
+### 9. Persetujuan Laporan
+
+HC dapat meninjau working report, melakukan pencarian, serta memfilter laporan berdasarkan status.
+
+<p align="center">
+  <img src="docs/screenshots/admin/report-approval.jpg" alt="Persetujuan Laporan" width="260">
+</p>
+
+### 10. Profil Admin dan Statistik Sistem
+
+Bagian profil menyediakan pengaturan akun dan akses cepat ke halaman statistik sistem.
+
+<p align="center">
+  <img src="docs/screenshots/admin/profile-admin.jpg" alt="Profil Admin" width="240">
+  <img src="docs/screenshots/admin/system-statistics.jpg" alt="Statistik Sistem" width="240">
+</p>
+
+---
+
+## Teknologi yang Digunakan
+
+* **Bahasa Pemrograman**: Kotlin
+* **Platform**: Android Native
+* **Arsitektur UI**: Activity, Fragment, Intent, ViewBinding, Jetpack Compose
+* **Backend**: Firebase Authentication, Cloud Firestore, Firebase Storage
+* **Camera**: CameraX
+* **Concurrency**: Kotlin Coroutines
+* **Build System**: Gradle Kotlin DSL
+* **SDK**: `minSdk 26`, `targetSdk 34`, `compileSdk 36`
+
+---
+
+## Struktur Repository
+
+```text
+UAS-Mobile-Programming-Kelompok3/
+|-- app/
+|-- apk/
+|   |-- app-release.apk
+|   `-- sapta-work-debug.apk
+|-- docs/
+|   |-- assets/
+|   |   `-- saptawork-logo.jpg
+|   |-- ooad/
+|   |   |-- LaporanOOAD_Kel3_TIFRP24DCNS_Final1_compressed (1).pdf
+|   |   `-- README.md
+|   |-- reference/
+|   |   `-- soal-uas-mobile-programming-1.pdf
+|   `-- screenshots/
+|       |-- admin/
+|       `-- employee/
+|-- gradle/
+|-- README.md
+|-- build.gradle.kts
+`-- settings.gradle.kts
+```
+
+---
+
+## Struktur Kode
+
+```text
+app/src/main/java/com/feisal/workingreport/
+|-- model/
+|   |-- Attendance.kt
+|   |-- PermissionRequest.kt
+|   |-- User.kt
+|   `-- WorkingReport.kt
+|-- repository/
+|   |-- AttendanceRepository.kt
+|   |-- AuthRepository.kt
+|   |-- NotificationRepository.kt
+|   |-- PermissionRepository.kt
+|   `-- WorkingReportRepository.kt
+|-- service/
+|   `-- StorageService.kt
+|-- ui/
+|   |-- components/
+|   `-- theme/
+|-- utils/
+|   |-- Constants.kt
+|   |-- DateHelper.kt
+|   `-- LocationHelper.kt
+|-- LoginActivity.kt
+|-- DashboardEmployeeActivity.kt
+|-- DashboardHCActivity.kt
+|-- CameraAbsenActivity.kt
+|-- RiwayatSayaActivity.kt
+|-- NotificationActivity.kt
+|-- ApprovalIzinActivity.kt
+|-- ApprovalLaporanActivity.kt
+|-- ApprovalLemburActivity.kt
+`-- StatisticsActivity.kt
+```
+
+---
+
+## Cara Menjalankan Project
+
+### 1. Clone Repository
+
 ```bash
-   git clone [https://github.com/tridentmobile3/UAS-Mobile-Programming-Kelompok3](https://github.com/tridentmobile3/UAS-Mobile-Programming-Kelompok3)
-   cd UAS-Mobile-Programming-Kelompok3
+git clone https://github.com/tridentmobile3/UAS-Mobile-Programming-Kelompok3.git
+cd UAS-Mobile-Programming-Kelompok3
+```
+
+### 2. Prasyarat
+
+* Android Studio versi terbaru
+* JDK 11
+* Android SDK sesuai konfigurasi project
+* Perangkat Android atau emulator dengan minimal Android 8.0 (API 26)
+* Koneksi internet untuk fitur Firebase
+
+### 3. Jalankan Project
+
+1. Buka folder project di Android Studio.
+2. Tunggu proses **Gradle Sync** hingga selesai.
+3. Pastikan file `app/google-services.json` tersedia.
+4. Jalankan aplikasi pada emulator atau perangkat fisik.
+5. Izinkan akses **kamera**, **lokasi**, dan **media** saat aplikasi meminta permission.
+
+---
+
+## Akun
+
+Untuk demo lokal atau ketika koneksi Firebase tidak tersedia, aplikasi menyediakan fallback login berikut:
+
+| Role | NIP | Password |
+|---|---|---|
+| HC | `1001` | `123123123` |
+| Karyawan | `1993` | `rahman21` |
+
+---
+
+## Artefak Pengumpulan UAS
+* **Source code Android Studio** tersedia di folder `app/`
+* **APK release** yang digunakan untuk pengumpulan tersedia di [apk/app-release.apk](apk/app-release.apk)
+* **APK debug** tersedia di [apk/sapta-work-debug.apk](apk/sapta-work-debug.apk)
+* **Screenshot aplikasi** tersedia di `docs/screenshots/`
+* **PDF acuan soal UAS** tersedia di [docs/reference/soal-uas-mobile-programming-1.pdf](docs/reference/soal-uas-mobile-programming-1.pdf)
+* **Laporan OOAD final** tersedia di [docs/ooad/LaporanOOAD_Kel3_TIFRP24DCNS_Final1_compressed (1).pdf](<docs/ooad/LaporanOOAD_Kel3_TIFRP24DCNS_Final1_compressed (1).pdf>)
+
+---
+
+## Link Video Penjelasan
+
+```text
+https://youtu.be/
+```
+
+---
+
+## Anggota Kelompok
+
+| Nama | NIM / NPM | Peran |
+|---|---|---|
+| Muhamad Arga Reksapati | 24552011324 | Backend / Testing |
+| Feisal Ramdhani Riyadi | 24552011317 | UI UX / Frontend |
+| Diky Raihan Subagja | 24552011194 | Frontend / UI Support |
+| Dafa Irsyad Nasrullah | 24552011306 | Backend / Firebase Integration |
+
+---

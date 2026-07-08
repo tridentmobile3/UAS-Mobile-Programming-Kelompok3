@@ -1,0 +1,197 @@
+package com.feisal.workingreport.repository
+
+import android.net.Uri
+import com.feisal.workingreport.model.Attendance
+import com.feisal.workingreport.model.AttendanceStatus
+import com.feisal.workingreport.model.OfficeLocation
+import com.feisal.workingreport.model.User
+import com.feisal.workingreport.utils.Constants
+import com.feisal.workingreport.utils.DateHelper
+import com.feisal.workingreport.utils.LocationHelper
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
+
+class AttendanceRepository {
+    private val firestore by lazy { try { FirebaseFirestore.getInstance() } catch (e: Exception) { null } }
+    private val auth by lazy { try { FirebaseAuth.getInstance() } catch (e: Exception) { null } }
+
+    private val currentUserId: String?
+        get() = AuthRepository().getCurrentUserId()
+
+    suspend fun getCurrentUser(): User? {
+        return AuthRepository().getCurrentUserProfile()
+    }
+
+    suspend fun getOfficeLocation(locationId: String = "padepokan79_main"): OfficeLocation? {
+        val defaultOffice = OfficeLocation(
+            id = "padepokan79_main",
+            name = "Padepokan 79",
+            latitude = -6.9174639,
+            longitude = 107.6191228,
+            radiusMeter = 1000,
+            active = true
+        )
+
+        val uid = currentUserId ?: return defaultOffice
+        val firebaseFirestore = firestore ?: return defaultOffice
+        return try {
+            val doc = firebaseFirestore.collection(Constants.OFFICE_LOCATIONS_COLLECTION)
+                .document(locationId)
+                .get()
+                .await()
+                .toObject(OfficeLocation::class.java)
+            doc ?: defaultOffice
+        } catch (e: Exception) {
+            defaultOffice
+        }
+    }
+
+    suspend fun checkIn(
+        latitude: Double,
+        longitude: Double,
+        accuracy: Float,
+        photoUri: Uri,
+        faceVerified: Boolean
+    ): Result<Unit> = runCatching {
+        val uid = currentUserId ?: throw Exception("User not logged in")
+        
+        if (!faceVerified) {
+            throw Exception("Verifikasi wajah gagal")
+        }
+
+        val user = getCurrentUser() ?: throw Exception("User profile not found")
+        val office = getOfficeLocation()
+        val distance = office?.let {
+            LocationHelper.calculateDistanceMeter(
+                latitude, longitude, it.latitude, it.longitude
+            )
+        } ?: 0f
+
+        val today = DateHelper.getCurrentDate()
+        val docId = "${uid}_$today"
+
+        val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
+        val existing = firebaseFirestore.collection(Constants.ATTENDANCES_COLLECTION).document(docId).get().await()
+
+        if (existing.exists()) {
+            throw Exception("Already checked in today")
+        }
+
+        val photoUrl = photoUri.toString()
+
+        val attendance = Attendance(
+            id = docId,
+            userId = uid,
+            employeeName = user.name,
+            employeeNip = user.nip,
+            date = today,
+            status = AttendanceStatus.HADIR.name,
+            checkInTime = DateHelper.getCurrentTime(),
+            checkInLatitude = latitude,
+            checkInLongitude = longitude,
+            checkInAccuracy = accuracy,
+            checkInDistance = distance,
+            checkInPhotoUrl = photoUrl,
+            faceVerified = faceVerified,
+            isLocked = true
+        )
+
+        firebaseFirestore.collection(Constants.ATTENDANCES_COLLECTION)
+            .document(docId)
+            .set(attendance)
+            .await()
+    }
+
+    suspend fun checkOut(
+        latitude: Double,
+        longitude: Double,
+        accuracy: Float,
+        photoUri: Uri
+    ): Result<Unit> = runCatching {
+        val uid = currentUserId ?: throw Exception("User not logged in")
+        val today = DateHelper.getCurrentDate()
+        val docId = "${uid}_$today"
+
+        val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
+        val docRef = firebaseFirestore.collection(Constants.ATTENDANCES_COLLECTION).document(docId)
+        val snapshot = docRef.get().await()
+
+        if (!snapshot.exists()) {
+            throw Exception("No check-in record found for today")
+        }
+
+        val attendance = snapshot.toObject(Attendance::class.java)!!
+        if (attendance.checkOutTime.isNotEmpty()) {
+            throw Exception("Already checked out today")
+        }
+
+        val office = getOfficeLocation()
+        val distance = office?.let {
+            LocationHelper.calculateDistanceMeter(
+                latitude, longitude, it.latitude, it.longitude
+            )
+        } ?: 0f
+
+        val photoUrl = photoUri.toString()
+
+        docRef.update(
+            mapOf(
+                "checkOutTime" to DateHelper.getCurrentTime(),
+                "checkOutLatitude" to latitude,
+                "checkOutLongitude" to longitude,
+                "checkOutAccuracy" to accuracy,
+                "checkOutDistance" to distance,
+                "checkOutPhotoUrl" to photoUrl,
+                "updatedAt" to System.currentTimeMillis()
+            )
+        ).await()
+    }
+
+    suspend fun getTodayAttendance(): Attendance? {
+        val uid = currentUserId ?: return null
+        val firebaseFirestore = firestore ?: return null
+        val today = DateHelper.getCurrentDate()
+        val docId = "${uid}_$today"
+        return try {
+            firebaseFirestore.collection(Constants.ATTENDANCES_COLLECTION)
+                .document(docId)
+                .get()
+                .await()
+                .toObject(Attendance::class.java)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun getAttendanceHistory() : List<Attendance> {
+        val uid = currentUserId ?: return emptyList()
+        val firebaseFirestore = firestore ?: return emptyList()
+        return try {
+            firebaseFirestore.collection(Constants.ATTENDANCES_COLLECTION)
+                .whereEqualTo("userId", uid)
+                .get()
+                .await()
+                .toObjects(Attendance::class.java)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    suspend fun getAllAttendances(): List<Attendance> {
+        val firebaseFirestore = firestore ?: return emptyList()
+        return try {
+            firebaseFirestore.collection(Constants.ATTENDANCES_COLLECTION)
+                .get()
+                .await()
+                .toObjects(Attendance::class.java)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun getPendingAttendances(): List<Attendance> {
+        return getAllAttendances().filter { it.status == "PENDING" || it.status == "SUBMITTED" }
+    }
+}

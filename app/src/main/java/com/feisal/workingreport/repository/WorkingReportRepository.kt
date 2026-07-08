@@ -1,0 +1,181 @@
+package com.feisal.workingreport.repository
+
+import android.net.Uri
+import com.feisal.workingreport.model.User
+import com.feisal.workingreport.model.WorkingReport
+import com.feisal.workingreport.model.WorkingReportStatus
+import com.feisal.workingreport.utils.Constants
+import com.feisal.workingreport.utils.DateHelper
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
+
+class WorkingReportRepository {
+    private val firestore by lazy { try { FirebaseFirestore.getInstance() } catch (e: Exception) { null } }
+    private val auth by lazy { try { FirebaseAuth.getInstance() } catch (e: Exception) { null } }
+
+    private val currentUserId: String?
+        get() = AuthRepository().getCurrentUserId()
+
+    suspend fun getCurrentUser(): User? {
+        return AuthRepository().getCurrentUserProfile()
+    }
+
+    suspend fun submitReport(
+        startTime: String,
+        endTime: String,
+        workLocation: String,
+        title: String,
+        description: String,
+        progress: String,
+        obstacle: String,
+        nextPlan: String,
+        attachmentUri: Uri? = null,
+        fileName: String? = null,
+        mimeType: String? = null
+    ): Result<Unit> = runCatching {
+        val uid = currentUserId ?: throw Exception("User not logged in")
+        val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
+        val user = getCurrentUser() ?: throw Exception("User profile not found")
+        val today = DateHelper.getCurrentDate()
+        val docId = "${uid}_$today"
+
+        val existing = firebaseFirestore
+            .collection(Constants.WORKING_REPORTS_COLLECTION)
+            .document(docId)
+            .get()
+            .await()
+
+        if (existing.exists()) {
+            throw Exception("Working report hari ini sudah dikirim")
+        }
+
+        var attachmentUrl = ""
+        if (attachmentUri != null) {
+            attachmentUrl = attachmentUri.toString()
+        }
+
+        val report = WorkingReport(
+            id = docId,
+            userId = uid,
+            employeeName = user.name,
+            employeeNip = user.nip,
+            date = today,
+            startTime = startTime,
+            endTime = endTime,
+            workLocation = workLocation,
+            title = title,
+            description = description,
+            progress = progress,
+            obstacle = obstacle,
+            nextPlan = nextPlan,
+            attachmentUrl = attachmentUrl,
+            fileName = fileName ?: "",
+            mimeType = mimeType ?: "",
+            status = WorkingReportStatus.SUBMITTED.name,
+            isLocked = true
+        )
+
+        firebaseFirestore.collection(Constants.WORKING_REPORTS_COLLECTION)
+            .document(docId)
+            .set(report)
+            .await()
+
+        // Notify all HC
+        NotificationRepository().notifyAllHC(
+            title = "Laporan Baru",
+            message = "${user.name} mengirim laporan kerja.",
+            type = "REPORT_PENDING"
+        )
+    }
+
+    suspend fun getMyReports(): List<WorkingReport> {
+        val uid = currentUserId ?: return emptyList()
+        val firebaseFirestore = firestore ?: return emptyList()
+        return try {
+            firebaseFirestore.collection(Constants.WORKING_REPORTS_COLLECTION)
+                .whereEqualTo("userId", uid)
+                .get()
+                .await()
+                .toObjects(WorkingReport::class.java)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    suspend fun getAllReports(): List<WorkingReport> {
+        val firebaseFirestore = firestore ?: return emptyList()
+        return try {
+            firebaseFirestore.collection(Constants.WORKING_REPORTS_COLLECTION)
+                .get()
+                .await()
+                .toObjects(WorkingReport::class.java)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun getPendingReports(): List<WorkingReport> {
+        return getAllReports().filter { it.status == "PENDING" || it.status == "SUBMITTED" }
+    }
+
+    suspend fun approveReport(reportId: String): Result<Unit> = runCatching {
+        val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
+        
+        val snapshot = firebaseFirestore.collection(Constants.WORKING_REPORTS_COLLECTION)
+            .document(reportId)
+            .get()
+            .await()
+        val userId = snapshot.getString("userId") ?: ""
+
+        firebaseFirestore.collection(Constants.WORKING_REPORTS_COLLECTION)
+            .document(reportId)
+            .update(
+                mapOf(
+                    "status" to WorkingReportStatus.APPROVED.name,
+                    "updatedAt" to System.currentTimeMillis()
+                )
+            )
+            .await()
+
+        if (userId.isNotEmpty()) {
+            NotificationRepository().createNotification(
+                userId = userId,
+                title = "Laporan Disetujui",
+                message = "Laporan kerja Anda telah disetujui.",
+                type = "REPORT_APPROVED"
+            )
+        }
+    }
+
+    suspend fun revisionReport(reportId: String, note: String): Result<Unit> = runCatching {
+        val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
+        
+        val snapshot = firebaseFirestore.collection(Constants.WORKING_REPORTS_COLLECTION)
+            .document(reportId)
+            .get()
+            .await()
+        val userId = snapshot.getString("userId") ?: ""
+
+        firebaseFirestore.collection(Constants.WORKING_REPORTS_COLLECTION)
+            .document(reportId)
+            .update(
+                mapOf(
+                    "status" to WorkingReportStatus.REVISION.name,
+                    "revisionNote" to note,
+                    "updatedAt" to System.currentTimeMillis()
+                )
+            )
+            .await()
+
+        if (userId.isNotEmpty()) {
+            NotificationRepository().createNotification(
+                userId = userId,
+                title = "Laporan Direvisi",
+                message = "Laporan kerja Anda perlu direvisi.",
+                type = "REPORT_REVISION"
+            )
+        }
+    }
+}

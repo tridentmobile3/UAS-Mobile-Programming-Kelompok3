@@ -1,0 +1,275 @@
+package com.feisal.workingreport
+
+import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.feisal.workingreport.model.PermissionRequest
+import com.feisal.workingreport.repository.PermissionRepository
+import com.feisal.workingreport.ui.components.DetailItem
+import com.feisal.workingreport.ui.components.EmptyState
+import com.feisal.workingreport.ui.components.NoiseOverlay
+import com.feisal.workingreport.ui.theme.LiquidGlassBackground
+import com.feisal.workingreport.ui.theme.P79Colors
+import com.feisal.workingreport.ui.theme.p79Colors
+import com.feisal.workingreport.utils.Constants
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+
+class ApprovalIzinActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            val colors = p79Colors(isDark = true)
+            var permissions by remember { mutableStateOf<List<PermissionRequest>>(emptyList()) }
+            var isLoading by remember { mutableStateOf(true) }
+            val scope = rememberCoroutineScope()
+
+            fun loadPermissions() {
+                scope.launch {
+                    try {
+                        val db = FirebaseFirestore.getInstance()
+                        val snapshot = db.collection(Constants.PERMISSIONS_COLLECTION).get().await()
+                        
+                        // Map manually to handle potential type mismatches or debug if needed
+                        val permissionList = snapshot.documents.mapNotNull { doc ->
+                            try {
+                                doc.toObject(PermissionRequest::class.java)?.copy(id = doc.id)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                null
+                            }
+                        }
+                        
+                        permissions = permissionList.sortedByDescending { it.createdAt }
+                    } catch (e: Exception) {
+                        Toast.makeText(this@ApprovalIzinActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                        e.printStackTrace()
+                    } finally {
+                        isLoading = false
+                    }
+                }
+            }
+
+            LaunchedEffect(Unit) { loadPermissions() }
+
+            Box(modifier = Modifier.fillMaxSize()) {
+                LiquidGlassBackground(colors = colors) { }
+                NoiseOverlay()
+
+                Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = { finish() }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
+                        }
+                        Text("Persetujuan Izin", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    if (isLoading) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = colors.blue)
+                        }
+                    } else if (permissions.isEmpty()) {
+                        Box(modifier = Modifier.padding(24.dp)) {
+                            EmptyState(colors, Color(0xFF161D2F), "Tidak ada pengajuan izin")
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(permissions) { izin ->
+                                PermissionApprovalItem(izin, colors) {
+                                    loadPermissions()
+                                }
+                            }
+                            item { Spacer(modifier = Modifier.height(100.dp)) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PermissionApprovalItem(
+    izin: PermissionRequest,
+    colors: P79Colors,
+    onActionDone: () -> Unit
+) {
+    var showDetail by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF161D2F), RoundedCornerShape(16.dp))
+            .border(1.dp, colors.border, RoundedCornerShape(16.dp))
+            .clickable { showDetail = true }
+            .padding(16.dp)
+    ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(izin.employeeName, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("NIP: ${izin.employeeNip}", color = Color.Gray, fontSize = 11.sp)
+            }
+            Box(
+                modifier = Modifier
+                    .background(
+                        when(izin.status.uppercase()) {
+                            "APPROVED" -> colors.green.copy(alpha = 0.1f)
+                            "REJECTED" -> colors.red.copy(alpha = 0.1f)
+                            else -> colors.amber.copy(alpha = 0.1f)
+                        }, RoundedCornerShape(8.dp)
+                    )
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    izin.status.uppercase(),
+                    color = when(izin.status.uppercase()) {
+                        "APPROVED" -> colors.green
+                        "REJECTED" -> colors.red
+                        else -> colors.amber
+                    },
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(izin.type, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+        Text(izin.date, color = Color.Gray, fontSize = 12.sp)
+    }
+
+    if (showDetail) {
+        AlertDialog(
+            onDismissRequest = { showDetail = false },
+            title = { Text("Tinjau Izin", color = Color.White) },
+            text = {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    DetailItem("Karyawan", izin.employeeName, colors)
+                    DetailItem("Tipe", izin.type, colors)
+                    DetailItem("Tanggal", izin.date, colors)
+                    DetailItem("Alasan", izin.reason, colors)
+                    DetailItem("Status", izin.status, colors)
+                }
+            },
+            confirmButton = {
+                if (izin.status.uppercase() == "PENDING") {
+                    Row {
+                        TextButton(onClick = {
+                            scope.launch {
+                                val db = FirebaseFirestore.getInstance()
+                                db.collection(Constants.PERMISSIONS_COLLECTION).document(izin.id)
+                                    .update("status", "REJECTED").await()
+                                
+                                com.feisal.workingreport.repository.NotificationRepository().createNotification(
+                                    userId = izin.userId,
+                                    title = "Izin Ditolak",
+                                    message = "Pengajuan izin Anda ditolak.",
+                                    type = "PERMISSION_REJECTED"
+                                )
+
+                                Toast.makeText(context, "Izin Ditolak", Toast.LENGTH_SHORT).show()
+                                showDetail = false
+                                onActionDone()
+                            }
+                        }) { Text("Tolak", color = colors.red) }
+                        TextButton(onClick = {
+                            scope.launch {
+                                try {
+                                    val db = FirebaseFirestore.getInstance()
+
+                                    // 1. UPDATE STATUS DI KOLEKSI PERMISSIONS MENJADI APPROVED
+                                    db.collection(Constants.PERMISSIONS_COLLECTION).document(izin.id)
+                                        .update("status", "APPROVED").await()
+                                    
+                                    com.feisal.workingreport.repository.NotificationRepository().createNotification(
+                                        userId = izin.userId,
+                                        title = "Izin Disetujui",
+                                        message = "Pengajuan izin Anda telah disetujui.",
+                                        type = "PERMISSION_APPROVED"
+                                    )
+
+                                    // 2. SINKRONISASI KE ATTENDANCES DENGAN ID YANG SESUAI KARYAWAN
+                                    // Normalisasi pemisah tanggal jika dashboard Anda menggunakan "-" sedangkan izin menggunakan "/"
+                                    val docIdDate = izin.date.replace("/", "-")
+                                    val attendanceDocId = "${izin.userId}_$docIdDate"
+
+                                    // Tentukan status berdasarkan tipe izin yang diajukan
+                                    val finalStatus = when(izin.type.uppercase()) {
+                                        "SAKIT" -> "SAKIT"
+                                        "CUTI" -> "CUTI"
+                                        else -> "IZIN"
+                                    }
+
+                                    val autoAttendance = mapOf(
+                                        "id" to attendanceDocId,
+                                        "userId" to izin.userId,
+                                        "employeeName" to izin.employeeName,
+                                        "employeeNip" to izin.employeeNip,
+                                        "date" to izin.date,
+                                        "status" to finalStatus, // Status terisi (IZIN/SAKIT/CUTI)
+                                        "isLocked" to true,
+                                        "faceVerified" to false,
+                                        "source" to "HC_APPROVAL_SYSTEM",
+                                        "createdAt" to System.currentTimeMillis(),
+                                        "updatedAt" to System.currentTimeMillis()
+                                    )
+
+                                    // Simpan dokumen absensi baru
+                                    db.collection(Constants.ATTENDANCES_COLLECTION)
+                                        .document(attendanceDocId)
+                                        .set(autoAttendance)
+                                        .await()
+
+                                    Toast.makeText(context, "Izin disetujui & Ringkasan diperbarui!", Toast.LENGTH_SHORT).show()
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                                } finally {
+                                    showDetail = false
+                                    onActionDone() // Memanggil ulang loadPermissions() agar data di layar admin segar kembali
+                                }
+                            }
+                        }) { Text("Setuju", color = colors.green) }
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDetail = false }) { Text("Tutup", color = Color.Gray) }
+            },
+            containerColor = Color(0xFF161D2F)
+        )
+    }
+}
