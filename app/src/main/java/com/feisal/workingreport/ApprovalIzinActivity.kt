@@ -193,6 +193,14 @@ fun PermissionApprovalItem(
                                 val db = FirebaseFirestore.getInstance()
                                 db.collection(Constants.PERMISSIONS_COLLECTION).document(izin.id)
                                     .update("status", "REJECTED").await()
+                                
+                                com.feisal.workingreport.repository.NotificationRepository().createNotification(
+                                    userId = izin.userId,
+                                    title = "Izin Ditolak",
+                                    message = "Pengajuan izin Anda ditolak.",
+                                    type = "PERMISSION_REJECTED"
+                                )
+
                                 Toast.makeText(context, "Izin Ditolak", Toast.LENGTH_SHORT).show()
                                 showDetail = false
                                 onActionDone()
@@ -206,6 +214,13 @@ fun PermissionApprovalItem(
                                     // 1. UPDATE STATUS DI KOLEKSI PERMISSIONS MENJADI APPROVED
                                     db.collection(Constants.PERMISSIONS_COLLECTION).document(izin.id)
                                         .update("status", "APPROVED").await()
+                                    
+                                    com.feisal.workingreport.repository.NotificationRepository().createNotification(
+                                        userId = izin.userId,
+                                        title = "Izin Disetujui",
+                                        message = "Pengajuan izin Anda telah disetujui.",
+                                        type = "PERMISSION_APPROVED"
+                                    )
 
                                     // 2. SINKRONISASI KE ATTENDANCES DENGAN ID YANG SESUAI KARYAWAN
                                     // Normalisasi pemisah tanggal jika dashboard Anda menggunakan "-" sedangkan izin menggunakan "/"

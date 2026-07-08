@@ -304,6 +304,15 @@ class LoginActivity : ComponentActivity() {
                                             .putString("userId", user.id)
                                             .apply()
 
+                                        // Create notification for successful login
+                                        val notificationRepo = com.feisal.workingreport.repository.NotificationRepository()
+                                        notificationRepo.createNotification(
+                                            userId = user.id,
+                                            title = "Login Berhasil",
+                                            message = "Selamat datang kembali, ${user.name}",
+                                            type = "LOGIN"
+                                        )
+
 
 
 

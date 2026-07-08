@@ -355,6 +355,7 @@ fun HomeContent(
     hasActivePermission: Boolean,
     canClickIzin: Boolean,               // Tambahkan ini agar tidak error
     canClickAbsen: Boolean,              // Tambahkan ini agar tidak error
+    unreadCount: Int = 0,
     onLaporClick: () -> Unit,
     onRiwayatClick: () -> Unit,
     onIzinClick: () -> Unit,
@@ -409,7 +410,7 @@ fun HomeContent(
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Spacer(modifier = Modifier.height(48.dp))
-        TopBar(colors = colors, isDarkMode = isDarkMode, currentUser = currentUser, onBellClick = onBellClick)
+        TopBar(colors = colors, isDarkMode = isDarkMode, currentUser = currentUser, unreadCount = unreadCount, onBellClick = onBellClick)
         Spacer(modifier = Modifier.height(24.dp))
         AbsenCard(colors = colors, isDarkMode = isDarkMode, todayAttendance = todayAttendance, hasActivePermission = hasActivePermission, activity = activity)
         Spacer(modifier = Modifier.height(16.dp))
@@ -436,7 +437,13 @@ fun HomeContent(
 }
 
 @Composable
-fun TopBar(colors: P79Colors, isDarkMode: Boolean, currentUser: User?, onBellClick: () -> Unit) {
+fun TopBar(
+    colors: P79Colors, 
+    isDarkMode: Boolean, 
+    currentUser: User?, 
+    unreadCount: Int = 0,
+    onBellClick: () -> Unit
+) {
     val iconBgColor = if (isDarkMode) Color(0xFF161D2F) else Color.White
     val isHc = currentUser?.role == "HC"
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -444,7 +451,35 @@ fun TopBar(colors: P79Colors, isDarkMode: Boolean, currentUser: User?, onBellCli
             Text(text = "Halo, ${if (isHc) "Admin" else currentUser?.name?.split(" ")?.firstOrNull() ?: "Sobat"}", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Text(text = "Padepokan Tujuh Sembilan", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
         }
-        Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(iconBgColor).border(1.dp, colors.border, CircleShape).clickable { onBellClick() }, contentAlignment = Alignment.Center) { Icon(Icons.Default.Notifications, null, tint = Color.Gray, modifier = Modifier.size(20.dp)) }
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(iconBgColor)
+                .border(1.dp, colors.border, CircleShape)
+                .clickable { onBellClick() }, 
+            contentAlignment = Alignment.Center
+        ) { 
+            Icon(Icons.Default.Notifications, null, tint = Color.Gray, modifier = Modifier.size(20.dp))
+            if (unreadCount > 0) {
+                Box(
+                    modifier = Modifier
+                        .size(16.dp)
+                        .align(Alignment.TopEnd)
+                        .offset(x = 2.dp, y = (-2).dp)
+                        .background(Color.Red, CircleShape)
+                        .border(1.5.dp, iconBgColor, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (unreadCount > 9) "9+" else unreadCount.toString(),
+                        color = Color.White,
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
         Spacer(modifier = Modifier.width(12.dp))
         Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(Brush.linearGradient(listOf(colors.blue, colors.green))), contentAlignment = Alignment.Center) {
             Text(currentUser?.name?.firstOrNull()?.toString() ?: "U", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
@@ -798,6 +833,7 @@ fun LaporanContent(
     isDarkMode: Boolean,
     currentUser: User?,
     reports: List<WorkingReport>,
+    unreadCount: Int = 0,
     onBellClick: () -> Unit,
     onAddClick: () -> Unit
 ) {
@@ -818,10 +854,7 @@ fun LaporanContent(
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize().statusBarsPadding().verticalScroll(rememberScrollState())) {
             Spacer(modifier = Modifier.height(24.dp))
-            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Laporan Kerja", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                Box(modifier = Modifier.size(42.dp).clip(CircleShape).background(cardBgColor).border(1.dp, colors.border, CircleShape).clickable { onBellClick() }, contentAlignment = Alignment.Center) { Icon(Icons.Default.Notifications, null, tint = Color.Gray, modifier = Modifier.size(20.dp)) }
-            }
+            TopBar(colors = colors, isDarkMode = isDarkMode, currentUser = currentUser, unreadCount = unreadCount, onBellClick = onBellClick)
             Spacer(modifier = Modifier.height(24.dp))
             Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 24.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 listOf("Semua", "Disetujui", "Menunggu", "Revisi").forEach { tab ->

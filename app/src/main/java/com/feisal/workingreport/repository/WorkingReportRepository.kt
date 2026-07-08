@@ -80,6 +80,13 @@ class WorkingReportRepository {
             .document(docId)
             .set(report)
             .await()
+
+        // Notify all HC
+        NotificationRepository().notifyAllHC(
+            title = "Laporan Baru",
+            message = "${user.name} mengirim laporan kerja.",
+            type = "REPORT_PENDING"
+        )
     }
 
     suspend fun getMyReports(): List<WorkingReport> {
@@ -116,6 +123,12 @@ class WorkingReportRepository {
     suspend fun approveReport(reportId: String): Result<Unit> = runCatching {
         val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
         
+        val snapshot = firebaseFirestore.collection(Constants.WORKING_REPORTS_COLLECTION)
+            .document(reportId)
+            .get()
+            .await()
+        val userId = snapshot.getString("userId") ?: ""
+
         firebaseFirestore.collection(Constants.WORKING_REPORTS_COLLECTION)
             .document(reportId)
             .update(
@@ -125,11 +138,26 @@ class WorkingReportRepository {
                 )
             )
             .await()
+
+        if (userId.isNotEmpty()) {
+            NotificationRepository().createNotification(
+                userId = userId,
+                title = "Laporan Disetujui",
+                message = "Laporan kerja Anda telah disetujui.",
+                type = "REPORT_APPROVED"
+            )
+        }
     }
 
     suspend fun revisionReport(reportId: String, note: String): Result<Unit> = runCatching {
         val firebaseFirestore = firestore ?: throw Exception("Firestore not initialized")
         
+        val snapshot = firebaseFirestore.collection(Constants.WORKING_REPORTS_COLLECTION)
+            .document(reportId)
+            .get()
+            .await()
+        val userId = snapshot.getString("userId") ?: ""
+
         firebaseFirestore.collection(Constants.WORKING_REPORTS_COLLECTION)
             .document(reportId)
             .update(
@@ -140,5 +168,14 @@ class WorkingReportRepository {
                 )
             )
             .await()
+
+        if (userId.isNotEmpty()) {
+            NotificationRepository().createNotification(
+                userId = userId,
+                title = "Laporan Direvisi",
+                message = "Laporan kerja Anda perlu direvisi.",
+                type = "REPORT_REVISION"
+            )
+        }
     }
 }

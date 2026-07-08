@@ -83,6 +83,7 @@ class DashboardHCActivity : AppCompatActivity() {
             var attendanceHistory by remember { mutableStateOf<List<Attendance>>(emptyList()) }
             var workingReports by remember { mutableStateOf<List<WorkingReport>>(emptyList()) }
             var permissionHistory by remember { mutableStateOf<List<PermissionRequest>>(emptyList()) }
+            var unreadNotificationCount by remember { mutableIntStateOf(0) }
             
             val scope = rememberCoroutineScope()
             val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -99,6 +100,8 @@ class DashboardHCActivity : AppCompatActivity() {
                             attendanceHistory = attendanceRepository.getAttendanceHistory()
                             workingReports = workingReportRepository.getMyReports()
                             permissionHistory = permissionRepository.getMyPermissions(u.id)
+                            
+                            unreadNotificationCount = NotificationRepository().getUnreadCount(u.id)
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -174,6 +177,7 @@ class DashboardHCActivity : AppCompatActivity() {
                                     hasActivePermission = hasApprovedOrPendingPermission,
                                     canClickIzin = todayAttendance == null && !hasApprovedOrPendingPermission,
                                     canClickAbsen = !hasApprovedOrPendingPermission,
+                                    unreadCount = unreadNotificationCount,
                                     onLaporClick = { selectedIndex = 2 },
                                     onRiwayatClick = { selectedIndex = 4 },
 
@@ -188,7 +192,9 @@ class DashboardHCActivity : AppCompatActivity() {
                                     onLemburClick = {
                                         startActivity(Intent(this@DashboardHCActivity, LemburActivity::class.java))
                                     },
-                                    onBellClick = { showNotificationSheet = true }
+                                    onBellClick = { 
+                                        startActivity(Intent(this@DashboardHCActivity, NotificationActivity::class.java))
+                                    }
                                 )
                             }
                             2 -> LaporanContent(
@@ -196,7 +202,10 @@ class DashboardHCActivity : AppCompatActivity() {
                                 isDarkMode = isDarkMode,
                                 currentUser = currentUser,
                                 reports = workingReports,
-                                onBellClick = { showNotificationSheet = true },
+                                unreadCount = unreadNotificationCount,
+                                onBellClick = { 
+                                    startActivity(Intent(this@DashboardHCActivity, NotificationActivity::class.java))
+                                },
                                 onAddClick = { showLaporanSheet = true }
                             )
                             3 -> ProfilContentHC(

@@ -57,6 +57,14 @@ class PermissionRepository {
 
             // 3. Simpan ke Firestore menggunakan custom document ID untuk menghindari duplikasi data
             firestore.collection("permissions").document(requestId).set(request).await()
+
+            // Notify all HC
+            NotificationRepository().notifyAllHC(
+                title = "Pengajuan Izin Baru",
+                message = "$employeeName mengajukan izin.",
+                type = "PERMISSION_PENDING"
+            )
+
             Result.success(true)
         } catch (e: Exception) {
             Result.failure(e)

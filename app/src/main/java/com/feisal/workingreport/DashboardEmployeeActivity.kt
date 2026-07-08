@@ -83,6 +83,7 @@ class DashboardEmployeeActivity : AppCompatActivity() {
             var attendanceHistory by remember { mutableStateOf<List<Attendance>>(emptyList()) }
             var workingReports by remember { mutableStateOf<List<WorkingReport>>(emptyList()) }
             var permissionHistory by remember { mutableStateOf<List<PermissionRequest>>(emptyList()) }
+            var unreadNotificationCount by remember { mutableIntStateOf(0) }
 
             var showNotificationSheet by remember { mutableStateOf(false) }
             var showLaporanSheet by remember { mutableStateOf(false) }
@@ -106,6 +107,8 @@ class DashboardEmployeeActivity : AppCompatActivity() {
 
                             val permissions = permissionRepository.getMyPermissions(u.id)
                             permissionHistory = permissions
+                            
+                            unreadNotificationCount = NotificationRepository().getUnreadCount(u.id)
 
                             // VALIDASI 1: Cek apakah ada izin pending/approved untuk TANGGAL HARI INI
                             val todayStr = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
@@ -174,19 +177,16 @@ class DashboardEmployeeActivity : AppCompatActivity() {
                             attendanceHistory = attendanceHistory,
                             permissionHistory = permissionHistory,
                             hasActivePermission = hasPendingOrApprovedPermissionToday,
+                            unreadCount = unreadNotificationCount,
 
                             // VALIDASI 2: Kirim status proteksi tombol ke HomeContent Anda
-                            // Tombol Izin dikunci jika: Sudah pernah absen masuk hari ini ATAU sudah punya izin aktif
                             canClickIzin = todayAttendance == null && !hasPendingOrApprovedPermissionToday,
-
-                            // Tombol Absen dikunci jika: Sudah mengajukan izin (Pending/Approved) hari ini
                             canClickAbsen = !hasPendingOrApprovedPermissionToday,
+                            
                             onLaporClick = { coroutineScope.launch { pagerState.animateScrollToPage(2) } },
                             onRiwayatClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
                             onIzinClick = {
                                 val todayStr = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
-                                // Cari apakah ada data izin hari ini, APAPUN statusnya (PENDING, APPROVED, ataupun REJECTED)
-                                // Jika ingin REJECTED memperbolehkan kirim ulang, hapus pengecekan "REJECTED"
                                 val existingPerm = permissionHistory.find { it.date == todayStr }
 
                                 when {
@@ -200,7 +200,6 @@ class DashboardEmployeeActivity : AppCompatActivity() {
                                         } else if (status == "APPROVED") {
                                             Toast.makeText(context, "❌ Izin Anda hari ini sudah DISETUJUI. Tidak bisa mengajukan kembali.", Toast.LENGTH_LONG).show()
                                         } else {
-                                            // Jika REJECTED, izinkan karyawan untuk mengajukan ulang
                                             showIzinSheet = true
                                         }
                                     }
@@ -213,7 +212,9 @@ class DashboardEmployeeActivity : AppCompatActivity() {
                                 val intent = Intent(this@DashboardEmployeeActivity, LemburActivity::class.java)
                                 startActivity(intent)
                             },
-                            onBellClick = { showNotificationSheet = true }
+                            onBellClick = { 
+                                startActivity(Intent(this@DashboardEmployeeActivity, NotificationActivity::class.java))
+                            }
                         )
                         1 -> RiwayatContent(
                             colors = colors,
@@ -228,7 +229,10 @@ class DashboardEmployeeActivity : AppCompatActivity() {
                             isDarkMode = isDarkMode,
                             currentUser = currentUser,
                             reports = workingReports,
-                            onBellClick = { showNotificationSheet = true },
+                            unreadCount = unreadNotificationCount,
+                            onBellClick = { 
+                                startActivity(Intent(this@DashboardEmployeeActivity, NotificationActivity::class.java))
+                            },
                             onAddClick = { showLaporanSheet = true }
                         )
                         3 -> ProfilContent(
