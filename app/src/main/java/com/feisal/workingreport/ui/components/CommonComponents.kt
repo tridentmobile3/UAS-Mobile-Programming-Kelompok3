@@ -353,8 +353,8 @@ fun HomeContent(
     attendanceHistory: List<Attendance>,
     permissionHistory: List<PermissionRequest>,
     hasActivePermission: Boolean,
-    canClickIzin: Boolean,               // Tambahkan ini agar tidak error
-    canClickAbsen: Boolean,              // Tambahkan ini agar tidak error
+    canClickIzin: Boolean,               // Sudah aman, tidak bertabrakan lagi
+    canClickAbsen: Boolean,              // Sudah aman, tidak bertabrakan lagi
     unreadCount: Int = 0,
     onLaporClick: () -> Unit,
     onRiwayatClick: () -> Unit,
@@ -366,25 +366,17 @@ fun HomeContent(
     val calendar = java.util.Calendar.getInstance()
     val currentMonth = calendar.get(java.util.Calendar.MONTH)
     val currentYear = calendar.get(java.util.Calendar.YEAR)
-    val todayStr = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
-// Cari apakah ada izin hari ini yang tidak ditolak (Pending / Approved)
-    val hasActivePermissionToday = permissionHistory.any { it.date == todayStr && it.status.uppercase() != "REJECTED" }
 
-// Tombol izin aktif HANYA JIKA belum absen DAN belum mengajukan izin hari ini
-    val canClickIzin = todayAttendance == null && !hasActivePermissionToday
-    val localCanClickAbsen = !hasActivePermissionToday
-
+    // Perhitungan Ringkasan Bulanan
     val attendanceThisMonth = attendanceHistory.filter { att ->
         try {
             val dateStr = att.date
             val attCal = java.util.Calendar.getInstance()
 
             val parsedDate = when {
-                // Jika menggunakan format garis miring (08/07/2026)
                 dateStr.contains("/") -> {
                     SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(dateStr)
                 }
-                // Jika menggunakan format strip terbalik (2026-07-07)
                 dateStr.contains("-") -> {
                     SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(dateStr)
                 }
@@ -393,7 +385,6 @@ fun HomeContent(
 
             if (parsedDate != null) {
                 attCal.time = parsedDate
-                // Validasi apakah bulan dan tahun cocok dengan bulan ini
                 attCal.get(java.util.Calendar.MONTH) == currentMonth && attCal.get(java.util.Calendar.YEAR) == currentYear
             } else {
                 false
@@ -408,6 +399,27 @@ fun HomeContent(
     val countSakit = attendanceThisMonth.count { it.status.uppercase() == "SAKIT" }
     val countCuti = attendanceThisMonth.count { it.status.uppercase() == "CUTI" }
 
+    // --- LOGIKA PENYELARASAN FORMAT TANGGAL PADA LIST HISTORY ---
+    // Memetakan isi list agar semua format tanggal izin/cuti/sakit menjadi yyyy-MM-dd
+    val formattedAttendanceHistory = remember(attendanceHistory) {
+        attendanceHistory.map { att ->
+            if (att.date.contains("/")) {
+                try {
+                    val inputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                    val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    val parsedDate = inputFormat.parse(att.date)
+                    if (parsedDate != null) {
+                        att.copy(date = outputFormat.format(parsedDate))
+                    } else att
+                } catch (e: Exception) {
+                    att
+                }
+            } else {
+                att
+            }
+        }
+    }
+
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Spacer(modifier = Modifier.height(48.dp))
         TopBar(colors = colors, isDarkMode = isDarkMode, currentUser = currentUser, unreadCount = unreadCount, onBellClick = onBellClick)
@@ -415,11 +427,10 @@ fun HomeContent(
         AbsenCard(colors = colors, isDarkMode = isDarkMode, todayAttendance = todayAttendance, hasActivePermission = hasActivePermission, activity = activity)
         Spacer(modifier = Modifier.height(16.dp))
 
-        // PENTING: Jika MenuRow Anda menerima parameter enabled, oper `canClickIzin` ke dalamnya
+        // Jika MenuRow Anda bisa menerima parameter status aktif tombol, masukkan variabel canClickIzin ke sini
         MenuRow(colors = colors, cardBgColor = cardBgColor, onIzinClick = onIzinClick, onLaporClick = onLaporClick, onRiwayatClick = onRiwayatClick, onLemburClick = onLemburClick)
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Alirkan data `attendanceHistory` langsung ke komponen visual ringkasan & list
         SummaryCard(
             colors = colors,
             cardBgColor = cardBgColor,
@@ -431,7 +442,9 @@ fun HomeContent(
         Spacer(modifier = Modifier.height(24.dp))
         Text("RIWAYAT TERBARU", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, modifier = Modifier.padding(horizontal = 24.dp))
         Spacer(modifier = Modifier.height(12.dp))
-        HistoryList(colors = colors, cardBgColor = cardBgColor, history = attendanceHistory)
+
+        // Menggunakan data list yang format tanggalnya sudah disamakan/diselaraskan
+        HistoryList(colors = colors, cardBgColor = cardBgColor, history = formattedAttendanceHistory)
         Spacer(modifier = Modifier.height(130.dp))
     }
 }
@@ -676,7 +689,7 @@ fun RiwayatContent(
     // Hitung ulang statistik berdasarkan kategori baru
     val totalHadir = history.count { it.status.uppercase() == "HADIR" || it.status.uppercase() == "TERLAMBAT" }
     val totalIzin = history.count { it.status.uppercase() == "IZIN" || it.status.uppercase() == "SAKIT" }
-    val totalCuti = history.count { it.status.uppercase() == "CUTI" } // Menggantikan totalTerlambat
+    val totalCuti = history.count { it.status.uppercase() == "CUTI" }
 
     val averageCheckIn = remember(history) {
         if (history.isEmpty()) "--"
@@ -697,7 +710,25 @@ fun RiwayatContent(
         }
     }
 
-    val sortedHistory = remember(history) { history.sortedByDescending { it.createdAt } }
+    // --- LOGIKA PENYELARASAN FORMAT TANGGAL DAN SORTING ---
+    val sortedHistory = remember(history) {
+        history.map { att ->
+            if (att.date.contains("/")) {
+                try {
+                    val inputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                    val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    val parsedDate = inputFormat.parse(att.date)
+                    if (parsedDate != null) {
+                        att.copy(date = outputFormat.format(parsedDate))
+                    } else att
+                } catch (e: Exception) {
+                    att
+                }
+            } else {
+                att
+            }
+        }.sortedByDescending { it.createdAt }
+    }
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp)) {
         Spacer(modifier = Modifier.height(64.dp))
@@ -719,7 +750,6 @@ fun RiwayatContent(
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = totalHadir.toString(), subtitle = "HADIR", iconTint = colors.green, textColor = Color.White)
             StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = averageCheckIn, subtitle = "RATA² MASUK", iconTint = colors.blue, textColor = Color.White)
-            // 1. MENGUBAH TERLAMBAT MENJADI CUTI
             StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = totalCuti.toString(), subtitle = "CUTI", iconTint = colors.red, textColor = Color.White)
             StatCard(modifier = Modifier.weight(1f), bg = cardBgColor, border = colors.border, title = totalIzin.toString(), subtitle = "IZIN/SAKIT", iconTint = colors.amber, textColor = Color.White)
         }
@@ -743,11 +773,9 @@ fun RiwayatContent(
                         var dayColor = innerCardBgColor
 
                         if (dayIndex <= 31) {
-                            // 1. Buat dua kemungkinan format tanggal yang ada di database Anda
-                            val dateWithSlash = String.format("%02d/%02d/%04d", dayIndex, currentMonth + 1, currentYear) // "07/07/2026"
-                            val dateWithDash = String.format("%04d-%02d-%02d", currentYear, currentMonth + 1, dayIndex)  // "2026-07-07"
+                            val dateWithSlash = String.format("%02d/%02d/%04d", dayIndex, currentMonth + 1, currentYear)
+                            val dateWithDash = String.format("%04d-%02d-%02d", currentYear, currentMonth + 1, dayIndex)
 
-                            // 2. Cari di map, periksa format slash dulu, jika null coba format dash
                             val att = attendanceMap[dateWithSlash] ?: attendanceMap[dateWithDash]
 
                             if (att != null) {
@@ -774,11 +802,10 @@ fun RiwayatContent(
             sortedHistory.forEach { item ->
                 val statusUpper = item.status.uppercase()
 
-                // 2. PENENTUAN WARNA BADGE KATEGORI SECARA DINAMIS
                 val currentStatusColor = when (statusUpper) {
-                    "HADIR", "TERLAMBAT" -> colors.green  // Hadir / Terlambat -> Hijau
-                    "IZIN", "SAKIT"      -> colors.amber  // Izin / Sakit -> Kuning (Amber)
-                    "CUTI"               -> colors.red    // Cuti -> Merah
+                    "HADIR", "TERLAMBAT" -> colors.green
+                    "IZIN", "SAKIT"      -> colors.amber
+                    "CUTI"               -> colors.red
                     else                 -> colors.blue
                 }
 
@@ -787,9 +814,9 @@ fun RiwayatContent(
                         .clickable { selectedAttendance = item; showDetailSheet = true }.padding(16.dp)
                 ) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        // Di sini otomatis menampilkan format yyyy-MM-dd hasil convert
                         Text(item.date, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
 
-                        // Render badge warna dinamis baru di sini
                         Box(modifier = Modifier.background(
                             currentStatusColor.copy(alpha = 0.15f),
                             RoundedCornerShape(8.dp)
@@ -810,7 +837,8 @@ fun RiwayatContent(
                         }
                         Column(modifier = Modifier.weight(1f)) {
                             Text("Pulang", color = Color.Gray, fontSize = 10.sp)
-                            Text(item.checkOutTime.ifBlank { "..." }, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            // Mengubah format fallback kosong dari "..." menjadi "--:--" agar lebih rapi untuk data non-hadir
+                            Text(item.checkOutTime.ifBlank { "--:--" }, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }

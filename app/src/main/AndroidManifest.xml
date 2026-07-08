@@ -64,15 +64,6 @@
             android:name=".LemburActivity"
             android:exported="false" />
         <activity
-            android:name=".ProfilActivity"
-            android:exported="false" />
-        <activity
-            android:name=".RiwayatActivity"
-            android:exported="false" />
-        <activity
-            android:name=".LaporanKerjaActivity"
-            android:exported="false" />
-        <activity
             android:name=".CameraAbsenActivity"
             android:exported="false" />
         <activity

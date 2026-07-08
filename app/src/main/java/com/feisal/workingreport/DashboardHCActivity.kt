@@ -159,7 +159,7 @@ class DashboardHCActivity : AppCompatActivity() {
                                 onNavigateToPage = { selectedIndex = it }
                             )
                             1 -> {
-                                val todayStr = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+                                val todayStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
                                 // Kunci mutlak jika hari ini sudah ada izin APPROVED atau PENDING
                                 val hasApprovedOrPendingPermission = permissionHistory.any {
@@ -179,7 +179,8 @@ class DashboardHCActivity : AppCompatActivity() {
                                     canClickAbsen = !hasApprovedOrPendingPermission,
                                     unreadCount = unreadNotificationCount,
                                     onLaporClick = { selectedIndex = 2 },
-                                    onRiwayatClick = { selectedIndex = 4 },
+                                    onRiwayatClick = { val intent = Intent(this@DashboardHCActivity, RiwayatSayaActivity::class.java)
+                                        startActivity(intent) },
 
                                     // PENCEGAHAN SEBELUM SHEET TERBUKA
                                     onIzinClick = {
