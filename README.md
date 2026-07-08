@@ -303,9 +303,6 @@ Untuk demo lokal atau ketika koneksi Firebase tidak tersedia, aplikasi menyediak
 ---
 
 ## Artefak Pengumpulan UAS
-
-Berikut struktur artefak yang sudah disiapkan sesuai ketentuan soal:
-
 * **Source code Android Studio** tersedia di folder `app/`
 * **APK release** yang digunakan untuk pengumpulan tersedia di [apk/app-release.apk](apk/app-release.apk)
 * **APK debug** tersedia di [apk/sapta-work-debug.apk](apk/sapta-work-debug.apk)
@@ -318,7 +315,7 @@ Berikut struktur artefak yang sudah disiapkan sesuai ketentuan soal:
 ## Link Video Penjelasan
 
 ```text
-https://youtu.be/REPLACE_WITH_FINAL_DEMO
+https://youtu.be/
 ```
 
 ---
@@ -333,9 +330,3 @@ https://youtu.be/REPLACE_WITH_FINAL_DEMO
 | Dafa Irsyad Nasrullah | 24552011306 | Backend / Firebase Integration |
 
 ---
-
-## Catatan Penting
-
-* APK release utama yang digunakan untuk pengumpulan adalah `apk/app-release.apk`.
-* File laporan OOAD final disimpan di folder `docs/ooad/`.
-* Nama aplikasi yang ditampilkan ke pengguna adalah **SaptaWork**, sementara package utama source code tetap `com.feisal.workingreport`.
