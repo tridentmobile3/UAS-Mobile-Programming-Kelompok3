@@ -292,13 +292,10 @@ cd UAS-Mobile-Programming-Kelompok3
 ---
 
 ## Akun
-
-Untuk demo lokal atau ketika koneksi Firebase tidak tersedia, aplikasi menyediakan fallback login berikut:
-
 | Role | NIP | Password |
 |---|---|---|
 | HC | `1001` | `123123123` |
-| Karyawan | `1993` | `rahman21` |
+| Karyawan | `1993` | `rahman12` |
 
 ---
 
