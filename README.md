@@ -312,7 +312,7 @@ cd UAS-Mobile-Programming-Kelompok3
 ## Link Video Penjelasan
 
 ```text
-https://youtu.be/
+https://youtu.be/hXeepui7joM?si=0Cr1LX2c2wGebDNn
 ```
 
 ---
